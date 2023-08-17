@@ -1,0 +1,19 @@
+{
+    "id": "ouster_viz",
+    "type": "package",
+    "value": {
+        "use": [],
+        "language": "c++"
+    },
+    "lang.cpp": {
+        "export-symbols": true,
+        "static": true,
+        "cpp-standard": "c++14",
+        "include": ["/usr/include/eigen3"],
+        "ldflags": [""],
+        "lib": ["GLEW", "glfw", "GL"]
+    },
+    "lang.c": {
+        "include": ["/usr/include/eigen3"]
+    }
+}

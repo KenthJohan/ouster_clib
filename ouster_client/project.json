@@ -1,0 +1,20 @@
+{
+    "id": "ouster_client",
+    "type": "package",
+    "value": {
+        "use": [],
+        "language": "c++",
+        "public": true
+    },
+    "lang.cpp": {
+        "export-symbols": true,
+        "static": true,
+        "cpp-standard": "c++14",
+        "cxxflags":["-Wno-deprecated-declarations", "-Wno-pedantic"],
+        "include": [
+            "/usr/include/eigen3",
+            "/usr/include/jsoncpp"
+        ],
+        "lib": ["jsoncpp", "curl", "fmt"]
+    }
+}

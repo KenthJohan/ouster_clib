@@ -1,0 +1,18 @@
+{
+    "id": "ouster_pcap",
+    "type": "package",
+    "value": {
+        "use": ["ouster_client"],
+        "language": "c++"
+    },
+    "lang.cpp": {
+        "export-symbols": true,
+        "static": true,
+        "cpp-standard": "c++14",
+        "include": [
+            "/usr/include/eigen3",
+            "/usr/include/jsoncpp"
+        ],
+        "lib": ["ouster_client", "tins", "pcap"]
+    }
+}

@@ -1,7 +1,8 @@
 {
-    "id": "app1",
+    "id": "lidar_scan_example",
     "type": "application",
     "value": {
+        "public": false,
         "use" : ["ouster_viz", "ouster_pcap", "ouster_client"],
         "language": "c++"
     },

@@ -712,6 +712,7 @@ class Cloud {
      * points, so that the xyz position of the ith point is i, i + n, i + 2n
      */
     void set_xyz(const float* xyz);
+    void set_xyz(const double* xyz);
 
     /**
      * Set the offset values.

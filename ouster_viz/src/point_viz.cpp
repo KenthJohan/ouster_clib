@@ -557,6 +557,15 @@ void Cloud::set_xyz(const float* xyz) {
     xyz_changed_ = true;
 }
 
+void Cloud::set_xyz(const double* xyz) {
+    for (size_t i = 0; i < n_; i++) {
+        for (size_t k = 0; k < 3; k++) {
+            xyz_data_[3 * i + k] = xyz[i + n_ * k];
+        }
+    }
+    xyz_changed_ = true;
+}
+
 void Cloud::set_offset(const float* offset) {
     for (size_t i = 0; i < n_; i++) {
         for (size_t k = 0; k < 3; k++) {

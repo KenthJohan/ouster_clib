@@ -1,0 +1,16 @@
+{
+    "id": "lidar_view_example",
+    "type": "application",
+    "value": {
+        "public": false,
+        "use" : ["ouster_viz", "ouster_pcap", "ouster_client"],
+        "language": "c++"
+    },
+    "lang.cpp": {
+        "cpp-standard": "c++14",
+        "include": [
+            "/usr/include/eigen3"
+        ],
+        "lib": ["ouster_client", "ouster_pcap", "ouster_viz", "GLEW", "glfw", "GL", "jsoncpp", "fmt", "tins", "pcap", "curl"]
+    }
+}

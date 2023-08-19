@@ -8,11 +8,15 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
+#include <memory>
+#include <algorithm>
+#include <random>
 
 #include "ouster_client/client.h"
 #include "ouster_client/impl/build.h"
 #include "ouster_client/lidar_scan.h"
 #include "ouster_client/types.h"
+#include "ouster_viz/point_viz.h"
 
 using namespace ouster;
 
@@ -23,6 +27,57 @@ void FATAL(const char* msg) {
     std::cerr << msg << std::endl;
     std::exit(EXIT_FAILURE);
 }
+
+
+typedef struct
+{
+    int i;
+    LidarScan scan[2];
+    size_t cloud_size;
+    XYZLut lut;
+} thread_arguments_t;
+
+
+void* func(void* arg)
+{
+    thread_arguments_t * thread_args = (thread_arguments_t *)arg;
+    ouster::viz::PointViz viz("Viz example");
+    ouster::viz::add_default_controls(viz);
+    // create a point cloud and register it with the visualizer
+    auto cloud = std::make_shared<ouster::viz::Cloud>(thread_args->cloud_size);
+    viz.add(cloud);
+
+    std::random_device rd;
+    std::default_random_engine re(rd());
+    std::uniform_real_distribution<float> dis2(0.0, 1.0);
+    std::vector<float> colors(thread_args->cloud_size);
+    std::generate(colors.begin(), colors.end(), [&]() { return dis2(re); });
+    viz.running(true);
+    viz.visible(true);
+
+    while(1)
+    {
+        LidarScan::Points p = ouster::cartesian(thread_args->scan[thread_args->i], thread_args->lut);
+        cloud->set_xyz(p.data());
+        cloud->set_key(colors.data());
+        // send updates to be rendered. This method is thread-safe
+        viz.update();
+        viz.run_once();
+        if (viz.running() == false){break;}
+    }
+    viz.visible(false);
+
+    pthread_detach(pthread_self());
+    printf("Inside the thread\n");
+    pthread_exit(NULL);
+}
+
+
+
+
+
+
+
 
 int main(int argc, char* argv[]) {
     if (argc != 2 && argc != 3) {
@@ -36,6 +91,8 @@ int main(int argc, char* argv[]) {
 
         return argc == 1 ? EXIT_SUCCESS : EXIT_FAILURE;
     }
+
+
 
     // Limit ouster_client log statements to "info" and direct the output to log
     // file rather than the console (default).
@@ -84,26 +141,28 @@ int main(int argc, char* argv[]) {
               << "\n  Column window:     [" << column_window.first << ", "
               << column_window.second << "]" << std::endl;
 
+
+    thread_arguments_t thread_args = {0};
+    thread_args.cloud_size = w*h;
+
     // A LidarScan holds lidar data for an entire rotation of the device
-    std::vector<LidarScan> scans{
-        N_SCANS, LidarScan{w, h, info.format.udp_profile_lidar}};
+    thread_args.scan[0] = LidarScan{w, h, info.format.udp_profile_lidar};
+    thread_args.scan[1] = LidarScan{w, h, info.format.udp_profile_lidar};
+    thread_args.lut = ouster::make_xyz_lut(info);
 
     // A ScanBatcher can be used to batch packets into scans
     sensor::packet_format pf = sensor::get_format(info);
     ScanBatcher batch_to_scan(info.format.columns_per_frame, pf);
 
-    /*
-     * The network client provides some convenience wrappers around socket APIs
-     * to facilitate reading lidar and IMU data from the network. It is also
-     * possible to configure the sensor offline and read data directly from a
-     * UDP socket.
-     */
-    std::cerr << "Capturing points... ";
-
     // buffer to store raw packet data
     auto packet_buf = std::make_unique<uint8_t[]>(UDP_BUF_SIZE);
 
-    for (size_t i = 0; i < N_SCANS;) {
+    pthread_t ptid;
+    // Creating a new thread
+    pthread_create(&ptid, NULL, &func, &thread_args);
+
+    while(1)
+    {
         // wait until sensor data is available
         sensor::client_state st = sensor::poll_client(*handle);
 
@@ -118,12 +177,12 @@ int main(int argc, char* argv[]) {
             }
 
             // batcher will return "true" when the current scan is complete
-            if (batch_to_scan(packet_buf.get(), scans[i])) {
+            if (batch_to_scan(packet_buf.get(), thread_args.scan[thread_args.i])) {
                 // retry until we receive a full set of valid measurements
                 // (accounting for azimuth_window settings if any)
-                if (scans[i].complete(info.format.column_window))
+                if (thread_args.scan[thread_args.i].complete(info.format.column_window))
                 {
-                    i++;
+                    thread_args.i = thread_args.i == 0 ? 1 : 0;
                 }
             }
         }
@@ -132,74 +191,21 @@ int main(int argc, char* argv[]) {
         if (st & sensor::IMU_DATA) {
             sensor::read_imu_packet(*handle, packet_buf.get(), pf);
         }
-    }
-    std::cerr << "ok" << std::endl;
+        
 
-    /*
-     * The example code includes functions for efficiently and accurately
-     * computing point clouds from range measurements. LidarScan data can
-     * also be accessed directly using the Eigen[0] linear algebra library.
-     *
-     * [0] http://eigen.tuxfamily.org
-     */
-    std::cerr << "Computing point clouds... " << std::endl;
-
-    // pre-compute a table for efficiently calculating point clouds from
-    // range
-    XYZLut lut = ouster::make_xyz_lut(info);
-    std::vector<LidarScan::Points> clouds;
-
-    for (const LidarScan& scan : scans) {
-        // compute a point cloud using the lookup table
-        clouds.push_back(ouster::cartesian(scan, lut));
-
-        // channel fields can be queried as well
-        auto n_valid_first_returns = (scan.field(sensor::RANGE) != 0).count();
-
-        // LidarScan also provides access to header information such as
-        // status and timestamp
-        auto status = scan.status();
-        auto it = std::find_if(status.data(), status.data() + status.size(),
-                               [](const uint32_t s) {
-                                   return (s & 0x01);
-                               });  // find first valid status
-        if (it != status.data() + status.size()) {
-            auto ts_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::nanoseconds(scan.timestamp()(
-                    it - status.data())));  // get corresponding timestamp
-
-            std::cerr << "  Frame no. " << scan.frame_id << " with "
-                      << n_valid_first_returns << " valid first returns at "
-                      << ts_ms.count() << " ms" << std::endl;
-        }
+        
     }
 
-    /*
-     * Write output to CSV files. The output can be viewed in a point cloud
-     * viewer like CloudCompare:
-     *
-     * [0] https://github.com/cloudcompare/cloudcompare
-     */
-    std::cerr << "Writing files... " << std::endl;
 
-    int file_ind = 0;
-    std::string file_base{"cloud_"};
-    for (const LidarScan::Points& cloud : clouds) {
-        std::string filename = file_base + std::to_string(file_ind++) + ".csv";
-        std::ofstream out;
-        out.open(filename);
-        out << std::fixed << std::setprecision(4);
 
-        // write each point, filtering out points without returns
-        for (int i = 0; i < cloud.rows(); i++) {
-            auto xyz = cloud.row(i);
-            if (!xyz.isApproxToConstant(0.0))
-                out << xyz(0) << ", " << xyz(1) << ", " << xyz(2) << std::endl;
-        }
 
-        out.close();
-        std::cerr << "  Wrote " << filename << std::endl;
-    }
+
+    
+    
+
+
+
+
 
     return EXIT_SUCCESS;
 }

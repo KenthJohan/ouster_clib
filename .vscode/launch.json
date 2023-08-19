@@ -5,13 +5,31 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch lidar_scan_example",
+            "name": "Launch client_example",
             "type": "cppdbg",
             "request": "launch",
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/examples/client_example",
             "environment": [],
             "program": "${workspaceFolder}/examples/client_example/bin/x64-Linux-debug/client_example",
+            "args": ["192.168.1.137"],
+            "osx": {
+                "MIMode": "lldb",
+                "targetArchitecture": "arm64",
+                "externalConsole": false,
+            },
+            "linux": {
+                "externalConsole": false,
+            }
+        },
+        {
+            "name": "Launch lidar_scan_example",
+            "type": "cppdbg",
+            "request": "launch",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/examples/lidar_view_example",
+            "environment": [],
+            "program": "${workspaceFolder}/examples/lidar_view_example/bin/x64-Linux-debug/lidar_view_example",
             "args": ["192.168.1.137"],
             "osx": {
                 "MIMode": "lldb",

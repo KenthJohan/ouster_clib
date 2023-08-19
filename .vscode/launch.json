@@ -9,10 +9,10 @@
             "type": "cppdbg",
             "request": "launch",
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/lidar_scan_example",
+            "cwd": "${workspaceFolder}/examples/client_example",
             "environment": [],
-            "program": "${workspaceFolder}/lidar_scan_example/bin/x64-Linux-debug/lidar_scan_example",
-            "args": ["arg1", "arg2"],
+            "program": "${workspaceFolder}/examples/client_example/bin/x64-Linux-debug/client_example",
+            "args": ["192.168.1.137"],
             "osx": {
                 "MIMode": "lldb",
                 "targetArchitecture": "arm64",

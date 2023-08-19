@@ -68,7 +68,6 @@ void* func(void* arg)
     viz.visible(false);
 
     pthread_detach(pthread_self());
-    printf("Inside the thread\n");
     pthread_exit(NULL);
 }
 
@@ -160,6 +159,7 @@ int main(int argc, char* argv[]) {
     pthread_t ptid;
     // Creating a new thread
     pthread_create(&ptid, NULL, &func, &thread_args);
+    int i = 0;
 
     while(1)
     {
@@ -177,12 +177,13 @@ int main(int argc, char* argv[]) {
             }
 
             // batcher will return "true" when the current scan is complete
-            if (batch_to_scan(packet_buf.get(), thread_args.scan[thread_args.i])) {
+            if (batch_to_scan(packet_buf.get(), thread_args.scan[i])) {
                 // retry until we receive a full set of valid measurements
                 // (accounting for azimuth_window settings if any)
                 if (thread_args.scan[thread_args.i].complete(info.format.column_window))
                 {
-                    thread_args.i = thread_args.i == 0 ? 1 : 0;
+                    thread_args.i = i;
+                    i = (i + 1) % 2;
                 }
             }
         }

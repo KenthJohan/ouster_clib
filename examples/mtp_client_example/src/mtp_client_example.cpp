@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-#include "ouster/client.h"
+#include "ouster_client/client.h"
 
 using namespace ouster;
 

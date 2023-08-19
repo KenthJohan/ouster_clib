@@ -13,10 +13,10 @@
 #include <vector>
 
 #include "helpers.h"
-#include "ouster/client.h"
-#include "ouster/impl/build.h"
-#include "ouster/lidar_scan.h"
-#include "ouster/types.h"
+#include "ouster_client/client.h"
+#include "ouster_client/impl/build.h"
+#include "ouster_client/lidar_scan.h"
+#include "ouster_client/types.h"
 
 using namespace ouster;
 

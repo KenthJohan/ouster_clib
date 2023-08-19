@@ -5,9 +5,9 @@
 
 #include "helpers.h"
 
-#include "ouster/lidar_scan.h"
-#include "ouster/os_pcap.h"
-#include "ouster/types.h"
+#include "ouster_client/lidar_scan.h"
+#include "ouster_pcap/os_pcap.h"
+#include "ouster_client/types.h"
 
 using namespace ouster::sensor;
 

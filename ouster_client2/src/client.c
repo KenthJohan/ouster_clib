@@ -67,15 +67,31 @@ void get(ouster_client_t * client, CURL* handle, char const * host, char const *
 
 void ouster_client_init(ouster_client_t * client, char const * host)
 {
-    net_sock_desc_t desc;
-    desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
-    desc.hint_name = NULL;
-    desc.hint_service = "0";
-    desc.rcvbuf_size = 256 * 1024;
-    client->socks[0] = net_create(&desc);
-    client->socks[1] = net_create(&desc);
-    client->buffer_cap = 1024;
-    client->buffer = calloc(1, client->buffer_cap);
+    {
+        net_sock_desc_t desc = {0};
+        desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
+        desc.hint_name = NULL;
+        desc.hint_service = "0";
+        desc.rcvbuf_size = 256 * 1024;
+        client->socks[0] = net_create(&desc);
+        client->socks[1] = net_create(&desc);
+        client->buffer_cap = 1024;
+        client->buffer = calloc(1, client->buffer_cap);
+    }
+
+    {
+        net_sock_desc_t desc = {0};
+        desc.flags = NET_FLAGS_TCP | NET_FLAGS_CONNECT;
+        desc.hint_name = host;
+        desc.hint_service = "7501";
+        desc.rcvtimeout_sec = 10;
+        client->sock_tcp = net_create(&desc);
+    }
+
+
+    int p1 = net_get_port(client->socks[0]);
+    int p2 = net_get_port(client->socks[1]);
+    printf("p1p2 %i %i\n", p1, p2);
 
     curl_global_init(CURL_GLOBAL_ALL);
     CURL * curl = curl_easy_init();
@@ -83,8 +99,8 @@ void ouster_client_init(ouster_client_t * client, char const * host)
 
     while(1)
     {
-        printf("net_select\n");
         uint64_t a = net_select(client->socks, 2, 1);
+        printf("net_select %jx\n", (uintmax_t)a);
         if(a & 0x1)
         {
             printf("Sock1 data!\n");

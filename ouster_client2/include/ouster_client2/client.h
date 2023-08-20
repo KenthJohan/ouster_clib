@@ -4,6 +4,7 @@
 typedef struct 
 {
     int socks[2];
+    int sock_tcp;
     char * buffer;
     int buffer_count;
     int buffer_cap;

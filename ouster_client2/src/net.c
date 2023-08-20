@@ -9,7 +9,28 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <errno.h>
 #include "log.h"
+
+
+int32_t net_get_port(int sock)
+{
+    struct sockaddr_storage ss;
+    socklen_t addrlen = sizeof(ss);
+    getsockname(sock, (struct sockaddr*)&ss, &addrlen);
+    in_port_t port;
+    switch (ss.ss_family)
+    {
+    case AF_INET:
+        port = ((struct sockaddr_in*)&ss)->sin_port;
+        break;
+    case AF_INET6:
+        port = ((struct sockaddr_in6*)&ss)->sin6_port;
+        break;
+    }
+    return ntohs(port);
+}
+
 
 void inet_ntop_addrinfo(struct addrinfo * ai, char * buf, socklen_t len)
 {
@@ -47,93 +68,150 @@ int net_create(net_sock_desc_t * desc)
             hints.ai_socktype = SOCK_DGRAM;
             hints.ai_flags = AI_PASSIVE;
         }
+        if(desc->flags & NET_FLAGS_TCP)
+        {
+            hints.ai_socktype = SOCK_STREAM;
+            hints.ai_flags = AI_NUMERICHOST;
+        }
         int ret = getaddrinfo(desc->hint_name, desc->hint_service, &hints, &info);
         if (ret != 0)
         {
-            ouster_log("udp getaddrinfo(): %s\n", gai_strerror(ret));
-            goto error;
+            hints.ai_flags = 0;
+            ret = getaddrinfo(desc->hint_name, desc->hint_service, &hints, &info);
+            if (ret != 0)
+            {
+                ouster_log("getaddrinfo(): %s\n", gai_strerror(ret));
+                goto error;
+            }
         }
         if (info == NULL)
         {
-            ouster_log("udp getaddrinfo(): empty result\n");
+            ouster_log("getaddrinfo(): empty result\n");
             goto error;
         }
     }
-
-    for (struct addrinfo * ai = info; ai != NULL; ai = ai->ai_next)
+    struct addrinfo * ai;
+    int s = -1;
+    for (ai = info; ai != NULL; ai = ai->ai_next)
     {
         char buf[INET6_ADDRSTRLEN];
         inet_ntop_addrinfo(ai, buf, INET6_ADDRSTRLEN);
         printf("Addr: %s\n", buf);
+        s = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+        if(s < 0)
+        {
+            ouster_log("socket(): error\n");
+            continue;
+        }
+
+        if(desc->flags & NET_FLAGS_CONNECT)
+        {
+            int rc = connect(s, ai->ai_addr, (socklen_t)ai->ai_addrlen);
+            if(rc)
+            {
+                ouster_log("connect(): error: %s\n", strerror(errno));
+                close(s);
+                s = -1;
+                continue;
+            }
+        }
+
+        if(desc->rcvtimeout_sec)
+        {
+            struct timeval tv;
+            tv.tv_sec = desc->rcvtimeout_sec;
+            tv.tv_usec = 0;
+            int rc = setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof tv);
+            if(rc == -1)
+            {
+                ouster_log("fcntl(): error\n");
+                close(s);
+                s = -1;
+                continue;
+            }
+        }
+
+        if(desc->flags & NET_FLAGS_IPV6ONLY)
+        {
+            int off = 0;
+            int rc = setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&off, sizeof(off));
+            if(rc)
+            {
+                ouster_log("setsockopt(): error\n");
+                close(s);
+                s = -1;
+                continue;
+            }
+        }
+
+        if(desc->flags & NET_FLAGS_REUSE)
+        {
+            int option = 1;
+            int rc = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
+            if(rc)
+            {
+                ouster_log("setsockopt(): error\n");
+                close(s);
+                s = -1;
+                continue;
+            }
+        }
+
+        if(desc->flags & NET_FLAGS_BIND)
+        {
+            int rc = bind(s, ai->ai_addr, (socklen_t)ai->ai_addrlen);
+            if(rc)
+            {
+                ouster_log("bind(): error: %s\n", strerror(errno));
+                close(s);
+                s = -1;
+                continue;
+            }
+        }
+
+        if(desc->flags & NET_FLAGS_NONBLOCK)
+        {
+            int flags = fcntl(s, F_GETFL, 0);
+            if(flags == -1)
+            {
+                ouster_log("fcntl(): error\n");
+                close(s);
+                s = -1;
+                continue;
+            }
+            int rc = fcntl(s, F_SETFL, flags | O_NONBLOCK);
+            if(rc == -1)
+            {
+                ouster_log("fcntl(): error\n");
+                close(s);
+                s = -1;
+                continue;
+            }
+        }
+        if(desc->rcvbuf_size)
+        {
+            int rc = setsockopt(s, SOL_SOCKET, SO_RCVBUF, (char*)&desc->rcvbuf_size, sizeof(desc->rcvbuf_size));
+            if(rc)
+            {
+                ouster_log("setsockopt(): error\n");
+                close(s);
+                s = -1;
+                continue;
+            }
+        }
+
     }
 
-    int s = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
+    
     if(s < 0)
     {
         ouster_log("socket(): error\n");
         goto error;
     }
 
-    int rc;
-    if(desc->flags & NET_FLAGS_IPV6ONLY)
-    {
-        int off = 0;
-        rc = setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&off, sizeof(off));
-        if(rc)
-        {
-            ouster_log("setsockopt(): error\n");
-            goto error;
-        }
-    }
-
-    if(desc->flags & NET_FLAGS_REUSE)
-    {
-        int option = 1;
-        rc = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
-        if(rc)
-        {
-            ouster_log("setsockopt(): error\n");
-            goto error;
-        }
-    }
-
-    if(desc->flags & NET_FLAGS_BIND)
-    {
-        rc = bind(s, info->ai_addr, (socklen_t)info->ai_addrlen);
-        if(rc)
-        {
-            ouster_log("bind(): error\n");
-            goto error;
-        }
-    }
 
 
-
-    if(desc->flags & NET_FLAGS_NONBLOCK)
-    {
-        int flags = fcntl(s, F_GETFL, 0);
-        if(flags == -1)
-        {
-            ouster_log("fcntl(): error\n");
-            goto error;
-        }
-        rc = fcntl(s, F_SETFL, flags | O_NONBLOCK);
-        if(rc == -1)
-        {
-            ouster_log("fcntl(): error\n");
-            goto error;
-        }
-    }
-    if(desc->rcvbuf_size)
-    {
-        rc = setsockopt(s, SOL_SOCKET, SO_RCVBUF, (char*)&desc->rcvbuf_size, sizeof(desc->rcvbuf_size));
-        if(rc)
-        {
-            ouster_log("setsockopt(): error\n");
-            goto error;
-        }
-    }
-
+    freeaddrinfo(info);
     return s;
 
 error:
@@ -142,7 +220,7 @@ error:
         ouster_log("freeaddrinfo()\n");
         freeaddrinfo(info);
     }
-    if(s < 0)
+    if(s >= 0)
     {
         ouster_log("close() socket\n");
         close(s);

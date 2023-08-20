@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[])
 {
-    ouster_client_t client;
+    ouster_client_t client = {0};
     ouster_client_init(&client, "192.168.1.137");
     return 0;
 }

@@ -71,9 +71,10 @@ void ouster_client_init(ouster_client_t * client, char const * host)
         net_sock_desc_t desc = {0};
         desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
         desc.hint_name = NULL;
-        desc.hint_service = "0";
         desc.rcvbuf_size = 256 * 1024;
+        desc.hint_service = "56399";
         client->socks[0] = net_create(&desc);
+        desc.hint_service = "52079";
         client->socks[1] = net_create(&desc);
         client->buffer_cap = 1024;
         client->buffer = calloc(1, client->buffer_cap);
@@ -95,19 +96,22 @@ void ouster_client_init(ouster_client_t * client, char const * host)
 
     curl_global_init(CURL_GLOBAL_ALL);
     CURL * curl = curl_easy_init();
-    get(client, curl, host, "api/v1/sensor/cmd/set_udp_dest_auto");
+    //get(client, curl, host, "api/v1/sensor/cmd/set_udp_dest_auto");
 
     while(1)
     {
+        uint8_t buf[1024*256];
         uint64_t a = net_select(client->socks, 2, 1);
-        printf("net_select %jx\n", (uintmax_t)a);
+        //printf("net_select %jx\n", (uintmax_t)a);
         if(a & 0x1)
         {
-            printf("Sock1 data!\n");
+            int64_t n = net_read(client->socks[0], buf, sizeof(buf));
+            printf("Sock1 %ji\n", (intmax_t)n);
         }
         if(a & 0x2)
         {
-            printf("Sock2 data!\n");
+            int64_t n = net_read(client->socks[1], buf, sizeof(buf));
+            printf("Sock2 %ji\n", (intmax_t)n);
         }
         /*
         char buf[256 * 1024];

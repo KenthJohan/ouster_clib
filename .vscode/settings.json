@@ -67,6 +67,17 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "client.h": "c",
+        "netdb.h": "c",
+        "string.h": "c",
+        "socket.h": "c",
+        "types.h": "c",
+        "inet.h": "c",
+        "features.h": "c",
+        "in.h": "c",
+        "stdlib.h": "c",
+        "net.h": "c",
+        "internet": "c"
     }
 }

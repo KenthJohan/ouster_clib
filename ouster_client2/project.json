@@ -1,0 +1,12 @@
+{
+    "id": "ouster_client2",
+    "type": "package",
+    "value": {
+        "language": "c",
+        "public": true
+    },
+    "lang.c": {
+        "export-symbols": true,
+        "static": true
+    }
+}

@@ -64,6 +64,31 @@ void get(ouster_client_t * client, CURL* handle, char const * host, char const *
     }
 }
 
+int nth_col(int packet_header_size, int col_size, int n)
+{
+    return packet_header_size + (n * col_size);
+}
+
+uint16_t get_frame_id(uint8_t const * buf)
+{
+    uint16_t res;
+    memcpy(&res, buf + 10, sizeof(uint16_t));
+}
+
+uint64_t get_col_timestamp(uint8_t const* buf)
+{
+    uint64_t res;
+    memcpy(&res, buf, sizeof(uint64_t));
+    return res;
+}
+
+uint16_t get_col_measurement_id(uint8_t const* buf)
+{
+    uint16_t res;
+    memcpy(&res, buf, sizeof(uint16_t));
+    return res;
+}
+
 
 void ouster_client_init(ouster_client_t * client, char const * host)
 {
@@ -72,9 +97,9 @@ void ouster_client_init(ouster_client_t * client, char const * host)
         desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
         desc.hint_name = NULL;
         desc.rcvbuf_size = 256 * 1024;
-        desc.hint_service = "56399";
+        desc.hint_service = "46942";
         client->socks[0] = net_create(&desc);
-        desc.hint_service = "52079";
+        desc.hint_service = "43945";
         client->socks[1] = net_create(&desc);
         client->buffer_cap = 1024;
         client->buffer = calloc(1, client->buffer_cap);
@@ -98,6 +123,13 @@ void ouster_client_init(ouster_client_t * client, char const * host)
     CURL * curl = curl_easy_init();
     //get(client, curl, host, "api/v1/sensor/cmd/set_udp_dest_auto");
 
+    int col_size = 212;
+    int packet_header_size = 0;
+    int timestamp_offset = 0;
+    int measurement_id_offset = 0;
+    int col_header_size = 16;
+    int lidar_packet_size = 3392;
+    int status_offset = 208;
     while(1)
     {
         uint8_t buf[1024*256];
@@ -105,20 +137,21 @@ void ouster_client_init(ouster_client_t * client, char const * host)
         //printf("net_select %jx\n", (uintmax_t)a);
         if(a & 0x1)
         {
-            int64_t n = net_read(client->socks[0], buf, sizeof(buf));
-            printf("Sock1 %ji\n", (intmax_t)n);
+            int64_t n = net_read(client->socks[0], (char*)buf, sizeof(buf));
+            uint16_t frame_id = get_frame_id(buf + nth_col(packet_header_size, col_size, 0));
+            printf("Sock1 %ji, frame_id=%ji =================\n", (intmax_t)n, (intmax_t)frame_id);
+            for(int icol = 0; icol < 16; icol++)
+            {
+                uint64_t ts = get_col_timestamp(buf + nth_col(packet_header_size, col_size, icol));
+                uint16_t id = get_col_measurement_id(buf + nth_col(packet_header_size, col_size, icol));
+                printf("col%i: %ji %ji\n", icol, (intmax_t)id, (intmax_t)ts);
+            }
         }
         if(a & 0x2)
         {
             int64_t n = net_read(client->socks[1], buf, sizeof(buf));
             printf("Sock2 %ji\n", (intmax_t)n);
         }
-        /*
-        char buf[256 * 1024];
-        int64_t n = net_read(client->socket_lidar, buf, desc.rcvbuf_size);
-        printf("net_read %i, %ji\n", client->socket_lidar, (intmax_t)n);
-        sleep(1);
-        */
     }
 
 }

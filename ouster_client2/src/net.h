@@ -1,5 +1,5 @@
 #pragma once
-
+#include <stdint.h>
 
 
 #define NET_FLAGS_NONBLOCK 0x01
@@ -15,7 +15,7 @@
 typedef struct
 {
     int flags;
-    int rcvbuf;
+    int rcvbuf_size;
     char const * hint_service;
     char const * hint_name;
 } net_sock_desc_t;
@@ -24,3 +24,8 @@ typedef struct
 
 
 int net_create(net_sock_desc_t * desc);
+
+
+int64_t net_read(int sock, char * buf, int len);
+
+uint64_t net_select(int socks[], int n, const int timeout_sec);

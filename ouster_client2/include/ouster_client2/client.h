@@ -3,8 +3,10 @@
 
 typedef struct 
 {
-    int socket_lidar;
-    int socket_imu;
+    int socks[2];
+    char * buffer;
+    int buffer_count;
+    int buffer_cap;
 } ouster_client_t;
 
 

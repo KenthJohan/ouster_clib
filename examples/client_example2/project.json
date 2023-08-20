@@ -7,6 +7,6 @@
         "use" : ["ouster_client2"]
     },
     "lang.c": {
-        "lib": ["ouster_client2"]
+        "lib": ["ouster_client2", "curl"]
     }
 }

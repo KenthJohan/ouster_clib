@@ -78,6 +78,10 @@
         "in.h": "c",
         "stdlib.h": "c",
         "net.h": "c",
-        "internet": "c"
+        "internet": "c",
+        "io_context": "c",
+        "stdint.h": "c",
+        "curl.h": "c",
+        "unistd.h": "c"
     }
 }

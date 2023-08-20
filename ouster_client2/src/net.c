@@ -7,31 +7,29 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/time.h>
 #include "log.h"
 
-void print_1(struct addrinfo * ai)
+void inet_ntop_addrinfo(struct addrinfo * ai, char * buf, socklen_t len)
 {
-    void * a = NULL;
+    void * addr = NULL;
     switch (ai->ai_family)
     {
     case AF_INET:
-        a = &(((struct sockaddr_in*)ai->ai_addr)->sin_addr);
+        addr = &(((struct sockaddr_in*)ai->ai_addr)->sin_addr);
         break;
     case AF_INET6:
-        a = &(((struct sockaddr_in6*)ai->ai_addr)->sin6_addr);
+        addr = &(((struct sockaddr_in6*)ai->ai_addr)->sin6_addr);
         break;
     }
-    char buf[INET6_ADDRSTRLEN];
-    inet_ntop(ai->ai_family, a, buf, INET6_ADDRSTRLEN);
-    printf("%s\n", buf);
+    inet_ntop(ai->ai_family, addr, buf, len);
 }
 
 
 int net_create(net_sock_desc_t * desc)
 {
-
-    struct addrinfo * info_start;
-    struct addrinfo * ai;
+    struct addrinfo * info = NULL;
     {
         struct addrinfo hints;
         memset(&hints, 0, sizeof(hints));
@@ -49,31 +47,31 @@ int net_create(net_sock_desc_t * desc)
             hints.ai_socktype = SOCK_DGRAM;
             hints.ai_flags = AI_PASSIVE;
         }
-        int ret = getaddrinfo(desc->hint_name, desc->hint_service, &hints, &info_start);
+        int ret = getaddrinfo(desc->hint_name, desc->hint_service, &hints, &info);
         if (ret != 0)
         {
             ouster_log("udp getaddrinfo(): %s\n", gai_strerror(ret));
-            return -1;
+            goto error;
         }
-        if (info_start == NULL)
+        if (info == NULL)
         {
             ouster_log("udp getaddrinfo(): empty result\n");
-            return -1;
+            goto error;
         }
     }
 
-    for (ai = info_start; ai != NULL; ai = ai->ai_next)
+    for (struct addrinfo * ai = info; ai != NULL; ai = ai->ai_next)
     {
-        print_1(ai);
-        ouster_log("getaddrinfo %i\n", ai->ai_family);
+        char buf[INET6_ADDRSTRLEN];
+        inet_ntop_addrinfo(ai, buf, INET6_ADDRSTRLEN);
+        printf("Addr: %s\n", buf);
     }
-    ai = info_start;
 
-    int s = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+    int s = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
     if(s < 0)
     {
-        ouster_log("udp socket(): error\n");
-        return -1;
+        ouster_log("socket(): error\n");
+        goto error;
     }
 
     int rc;
@@ -84,7 +82,7 @@ int net_create(net_sock_desc_t * desc)
         if(rc)
         {
             ouster_log("setsockopt(): error\n");
-            return rc;
+            goto error;
         }
     }
 
@@ -95,17 +93,17 @@ int net_create(net_sock_desc_t * desc)
         if(rc)
         {
             ouster_log("setsockopt(): error\n");
-            return rc;
+            goto error;
         }
     }
 
     if(desc->flags & NET_FLAGS_BIND)
     {
-        rc = bind(s, ai->ai_addr, (socklen_t)ai->ai_addrlen);
+        rc = bind(s, info->ai_addr, (socklen_t)info->ai_addrlen);
         if(rc)
         {
             ouster_log("bind(): error\n");
-            return -1;
+            goto error;
         }
     }
 
@@ -117,25 +115,89 @@ int net_create(net_sock_desc_t * desc)
         if(flags == -1)
         {
             ouster_log("fcntl(): error\n");
-            return -1;
+            goto error;
         }
         rc = fcntl(s, F_SETFL, flags | O_NONBLOCK);
         if(rc == -1)
         {
             ouster_log("fcntl(): error\n");
-            return -1;
+            goto error;
         }
     }
-    if(desc->rcvbuf)
+    if(desc->rcvbuf_size)
     {
-        rc = setsockopt(s, SOL_SOCKET, SO_RCVBUF, (char*)&desc->rcvbuf, sizeof(desc->rcvbuf));
+        rc = setsockopt(s, SOL_SOCKET, SO_RCVBUF, (char*)&desc->rcvbuf_size, sizeof(desc->rcvbuf_size));
         if(rc)
         {
             ouster_log("setsockopt(): error\n");
-            return rc;
+            goto error;
         }
     }
 
+    return s;
 
-    return 0;
+error:
+    if(info)
+    {
+        ouster_log("freeaddrinfo()\n");
+        freeaddrinfo(info);
+    }
+    if(s < 0)
+    {
+        ouster_log("close() socket\n");
+        close(s);
+    }
+    return -1;
+}
+
+
+
+
+
+int64_t net_read(int sock, char * buf, int len)
+{
+    int64_t bytes_read = recv(sock, (char*)buf, len, 0);
+    return bytes_read;
+}
+
+
+
+uint64_t net_select(int socks[], int n, const int timeout_sec)
+{
+    fd_set rfds;
+    FD_ZERO(&rfds);
+    for(int i = 0; i < n; ++i)
+    {
+        FD_SET(socks[i], &rfds);
+    }
+
+    int max = 0;
+    for(int i = 0; i < n; ++i)
+    {
+        if (socks[i] > max)
+        {
+            max = socks[i];
+        }
+    }
+
+    uint64_t result = 0;
+    struct timeval tv;
+    tv.tv_sec = timeout_sec;
+    tv.tv_usec = 0;
+
+    int rc = select((int)max + 1, &rfds, NULL, NULL, &tv);
+    if(rc == -1)
+    {
+        ouster_log("select(): error\n");
+        return 0;
+    }
+    for(int i = 0; i < n; ++i)
+    {
+        if (FD_ISSET(socks[i], &rfds))
+        {
+            result |= (1 << i);
+        }
+    }
+
+    return result;
 }

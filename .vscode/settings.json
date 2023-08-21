@@ -82,6 +82,7 @@
         "io_context": "c",
         "stdint.h": "c",
         "curl.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "parse.h": "c"
     }
 }

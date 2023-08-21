@@ -70,6 +70,9 @@ void get(ouster_client_t * client, CURL* handle, char const * host, char const *
 
 void ouster_client_init(ouster_client_t * client, char const * host)
 {
+    client->buffer_cap = 1024;
+    client->buffer = calloc(1, client->buffer_cap);
+
     {
         net_sock_desc_t desc = {0};
         desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
@@ -79,8 +82,6 @@ void ouster_client_init(ouster_client_t * client, char const * host)
         client->socks[0] = net_create(&desc);
         desc.hint_service = "33370";
         client->socks[1] = net_create(&desc);
-        client->buffer_cap = 1024;
-        client->buffer = calloc(1, client->buffer_cap);
     }
 
     {
@@ -92,15 +93,11 @@ void ouster_client_init(ouster_client_t * client, char const * host)
         client->sock_tcp = net_create(&desc);
     }
 
-
-    int p1 = net_get_port(client->socks[0]);
-    int p2 = net_get_port(client->socks[1]);
-    printf("p1p2 %i %i\n", p1, p2);
-
     curl_global_init(CURL_GLOBAL_ALL);
     CURL * curl = curl_easy_init();
     //get(client, curl, host, "api/v1/sensor/cmd/set_udp_dest_auto");
 
+    
     ouster_pf_t pf;
     pf.packet_header_size = 0;
     pf.col_header_size = 16;
@@ -114,16 +111,21 @@ void ouster_client_init(ouster_client_t * client, char const * host)
     pf.status_offset = 208;
 
 
-    while(1)
+    //while(1)
+    for(int i = 0; i < 100; ++i)
     {
         uint8_t buf[1024*256];
         uint64_t a = net_select(client->socks, 2, 1);
-        printf("net_select %jx\n", (uintmax_t)a);
+        //printf("net_select %jx\n", (uintmax_t)a);
         if(a & 0x1)
         {
             int64_t n = net_read(client->socks[0], (char*)buf, sizeof(buf));
             ouster_lidar_packet_t packet;
             ouster_lidar_packet_parse(buf, &pf, &packet);
+            if(packet.frame_id == -1)
+            {
+                printf("expecting to start batching a new scan!\n");
+            }
 
             //uint16_t frame_id = get_frame_id(buf + nth_col(packet_header_size, col_size, 0));
             printf("Sock1 %ji, frame_id=%ji =================\n", (intmax_t)n, (intmax_t)packet.frame_id);
@@ -131,7 +133,7 @@ void ouster_client_init(ouster_client_t * client, char const * host)
             {
                 ouster_column_t column;
                 ouster_parse_column(buf, icol, &pf, &column);
-                ouster_column_log(&column);
+                //ouster_column_log(&column);
             }
         }
         if(a & 0x2)

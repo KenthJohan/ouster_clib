@@ -11,6 +11,11 @@
 #include <memory>
 #include <algorithm>
 #include <random>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
 
 #include "ouster_client/client.h"
 #include "ouster_client/impl/build.h"
@@ -31,7 +36,6 @@ void FATAL(const char* msg) {
 
 typedef struct
 {
-
     ouster::viz::PointViz * viz;
 } thread_arguments_t;
 
@@ -56,7 +60,16 @@ void* func(void* arg)
 
 
 
-
+void runcv(cv::Ptr<cv::SimpleBlobDetector> detector, cv::Mat& a, cv::Mat& b)
+{
+    // Detect blobs.
+    std::vector<cv::KeyPoint> keypoints;
+    detector->detect(a, keypoints);
+    //printf("keypoints %i\n", keypoints.size());
+    // Draw detected blobs as red circles.
+    // DrawMatchesFlags::DRAW_RICH_KEYPOINTS flag ensures the size of the circle corresponds to the size of blob
+    cv::drawKeypoints(a, keypoints, b, cv::Scalar(0,0,255), cv::DrawMatchesFlags::DEFAULT );
+}
 
 
 
@@ -158,17 +171,25 @@ int main(int argc, char* argv[]) {
 
 
 
-
     pthread_t ptid;
     // Creating a new thread
     thread_arguments_t thread_args;
-    pthread_create(&ptid, NULL, &func, &thread_args);
     thread_args.viz = &viz;
+    pthread_create(&ptid, NULL, &func, &thread_args);
 
 
+    cv::SimpleBlobDetector::Params params;
+    params.filterByArea = true;
+    params.minArea = 1;
+    params.maxArea = 1000;
+    //params.filterByColor = true;
+    //params.blobColor = 255;
+    // Set up the detector with default parameters.
+    cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);
 
 
-
+    cv::namedWindow("B", cv::WINDOW_FREERATIO);
+    cv::resizeWindow("B", 2000, 200);
 
     while(1)
     {
@@ -194,6 +215,28 @@ int main(int argc, char* argv[]) {
                     LidarScan::Points p = ouster::cartesian(scan, lut);
                     cloud->set_xyz(p.data());
                     cloud->set_key(colors.data());
+                    //Eigen::Ref<const img_t<uint32_t>> imgref = scan.field(ouster::sensor::ChanField::RANGE);
+                    Eigen::Matrix<uint32_t, -1, -1, Eigen::RowMajor> img1 = scan.field(ouster::sensor::ChanField::RANGE);
+                    cv::Mat A(img1.rows(), img1.cols(), CV_32SC1, img1.data());
+                    cv::normalize(A, A, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+                    cv::Mat B;
+                    //cv::cvtColor(A, B, cv::COLOR_GRAY2RGB);
+                    runcv(detector, A, B);
+                    cv::imshow("B", B);
+                    cv::pollKey();
+                    cv::Mat C;
+                    cv::normalize(B, C, 0, 1, cv::NORM_MINMAX, CV_32FC3);
+                    image->set_image_rgb(C.cols, C.rows, (float*)C.data);
+
+                    /*
+                    Eigen::Matrix<float, -1, -1, Eigen::RowMajor> imgfloat = imgref.cast<float>();
+                    //imgfloat.normalize();
+                    cv::Mat B_OpenCV(imgfloat.rows(), imgfloat.cols(), CV_32FC1, imgfloat.data());
+                    cv::normalize(B_OpenCV, B_OpenCV, 0, 1, cv::NORM_MINMAX, CV_32FC1);
+                    runcv(detector, B_OpenCV);
+                    //B_OpenCV *= 10;
+                    image->set_image(B_OpenCV.cols, B_OpenCV.rows, (float*)B_OpenCV.data);
+                    */
                 }
             }
         }

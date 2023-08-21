@@ -83,6 +83,7 @@
         "stdint.h": "c",
         "curl.h": "c",
         "unistd.h": "c",
-        "parse.h": "c"
+        "parse.h": "c",
+        "netfwd": "cpp"
     }
 }

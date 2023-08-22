@@ -109,8 +109,8 @@ void GLImage::draw(const WindowCtx& ctx, const CameraData&, Image& image) {
 
     // draw
     double aspect = impl::window_aspect(ctx);
-    GLfloat x0_scaled = x0 / aspect + hshift;
-    GLfloat x1_scaled = x1 / aspect + hshift;
+    GLfloat x0_scaled = x0;// / aspect + hshift;
+    GLfloat x1_scaled = x1;// / aspect + hshift;
 
     const GLfloat vertices[] = {x0_scaled, y0, x0_scaled, y1,
                                 x1_scaled, y1, x1_scaled, y0};

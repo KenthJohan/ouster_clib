@@ -22,6 +22,7 @@
 #include "ouster_client/lidar_scan.h"
 #include "ouster_client/types.h"
 #include "ouster_viz/point_viz.h"
+#include <Eigen/Geometry>
 
 using namespace ouster;
 
@@ -37,12 +38,12 @@ void FATAL(const char* msg) {
 typedef struct
 {
     ouster::viz::PointViz * viz;
-} thread_arguments_t;
+} render_args_t;
 
 
-void* func(void* arg)
+void* render_thread(void* arg)
 {
-    thread_arguments_t * a = (thread_arguments_t *)arg;
+    render_args_t * a = (render_args_t *)arg;
     a->viz->running(true);
     a->viz->visible(true);
     while(1)
@@ -60,16 +61,42 @@ void* func(void* arg)
 
 
 
-void runcv(cv::Ptr<cv::SimpleBlobDetector> detector, cv::Mat& a, cv::Mat& b)
+void runcv(cv::Ptr<cv::SimpleBlobDetector> detector, cv::Mat& a, std::vector<cv::KeyPoint>& keypoints, cv::Mat& b)
 {
     // Detect blobs.
-    std::vector<cv::KeyPoint> keypoints;
     detector->detect(a, keypoints);
     //printf("keypoints %i\n", keypoints.size());
     // Draw detected blobs as red circles.
     // DrawMatchesFlags::DRAW_RICH_KEYPOINTS flag ensures the size of the circle corresponds to the size of blob
     cv::drawKeypoints(a, keypoints, b, cv::Scalar(0,0,255), cv::DrawMatchesFlags::DEFAULT );
 }
+
+
+
+
+
+void scan_to_cvmat(LidarScan& scan, ouster::sensor::ChanField f, cv::Mat& dst)
+{
+    Eigen::Ref<img_t<uint32_t>> img = scan.field(f);
+    cv::Mat a(img.rows(), img.cols(), CV_32SC1, img.data());
+    a.copyTo(dst);
+
+    /*
+    Eigen::Matrix<uint32_t, -1, -1, Eigen::RowMajor> img1 = scan.field(ouster::sensor::ChanField::RANGE);
+    dst.create(();)
+    cv::Mat A(img1.rows(), img1.cols(), CV_32SC1, img1.data());
+    cv::resize
+    */
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -153,14 +180,38 @@ int main(int argc, char* argv[]) {
 
     
     // create a point cloud and register it with the visualizer
+    //Eigen::Transform<Eigen::double_t, 3, Eigen::Affine> t = Eigen::Transform<Eigen::double_t, 3, Eigen::Affine>::Identity();
 
+    //auto g = a* t;
 
+    /*
+    auto a = Eigen::Translation3d(Eigen::Vector3d(1,1,2)).translation();
+    auto b = a.matrix();
+    */
     std::shared_ptr<ouster::viz::Image> image = std::make_shared<ouster::viz::Image>();
     std::shared_ptr<ouster::viz::Cloud> cloud = std::make_shared<ouster::viz::Cloud>(cloud_size);
+    /*
+    std::shared_ptr<ouster::viz::Label> labels[2] = 
+    {
+        std::make_shared<ouster::viz::Label>("Label1", ouster::viz::vec3d{0,0,0}),
+        std::make_shared<ouster::viz::Label>("Label2", ouster::viz::vec3d{0,0,0})
+    };
+    */
+
+    std::shared_ptr<ouster::viz::Cuboid> labels[2] = 
+    {
+        std::make_shared<ouster::viz::Cuboid>(ouster::viz::identity4d, ouster::viz::vec4f{1,1,1,1}),
+        std::make_shared<ouster::viz::Cuboid>(ouster::viz::identity4d, ouster::viz::vec4f{1,1,1,1})
+    };
+    viz.add(labels[0]);
+    viz.add(labels[1]);
+
+
+
     viz.add(cloud);
     viz.add(image);
 
-    image->set_position(-1.0, 1.0, -1.0, 0.0);
+    image->set_position(-1.0, 1.0, 0.5, 1.0);
 
     std::random_device rd;
     std::default_random_engine re(rd());
@@ -172,10 +223,8 @@ int main(int argc, char* argv[]) {
 
 
     pthread_t ptid;
-    // Creating a new thread
-    thread_arguments_t thread_args;
-    thread_args.viz = &viz;
-    pthread_create(&ptid, NULL, &func, &thread_args);
+    render_args_t thread_args = {&viz};
+    pthread_create(&ptid, NULL, &render_thread, &thread_args);
 
 
     cv::SimpleBlobDetector::Params params;
@@ -188,8 +237,8 @@ int main(int argc, char* argv[]) {
     cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);
 
 
-    cv::namedWindow("B", cv::WINDOW_FREERATIO);
-    cv::resizeWindow("B", 2000, 200);
+    cv::namedWindow("img_visual_rgb8", cv::WINDOW_FREERATIO);
+    cv::resizeWindow("img_visual_rgb8", 2000, 200);
 
     while(1)
     {
@@ -215,28 +264,32 @@ int main(int argc, char* argv[]) {
                     LidarScan::Points p = ouster::cartesian(scan, lut);
                     cloud->set_xyz(p.data());
                     cloud->set_key(colors.data());
-                    //Eigen::Ref<const img_t<uint32_t>> imgref = scan.field(ouster::sensor::ChanField::RANGE);
-                    Eigen::Matrix<uint32_t, -1, -1, Eigen::RowMajor> img1 = scan.field(ouster::sensor::ChanField::RANGE);
-                    cv::Mat A(img1.rows(), img1.cols(), CV_32SC1, img1.data());
-                    cv::normalize(A, A, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-                    cv::Mat B;
-                    //cv::cvtColor(A, B, cv::COLOR_GRAY2RGB);
-                    runcv(detector, A, B);
-                    cv::imshow("B", B);
-                    cv::pollKey();
-                    cv::Mat C;
-                    cv::normalize(B, C, 0, 1, cv::NORM_MINMAX, CV_32FC3);
-                    image->set_image_rgb(C.cols, C.rows, (float*)C.data);
+                    cv::Mat img_range32;
+                    scan_to_cvmat(scan, ouster::sensor::ChanField::RANGE, img_range32);
+                    cv::Mat img_range8;
+                    cv::normalize(img_range32, img_range8, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+                    cv::Mat img_visual_rgb8;
 
-                    /*
-                    Eigen::Matrix<float, -1, -1, Eigen::RowMajor> imgfloat = imgref.cast<float>();
-                    //imgfloat.normalize();
-                    cv::Mat B_OpenCV(imgfloat.rows(), imgfloat.cols(), CV_32FC1, imgfloat.data());
-                    cv::normalize(B_OpenCV, B_OpenCV, 0, 1, cv::NORM_MINMAX, CV_32FC1);
-                    runcv(detector, B_OpenCV);
-                    //B_OpenCV *= 10;
-                    image->set_image(B_OpenCV.cols, B_OpenCV.rows, (float*)B_OpenCV.data);
-                    */
+                    std::vector<cv::KeyPoint> keypoints;
+                    runcv(detector, img_range8, keypoints, img_visual_rgb8);
+                    for(int i = 0; i < MIN(keypoints.size(), 2); ++i)
+                    {
+                        int j = keypoints[i].pt.y * w + keypoints[i].pt.x;
+                        Eigen::Vector3d e{p(j, 0), p(j, 1), p(j, 2)};
+                        Eigen::Affine3d t{Eigen::Translation3d(Eigen::Vector3d(e))};
+                        Eigen::Matrix4d m = t.matrix(); // Option 2
+                        ouster::viz::mat4d * a = (ouster::viz::mat4d *)m.data();
+                        labels[i]->set_transform(*a);
+
+                        //auto fuck = ;
+                        //labels[i]->set_position({p(j, 0), p(j, 1), p(j, 2)});
+                        //printf("%f %f %f\n", p(j, 0), p(j, 1), p(j, 2));
+                    }
+                    cv::imshow("img_visual_rgb8", img_visual_rgb8);
+                    cv::pollKey();
+                    cv::Mat img_visual_rgb32;
+                    cv::normalize(img_visual_rgb8, img_visual_rgb32, 0, 1, cv::NORM_MINMAX, CV_32FC3);
+                    image->set_image_rgb(img_visual_rgb32.cols, img_visual_rgb32.rows, (float*)img_visual_rgb32.data);
                 }
             }
         }

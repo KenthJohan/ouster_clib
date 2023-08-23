@@ -77,6 +77,7 @@ void runcv(cv::Ptr<cv::SimpleBlobDetector> detector, cv::Mat& a, std::vector<cv:
 
 void scan_to_cvmat(LidarScan& scan, ouster::sensor::ChanField f, cv::Mat& dst)
 {
+    //https://docs.opencv.org/4.x/d0/daf/group__core__eigen.html#gaa79981ae2c2dbeea3ccf788d3a851a74
     Eigen::Ref<img_t<uint32_t>> img = scan.field(f);
     cv::Mat a(img.rows(), img.cols(), CV_32SC1, img.data());
     a.copyTo(dst);
@@ -88,9 +89,6 @@ void scan_to_cvmat(LidarScan& scan, ouster::sensor::ChanField f, cv::Mat& dst)
     cv::resize
     */
 }
-
-
-
 
 
 
@@ -200,8 +198,8 @@ int main(int argc, char* argv[]) {
 
     std::shared_ptr<ouster::viz::Cuboid> labels[2] = 
     {
-        std::make_shared<ouster::viz::Cuboid>(ouster::viz::identity4d, ouster::viz::vec4f{1,1,1,1}),
-        std::make_shared<ouster::viz::Cuboid>(ouster::viz::identity4d, ouster::viz::vec4f{1,1,1,1})
+        std::make_shared<ouster::viz::Cuboid>(ouster::viz::identity4d, ouster::viz::vec4f{0,1,1,1}),
+        std::make_shared<ouster::viz::Cuboid>(ouster::viz::identity4d, ouster::viz::vec4f{1,0,1,1})
     };
     viz.add(labels[0]);
     viz.add(labels[1]);
@@ -272,7 +270,7 @@ int main(int argc, char* argv[]) {
 
                     std::vector<cv::KeyPoint> keypoints;
                     runcv(detector, img_range8, keypoints, img_visual_rgb8);
-                    for(int i = 0; i < MIN(keypoints.size(), 2); ++i)
+                    for(size_t i = 0; i < MIN(keypoints.size(), 2); ++i)
                     {
                         int j = keypoints[i].pt.y * w + keypoints[i].pt.x;
                         Eigen::Vector3d e{p(j, 0), p(j, 1), p(j, 2)};

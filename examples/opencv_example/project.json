@@ -7,6 +7,7 @@
         "language": "c++"
     },
     "lang.cpp": {
+        "cxxflags": ["-Wno-deprecated-declarations"],
         "cpp-standard": "c++14",
         "include": [
             "/usr/include/eigen3",

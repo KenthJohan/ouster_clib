@@ -130,7 +130,7 @@ class LidarScan {
      */
     template <typename Iterator>
     LidarScan(size_t w, size_t h, Iterator begin, Iterator end)
-        : LidarScan(w, h, {begin, end}){};
+        : LidarScan(w, h, {begin, end}){}
 
     /**
      * Initialize a lidar scan from another lidar scan.
@@ -485,25 +485,12 @@ class ScanBatcher {
 /**
  * Imu Data
  */
+
+
 struct Imu {
-    union {
-        std::array<double, 3> angular_vel;
-        struct {
-            double wx, wy, wz;
-        };
-    };
-    union {
-        std::array<double, 3> linear_accel;
-        struct {
-            double ax, ay, az;
-        };
-    };
-    union {
-        std::array<uint64_t, 3> ts;
-        struct {
-            uint64_t sys_ts, accel_ts, gyro_ts;
-        };
-    };
+    std::array<double, 3> angular_vel; //wx, wy, wz
+    std::array<double, 3> linear_accel; //ax, ay, az
+    std::array<uint64_t, 3> ts; //sys_ts, accel_ts, gyro_ts
 };
 
 /** Equality for Imu */

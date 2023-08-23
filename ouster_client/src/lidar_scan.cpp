@@ -659,12 +659,19 @@ std::string to_string(const Imu& imu) {
     return ss.str();
 }
 
+/*
+struct Imu {
+    std::array<double, 3> angular_vel; //wx, wy, wz
+    std::array<double, 3> linear_accel; //ax, ay, az
+    std::array<uint64_t, 3> ts; //sys_ts, accel_ts, gyro_ts
+};
+*/
 void packet_to_imu(const uint8_t* buf, const ouster::sensor::packet_format& pf,
                    Imu& imu) {
     // Storing all available timestamps
-    imu.sys_ts = pf.imu_sys_ts(buf);
-    imu.accel_ts = pf.imu_accel_ts(buf);
-    imu.gyro_ts = pf.imu_gyro_ts(buf);
+    imu.ts[0] = pf.imu_sys_ts(buf);
+    imu.ts[1] = pf.imu_accel_ts(buf);
+    imu.ts[2] = pf.imu_gyro_ts(buf);
 
     imu.linear_accel[0] = pf.imu_la_x(buf);
     imu.linear_accel[1] = pf.imu_la_y(buf);

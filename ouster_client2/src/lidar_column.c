@@ -21,7 +21,7 @@ void ouster_column_get1(char const * col, void * dst, int type)
         break;
     case ouster_id(ouster_status_t):
         memcpy(dst, col + 10, sizeof(ouster_status_t));
-        (*(ouster_status_t*)dst) &= 0xffff;
+        *((ouster_status_t*)dst) &= 0xffff;
         break;
     }
 }

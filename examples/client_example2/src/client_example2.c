@@ -37,22 +37,29 @@ typedef struct {
     pthread_cond_t c_prod;
 } app_args;
 
-#define SOCK_LIDAR 0
-#define SOCK_IMU 1
+
+typedef enum 
+{
+    SOCK_INDEX_LIDAR,
+    SOCK_INDEX_IMU,
+    SOCK_INDEX_COUNT
+} sock_index_t;
+
 
 void * reader_fn(void * userptr)
 {
     app_args * a = (app_args *)userptr;
     int socks[2];
-    socks[SOCK_LIDAR] = ouster_client_create_lidar_udp_socket("37346");
-    socks[SOCK_IMU] = ouster_client_create_imu_udp_socket("34608");
+    socks[SOCK_INDEX_LIDAR] = ouster_client_create_lidar_udp_socket("37346");
+    socks[SOCK_INDEX_IMU] = ouster_client_create_imu_udp_socket("34608");
 
     //for(int i = 0; i < 100; ++i)
     while(1)
     {
         a->reader_fn_count++;
 
-        uint64_t a = net_select(socks, 2, 1);
+        int timeout_seconds = 1;
+        uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_seconds);
 
         if(a == 0)
         {
@@ -60,10 +67,10 @@ void * reader_fn(void * userptr)
         }
 
 
-        if(a & (1 << SOCK_LIDAR))
+        if(a & (1 << SOCK_INDEX_LIDAR))
         {
             char buf[1024*256];
-            int64_t n = net_read(socks[SOCK_LIDAR], buf, sizeof(buf));
+            int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
             ouster_log("%-10s %5ji:  ", "SOCK_LIDAR", (intmax_t)n);
             ouster_lidar_header_t header;
             ouster_lidar_header_get(buf, &header);
@@ -88,10 +95,10 @@ void * reader_fn(void * userptr)
         }
 
 
-        if(a & (1 << SOCK_IMU))
+        if(a & (1 << SOCK_INDEX_IMU))
         {
             char buf[1024*256];
-            int64_t n = net_read(socks[SOCK_IMU], buf, sizeof(buf));
+            int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
             ouster_log("%-10s %5ji:  ", "SOCK_IMU", (intmax_t)n);
             ouster_log("\n");
         }

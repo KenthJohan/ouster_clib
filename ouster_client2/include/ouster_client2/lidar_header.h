@@ -5,7 +5,6 @@
 typedef struct
 {
     ouster_frame_id_t frame_id;
-    ouster_frame_status_t frame_status;
     ouster_packet_type_t packet_type;
     ouster_init_id_t init_id;
     ouster_prod_sn_t prod_sn;

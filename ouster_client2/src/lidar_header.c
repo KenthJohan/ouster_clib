@@ -53,9 +53,9 @@ void ouster_lidar_header_get1(char const * buf, void * dst, int type)
 
 void ouster_lidar_header_get(char const * buf, ouster_lidar_header_t * dst)
 {
-    ouster_lidar_header_get1(buf, &dst->frame_id, ouster_id(ouster_frame_id_t));
     ouster_lidar_header_get1(buf, &dst->packet_type, ouster_id(ouster_packet_type_t));
-    ouster_lidar_header_get1(buf, &dst->packet_type, ouster_id(ouster_init_id_t));
+    ouster_lidar_header_get1(buf, &dst->frame_id, ouster_id(ouster_frame_id_t));
+    ouster_lidar_header_get1(buf, &dst->init_id, ouster_id(ouster_init_id_t));
     ouster_lidar_header_get1(buf, &dst->prod_sn, ouster_id(ouster_prod_sn_t));
     ouster_lidar_header_get1(buf, &dst->countdown_thermal_shutdown, ouster_id(ouster_countdown_thermal_shutdown_t));
     ouster_lidar_header_get1(buf, &dst->countdown_shot_limiting, ouster_id(ouster_countdown_shot_limiting_t));

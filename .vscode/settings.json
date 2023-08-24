@@ -89,6 +89,7 @@
         "lidar_column.h": "c",
         "stdio.h": "c",
         "client_config.h": "c",
-        "stdarg.h": "c"
+        "stdarg.h": "c",
+        "log.h": "c"
     }
 }

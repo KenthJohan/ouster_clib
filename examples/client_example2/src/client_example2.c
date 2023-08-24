@@ -5,6 +5,26 @@
 #include "ouster_client2/lidar_header.h"
 #include "ouster_client2/lidar_column.h"
 #include "ouster_client2/net.h"
+#include "ouster_client2/log.h"
+
+
+
+
+
+
+
+
+#define OUSTER_PACKET_HEADER_SIZE 32
+#define OUSTER_COLUMN_HEADER_SIZE 12
+#define OUSTER_CHANNEL_DATA_SIZE 12
+#define OUSTER_COLUMS_PER_PACKET 16
+#define OUSTER_PIXELS_PER_COLUMN 16
+#define OUSTER_COL_SIZE ((OUSTER_PIXELS_PER_COLUMN*OUSTER_CHANNEL_DATA_SIZE)+OUSTER_COLUMN_HEADER_SIZE)
+
+
+
+
+
 
 
 typedef struct {
@@ -17,36 +37,34 @@ typedef struct {
     pthread_cond_t c_prod;
 } app_args;
 
+#define SOCK_LIDAR 0
+#define SOCK_IMU 1
 
-void reader_fn(void * userptr)
+void * reader_fn(void * userptr)
 {
     app_args * a = (app_args *)userptr;
     int socks[2];
-    socks[0] = ouster_client_create_lidar_udp_socket("50876");
-    socks[1] = ouster_client_create_imu_udp_socket("38278");
+    socks[SOCK_LIDAR] = ouster_client_create_lidar_udp_socket("37346");
+    socks[SOCK_IMU] = ouster_client_create_imu_udp_socket("34608");
 
-    ouster_pf_t pf;
-    pf.packet_header_size = 0;
-    pf.col_header_size = 16;
-    pf.channel_data_size = 12;
-    pf.col_footer_size = 4;
-    pf.packet_footer_size = 0;
-    pf.col_size = 212;
-    pf.lidar_packet_size = 3392;
-    pf.timestamp_offset = 0;
-    pf.measurement_id_offset = 8;
-    pf.status_offset = 208;
-
-    while(1)
     //for(int i = 0; i < 100; ++i)
+    while(1)
     {
         a->reader_fn_count++;
-        char buf[1024*256];
+
         uint64_t a = net_select(socks, 2, 1);
-        //printf("net_select %jx\n", (uintmax_t)a);
-        if(a & 0x1)
+
+        if(a == 0)
         {
-            int64_t n = net_read(socks[0], buf, sizeof(buf));
+            ouster_log("Timeout\n");
+        }
+
+
+        if(a & (1 << SOCK_LIDAR))
+        {
+            char buf[1024*256];
+            int64_t n = net_read(socks[SOCK_LIDAR], buf, sizeof(buf));
+            ouster_log("%-10s %5ji:  ", "SOCK_LIDAR", (intmax_t)n);
             ouster_lidar_header_t header;
             ouster_lidar_header_get(buf, &header);
             ouster_lidar_header_log(&header);
@@ -60,17 +78,22 @@ void reader_fn(void * userptr)
 
             //uint16_t frame_id = get_frame_id(buf + nth_col(packet_header_size, col_size, 0));
             
-            for(int icol = 0; icol < 16; icol++)
+            for(int icol = 0; icol < OUSTER_COLUMS_PER_PACKET; icol++)
             {
                 ouster_column_t column;
-                ouster_column_get(buf, icol, &pf, &column);
-                //ouster_column_log(&column);
+                char * colbuf = buf + OUSTER_PACKET_HEADER_SIZE + OUSTER_COL_SIZE * icol;
+                ouster_column_get(colbuf, icol, &column);
+                ouster_column_log(&column);
             }
         }
-        if(a & 0x2)
+
+
+        if(a & (1 << SOCK_IMU))
         {
-            int64_t n = net_read(socks[1], buf, sizeof(buf));
-            printf("Sock2 %ji\n", (intmax_t)n);
+            char buf[1024*256];
+            int64_t n = net_read(socks[SOCK_IMU], buf, sizeof(buf));
+            ouster_log("%-10s %5ji:  ", "SOCK_IMU", (intmax_t)n);
+            ouster_log("\n");
         }
     }
 }

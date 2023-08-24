@@ -1,7 +1,9 @@
 #include "ouster_client2/client.h"
 #include "log.h"
 #include "net.h"
-#include "parse.h"
+#include "lidar_header.h"
+#include "lidar_column.h"
+
 #include <curl/curl.h>
 
 #include <stdlib.h>
@@ -67,31 +69,44 @@ void get(ouster_client_t * client, CURL* handle, char const * host, char const *
 
 
 
+int ouster_create_lidar_udp_socket(char const * hint_service)
+{
+    net_sock_desc_t desc = {0};
+    desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
+    desc.hint_name = NULL;
+    desc.rcvbuf_size = 256 * 1024;
+    desc.hint_service = hint_service;
+    return net_create(&desc);
+}
+
+int ouster_create_imu_udp_socket(char const * hint_service)
+{
+    net_sock_desc_t desc = {0};
+    desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
+    desc.hint_name = NULL;
+    desc.rcvbuf_size = 256 * 1024;
+    desc.hint_service = hint_service;
+    return net_create(&desc);
+}
+
+int ouster_create_imu_tcp_socket(char const * hint_name)
+{
+    net_sock_desc_t desc = {0};
+    desc.flags = NET_FLAGS_TCP | NET_FLAGS_CONNECT;
+    desc.hint_name = hint_name;
+    desc.hint_service = "7501";
+    desc.rcvtimeout_sec = 10;
+    return net_create(&desc);
+}
+
 
 void ouster_client_init(ouster_client_t * client, char const * host)
 {
     client->buffer_cap = 1024;
     client->buffer = calloc(1, client->buffer_cap);
-
-    {
-        net_sock_desc_t desc = {0};
-        desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
-        desc.hint_name = NULL;
-        desc.rcvbuf_size = 256 * 1024;
-        desc.hint_service = "40766";
-        client->socks[0] = net_create(&desc);
-        desc.hint_service = "33370";
-        client->socks[1] = net_create(&desc);
-    }
-
-    {
-        net_sock_desc_t desc = {0};
-        desc.flags = NET_FLAGS_TCP | NET_FLAGS_CONNECT;
-        desc.hint_name = host;
-        desc.hint_service = "7501";
-        desc.rcvtimeout_sec = 10;
-        client->sock_tcp = net_create(&desc);
-    }
+    client->socks[0] = ouster_create_lidar_udp_socket("50876");
+    client->socks[1] = ouster_create_imu_udp_socket("38278");
+    client->sock_tcp = ouster_create_imu_tcp_socket(host);
 
     curl_global_init(CURL_GLOBAL_ALL);
     CURL * curl = curl_easy_init();
@@ -111,8 +126,8 @@ void ouster_client_init(ouster_client_t * client, char const * host)
     pf.status_offset = 208;
 
 
-    //while(1)
-    for(int i = 0; i < 100; ++i)
+    while(1)
+    //for(int i = 0; i < 100; ++i)
     {
         uint8_t buf[1024*256];
         uint64_t a = net_select(client->socks, 2, 1);
@@ -120,19 +135,19 @@ void ouster_client_init(ouster_client_t * client, char const * host)
         if(a & 0x1)
         {
             int64_t n = net_read(client->socks[0], (char*)buf, sizeof(buf));
-            ouster_lidar_packet_t packet;
-            ouster_lidar_packet_parse(buf, &pf, &packet);
-            if(packet.frame_id == -1)
+            ouster_lidar_header_t header;
+            ouster_lidar_header_get(buf, &header);
+            if(header.frame_id == -1)
             {
                 printf("expecting to start batching a new scan!\n");
             }
 
             //uint16_t frame_id = get_frame_id(buf + nth_col(packet_header_size, col_size, 0));
-            printf("Sock1 %ji, frame_id=%ji =================\n", (intmax_t)n, (intmax_t)packet.frame_id);
+            ouster_lidar_header_log(&header);
             for(int icol = 0; icol < 16; icol++)
             {
                 ouster_column_t column;
-                ouster_parse_column(buf, icol, &pf, &column);
+                ouster_column_get(buf, icol, &pf, &column);
                 //ouster_column_log(&column);
             }
         }

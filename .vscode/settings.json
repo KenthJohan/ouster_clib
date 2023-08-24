@@ -84,6 +84,8 @@
         "curl.h": "c",
         "unistd.h": "c",
         "parse.h": "c",
-        "netfwd": "cpp"
+        "netfwd": "cpp",
+        "lidar_header.h": "c",
+        "lidar_column.h": "c"
     }
 }

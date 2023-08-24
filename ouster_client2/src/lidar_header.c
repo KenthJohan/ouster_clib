@@ -1,5 +1,5 @@
-#include "lidar_header.h"
-#include "log.h"
+#include "ouster_client2/lidar_header.h"
+#include "ouster_client2/log.h"
 #include <string.h>
 
 void ouster_lidar_header_log(ouster_lidar_header_t * p)
@@ -27,16 +27,14 @@ void ouster_lidar_header_get1(char const * buf, void * dst, int type)
     case ouster_id(ouster_frame_id_t):
         memcpy(dst, buf + 2, sizeof(ouster_frame_id_t));
         break;
-    case ouster_id(ouster_init_id_t):{
-        ouster_init_id_t * res = buf + 4;
-        memcpy(dst, res, sizeof(ouster_init_id_t));
-        (*res) &= UINT32_C(0x00ffffff);
-        break;}
-    case ouster_id(ouster_prod_sn_t):{
-        ouster_prod_sn_t * res = buf + 7;
-        memcpy(dst, res, sizeof(ouster_prod_sn_t));
-        (*res) &= UINT64_C(0x000000ffffffffff);
-        break;}
+    case ouster_id(ouster_init_id_t):
+        memcpy(dst, buf + 4, sizeof(ouster_init_id_t));
+        *((ouster_init_id_t*)dst) &= UINT32_C(0x00ffffff);
+        break;
+    case ouster_id(ouster_prod_sn_t):
+        memcpy(dst, buf + 7, sizeof(ouster_prod_sn_t));
+        *((ouster_prod_sn_t*)dst) &= UINT64_C(0x000000ffffffffff);
+        break;
     case ouster_id(ouster_countdown_thermal_shutdown_t):
         memcpy(dst, buf + 16, sizeof(ouster_countdown_thermal_shutdown_t));
         break;

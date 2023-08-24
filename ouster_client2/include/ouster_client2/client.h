@@ -7,14 +7,8 @@ https://static.ouster.dev/sensor-docs/image_route1/image_route2/sensor_data/sens
 
 
 
-typedef struct 
-{
-    int socks[2];
-    int sock_tcp;
-    char * buffer;
-    int buffer_count;
-    int buffer_cap;
-} ouster_client_t;
+int ouster_client_create_lidar_udp_socket(char const * hint_service);
 
+int ouster_client_create_imu_udp_socket(char const * hint_service);
 
-void ouster_client_init(ouster_client_t * client, char const * host);
+int ouster_client_create_imu_tcp_socket(char const * hint_name);

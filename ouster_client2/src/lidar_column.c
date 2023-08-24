@@ -1,6 +1,6 @@
-#include "lidar_column.h"
-#include "log.h"
-
+#include "ouster_client2/lidar_column.h"
+#include "ouster_client2/log.h"
+#include <string.h>
 
 
 void ouster_column_log(ouster_column_t const * column)
@@ -28,7 +28,7 @@ void ouster_column_get1(char const * col, void * dst, int type, ouster_pf_t cons
 
 void ouster_column_get(char const * buf, int icol, ouster_pf_t const * pf, ouster_column_t * dst)
 {
-    char * col = buf + pf->packet_header_size + pf->col_size * icol;
+    char const * col = buf + pf->packet_header_size + pf->col_size * icol;
     ouster_column_get1(col, &dst->ts, ouster_id(ouster_timestamp_t), pf);
     ouster_column_get1(col, &dst->status, ouster_id(ouster_status_t), pf);
     ouster_column_get1(col, &dst->mid, ouster_id(ouster_measurment_id_t), pf);

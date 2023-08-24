@@ -1,4 +1,4 @@
-#include "net.h"
+#include "ouster_client2/net.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <errno.h>
-#include "log.h"
+#include "ouster_client2/log.h"
 
 
 int32_t net_get_port(int sock)

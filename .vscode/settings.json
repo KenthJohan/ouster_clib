@@ -86,6 +86,9 @@
         "parse.h": "c",
         "netfwd": "cpp",
         "lidar_header.h": "c",
-        "lidar_column.h": "c"
+        "lidar_column.h": "c",
+        "stdio.h": "c",
+        "client_config.h": "c",
+        "stdarg.h": "c"
     }
 }

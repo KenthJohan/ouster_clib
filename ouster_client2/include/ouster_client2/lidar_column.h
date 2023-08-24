@@ -1,5 +1,5 @@
 #pragma once
-#include "types.h"
+#include "ouster_client2/types.h"
 
 typedef struct
 {

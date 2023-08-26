@@ -12,7 +12,7 @@ typedef struct
 void ouster_column_get1(char const * colbuf, void * dst, int type);
 
 
-void ouster_column_get(char const * colbuf, int icol, ouster_column_t * dst);
+void ouster_column_get(char const * colbuf, ouster_column_t * dst);
 
 
 void ouster_column_log(ouster_column_t const * column);

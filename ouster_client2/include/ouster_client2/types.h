@@ -54,6 +54,14 @@ typedef uint32_t ouster_status_t;
 
 
 
+typedef uint32_t ouster_field_range_t;
+typedef uint16_t ouster_field_intensity_t;
+typedef uint8_t ouster_field_reflectivity_t;
+typedef uint16_t ouster_field_nearir_t; // Ambient
+
+
+
+
 
 
 
@@ -80,24 +88,30 @@ ouster_id(ouster_countdown_thermal_shutdown_t),
 ouster_id(ouster_countdown_shot_limiting_t),
 ouster_id(ouster_thermal_shutdown_t),
 ouster_id(ouster_shot_limiting_t),
+ouster_id(ouster_field_range_t),
+ouster_id(ouster_field_intensity_t),
+ouster_id(ouster_field_reflectivity_t),
+ouster_id(ouster_field_nearir_t),
 OUSTER_TYPE_LAST
 } ouster_type_t;
 
 
+typedef enum
+{
+  OUSTER_PROFILE_LIDAR_LEGACY = 1,
+  OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL = 2, // Dual Return Profile
+  OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16 = 3, // Single Return Profile
+  OUSTER_PROFILE_RNG15_RFL8_NIR8 = 3, // Low Data Rate Profile
+  OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL = 5,
+  OUSTER_PROFILE_COUNT
+} ouster_profile_t;
 
-#define OUSTER_PROFILE_LIDAR_LEGACY 1
-#define OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL 2 // Dual Return Profile
-#define OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16 3 // Single Return Profile
-#define OUSTER_PROFILE_RNG15_RFL8_NIR8 3 // Low Data Rate Profile
-#define OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL 5
+
 
 #define OUSTER_OS1_16 0
 #define OUSTER_OS1_32 1
 #define OUSTER_OS1_64 2
 #define OUSTER_OS1_128 3
-
-
-
 
 
 

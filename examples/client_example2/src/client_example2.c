@@ -1,15 +1,12 @@
 #include <stdio.h>
-#include <pthread.h>
+#include <string.h>
 
 #include "ouster_client2/client.h"
 #include "ouster_client2/lidar_header.h"
 #include "ouster_client2/lidar_column.h"
 #include "ouster_client2/net.h"
 #include "ouster_client2/log.h"
-
-
-
-
+#include "ouster_client2/types.h"
 
 
 
@@ -19,23 +16,11 @@
 #define OUSTER_CHANNEL_DATA_SIZE 12
 #define OUSTER_COLUMS_PER_PACKET 16
 #define OUSTER_PIXELS_PER_COLUMN 16
+#define OUSTER_COLUMN_HEADER_SIZE 12
 #define OUSTER_COL_SIZE ((OUSTER_PIXELS_PER_COLUMN*OUSTER_CHANNEL_DATA_SIZE)+OUSTER_COLUMN_HEADER_SIZE)
 
 
 
-
-
-
-
-typedef struct {
-    pthread_t reader_thread;
-    pthread_t process_thread;
-    int reader_fn_count;
-    int process_fn_count;
-    pthread_mutex_t mutex;
-    pthread_cond_t c_cons;
-    pthread_cond_t c_prod;
-} app_args;
 
 
 typedef enum 
@@ -46,18 +31,28 @@ typedef enum
 } sock_index_t;
 
 
-void * reader_fn(void * userptr)
+
+typedef struct
 {
-    app_args * a = (app_args *)userptr;
+    ouster_frame_id_t frame_id;
+} ouster_complete_t;
+
+
+
+
+
+
+
+int main(int argc, char* argv[])
+{
+
     int socks[2];
-    socks[SOCK_INDEX_LIDAR] = ouster_client_create_lidar_udp_socket("37346");
-    socks[SOCK_INDEX_IMU] = ouster_client_create_imu_udp_socket("34608");
+    socks[SOCK_INDEX_LIDAR] = ouster_client_create_lidar_udp_socket("52985");
+    socks[SOCK_INDEX_IMU] = ouster_client_create_imu_udp_socket("40140");
 
     //for(int i = 0; i < 100; ++i)
     while(1)
     {
-        a->reader_fn_count++;
-
         int timeout_seconds = 1;
         uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_seconds);
 
@@ -69,7 +64,7 @@ void * reader_fn(void * userptr)
 
         if(a & (1 << SOCK_INDEX_LIDAR))
         {
-            char buf[1024*256];
+            char buf[1024*10];
             int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
             ouster_log("%-10s %5ji:  ", "SOCK_LIDAR", (intmax_t)n);
             ouster_lidar_header_t header;
@@ -85,12 +80,14 @@ void * reader_fn(void * userptr)
 
             //uint16_t frame_id = get_frame_id(buf + nth_col(packet_header_size, col_size, 0));
             
-            for(int icol = 0; icol < OUSTER_COLUMS_PER_PACKET; icol++)
+            char * colbuf = buf + OUSTER_PACKET_HEADER_SIZE;
+            for(int icol = 0; icol < OUSTER_COLUMS_PER_PACKET; icol++, colbuf += OUSTER_COL_SIZE)
             {
                 ouster_column_t column;
-                char * colbuf = buf + OUSTER_PACKET_HEADER_SIZE + OUSTER_COL_SIZE * icol;
-                ouster_column_get(colbuf, icol, &column);
+                ouster_column_get(colbuf, &column);
                 ouster_column_log(&column);
+
+                char * pxbuf = colbuf + OUSTER_COLUMN_HEADER_SIZE;
             }
         }
 
@@ -103,18 +100,7 @@ void * reader_fn(void * userptr)
             ouster_log("\n");
         }
     }
-}
 
 
-int main(int argc, char* argv[])
-{
-    app_args a = 
-    {
-        .mutex = PTHREAD_MUTEX_INITIALIZER,
-        .c_cons = PTHREAD_COND_INITIALIZER,
-        .c_prod = PTHREAD_COND_INITIALIZER
-    };
-    pthread_create(&a.reader_thread, NULL, reader_fn, &a);
-    pthread_join(a.reader_thread, NULL);
     return 0;
 }

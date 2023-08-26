@@ -27,7 +27,7 @@ void ouster_column_get1(char const * col, void * dst, int type)
 }
 
 #define OUSTER_LIDAR_PACKET_
-void ouster_column_get(char const * colbuf, int icol, ouster_column_t * dst)
+void ouster_column_get(char const * colbuf, ouster_column_t * dst)
 {
     ouster_column_get1(colbuf, &dst->ts, ouster_id(ouster_timestamp_t));
     ouster_column_get1(colbuf, &dst->status, ouster_id(ouster_status_t));

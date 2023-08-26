@@ -90,6 +90,7 @@
         "stdio.h": "c",
         "client_config.h": "c",
         "stdarg.h": "c",
-        "log.h": "c"
+        "log.h": "c",
+        "px.h": "c"
     }
 }

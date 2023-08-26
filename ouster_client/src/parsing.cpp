@@ -199,12 +199,13 @@ static void col_field_impl(const uint8_t* col_buf, DST* dst, size_t offset,
     if (sizeof(DST) < sizeof(SRC))
         throw std::invalid_argument("Dest type too small for specified field");
 
+    int siz = sizeof(SRC);
     for (int px = 0; px < pixels_per_column; px++) {
         auto px_src =
             col_buf + col_header_size + offset + (px * channel_data_size);
         DST* px_dst = dst + px * dst_stride;
         *px_dst = 0;
-        std::memcpy(px_dst, px_src, sizeof(SRC));
+        std::memcpy(px_dst, px_src, siz);
         if (mask) *px_dst &= mask;
         if (shift > 0) *px_dst >>= shift;
         if (shift < 0) *px_dst <<= std::abs(shift);

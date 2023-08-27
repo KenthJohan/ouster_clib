@@ -91,6 +91,7 @@
         "client_config.h": "c",
         "stdarg.h": "c",
         "log.h": "c",
-        "px.h": "c"
+        "px.h": "c",
+        "lidar_px.h": "c"
     }
 }

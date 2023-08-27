@@ -61,6 +61,15 @@ typedef uint16_t ouster_field_nearir_t; // Ambient
 
 
 
+/*
+https://aishack.in/tutorials/2d-matrices-cvmat-opencv/
+*/
+typedef struct
+{
+    int esize;
+    int stride;
+    uint8_t * data;
+} ouster_mat_t;
 
 
 
@@ -95,7 +104,13 @@ ouster_id(ouster_field_nearir_t),
 OUSTER_TYPE_LAST
 } ouster_type_t;
 
-
+/*
+https://static.ouster.dev/sensor-docs/image_route1/image_route2/sensor_data/sensor-data.html#single-return-profile
+RRRR Y0SS NN00
+|--- | |- |-
+4    1 2  2
+0    4 6  8
+*/
 typedef enum
 {
   OUSTER_PROFILE_LIDAR_LEGACY = 1,

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "ouster_client2/client.h"
 #include "ouster_client2/lidar_header.h"
@@ -7,6 +8,7 @@
 #include "ouster_client2/net.h"
 #include "ouster_client2/log.h"
 #include "ouster_client2/types.h"
+#include "ouster_client2/lidar_px.h"
 
 
 
@@ -50,6 +52,12 @@ int main(int argc, char* argv[])
     socks[SOCK_INDEX_LIDAR] = ouster_client_create_lidar_udp_socket("52985");
     socks[SOCK_INDEX_IMU] = ouster_client_create_imu_udp_socket("40140");
 
+    ouster_mat_t mat;
+    mat.esize = 4;
+    mat.stride = mat.esize * 16;
+    mat.data = malloc(mat.stride * 1024);
+
+
     //for(int i = 0; i < 100; ++i)
     while(1)
     {
@@ -88,6 +96,8 @@ int main(int argc, char* argv[])
                 ouster_column_log(&column);
 
                 char * pxbuf = colbuf + OUSTER_COLUMN_HEADER_SIZE;
+
+                ouster_pxcpy(mat.data + icol * mat.stride, mat.esize, pxbuf, OUSTER_CHANNEL_DATA_SIZE, OUSTER_PIXELS_PER_COLUMN, mat.esize);
             }
         }
 

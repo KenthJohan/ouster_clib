@@ -9,18 +9,18 @@ void ouster_column_log(ouster_column_t const * column)
 }
 
 
-void ouster_column_get1(char const * col, void * dst, int type)
+void ouster_column_get1(char const * colbuf, void * dst, int type)
 {
     switch (type)
     {
     case ouster_id(ouster_timestamp_t):
-        memcpy(dst, col + 0, sizeof(ouster_timestamp_t));
+        memcpy(dst, colbuf + 0, sizeof(ouster_timestamp_t));
         break;
     case ouster_id(ouster_measurment_id_t):
-        memcpy(dst, col + 8, sizeof(ouster_measurment_id_t));
+        memcpy(dst, colbuf + 8, sizeof(ouster_measurment_id_t));
         break;
     case ouster_id(ouster_status_t):
-        memcpy(dst, col + 10, sizeof(ouster_status_t));
+        memcpy(dst, colbuf + 10, sizeof(ouster_status_t));
         *((ouster_status_t*)dst) &= 0xffff;
         break;
     }

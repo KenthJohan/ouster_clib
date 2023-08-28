@@ -8,6 +8,9 @@ typedef struct
     int columns_per_packet;
     int pixels_per_column;
     char udp_profile_lidar[128];
+
+    int channel_data_size;
+    int col_size;
 } ouster_meta_t;
 
 

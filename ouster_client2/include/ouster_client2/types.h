@@ -116,7 +116,24 @@ typedef enum
 
 
 
+/*
+  https://github.com/ouster-lidar/ouster_example/blob/9d0971107f6f9c95e16afd727fa2534d01a0fe4e/ouster_client/src/parsing.cpp#L155
 
+  packet_header_size = legacy ? 0 : 32;
+  col_header_size = legacy ? 16 : 12;
+  channel_data_size = entry.chan_data_size;
+  col_footer_size = legacy ? 4 : 0;
+  packet_footer_size = legacy ? 0 : 32;
+
+  col_size = col_header_size + pixels_per_column * channel_data_size +
+              col_footer_size;
+  lidar_packet_size = packet_header_size + columns_per_packet * col_size +
+                      packet_footer_size;
+*/
+#define OUSTER_PACKET_HEADER_SIZE 32
+#define OUSTER_PACKET_FOOTER_SIZE 32
+#define OUSTER_COLUMN_HEADER_SIZE 12
+#define OUSTER_COLUMN_FOOTER_SIZE 0
 
 
 

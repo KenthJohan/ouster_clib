@@ -18,46 +18,30 @@ void pxcpy(char * dst, int dst_inc, char const * src, int src_inc, int n, int es
 }
 
 
-void lidar_context_get_range(lidar_context_t * ctx, char const * buf, ouster_mat4_t * mat)
+void ouster_lidar_context_get_range(ouster_lidar_context_t * ctx, ouster_meta_t * meta, char const * buf, ouster_mat4_t * mat)
 {
     assert(ctx);
     assert(buf);
     assert(mat);
-    assert(ctx->pixels_per_column == mat->dim[1]);
+    assert(meta->pixels_per_column == mat->dim[1]);
     
-    char const * colbuf = buf + ctx->packet_header_size;
+    char const * colbuf = buf + OUSTER_PACKET_HEADER_SIZE;
     ouster_lidar_header_t header = {0};
     ouster_column_t column = {0};
     ouster_lidar_header_get(buf, &header);
     //ouster_lidar_header_log(&header);
 
-    /*
-    Identify the maximum measurement id (mid) by storing the last mid as max mid
-    when a new frame is recived:
-    */ 
+
     if (ctx->frame_id != header.frame_id)
     {
         ouster_log("New Frame!\n");
-        ouster_column_get(colbuf, &column);
-        if((column.status & 0x01) == 0)
-        {
-            ouster_log("????????? %i\n", column.mid);
-            //return;
-        }
-        /*
-        if(column.mid < 740)
-        {
-            //ouster_log("?????????\n");
-        }
-        */
-        ctx->mid_min = column.mid;
-        ctx->mid_max = ctx->mid_last;
         ctx->frame_id = header.frame_id;
         mat->num_valid_pixels = 0;
+        ctx->last_mid = 0;
     }
 
     // mid: 740 to 881
-    for(int icol = 0; icol < ctx->columns_per_packet; icol++, colbuf += ctx->col_size)
+    for(int icol = 0; icol < meta->columns_per_packet; icol++, colbuf += meta->col_size)
     {
         ouster_column_get(colbuf, &column);
         if((column.status & 0x01) == 0)
@@ -79,10 +63,7 @@ void lidar_context_get_range(lidar_context_t * ctx, char const * buf, ouster_mat
             mat->step[0]
         );
         */
-        mat->num_valid_pixels += ctx->pixels_per_column;
-        ctx->mid_last = column.mid;
+        mat->num_valid_pixels += meta->pixels_per_column;
+        ctx->last_mid = column.mid;
     }
-
-    
-    ouster_log("mid_min=%i, mid_max=%i, mid_last=%i\n", ctx->mid_min, ctx->mid_max, ctx->mid_last);
 }

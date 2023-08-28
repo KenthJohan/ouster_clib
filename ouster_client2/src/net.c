@@ -10,11 +10,13 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <assert.h>
 #include "ouster_client2/log.h"
 
 
 int32_t net_get_port(int sock)
 {
+    assert(sock >= 0);
     struct sockaddr_storage ss;
     socklen_t addrlen = sizeof(ss);
     getsockname(sock, (struct sockaddr*)&ss, &addrlen);
@@ -34,6 +36,8 @@ int32_t net_get_port(int sock)
 
 void inet_ntop_addrinfo(struct addrinfo * ai, char * buf, socklen_t len)
 {
+    assert(ai);
+
     void * addr = NULL;
     switch (ai->ai_family)
     {
@@ -50,6 +54,9 @@ void inet_ntop_addrinfo(struct addrinfo * ai, char * buf, socklen_t len)
 
 int try_create_socket(net_sock_desc_t * desc, struct addrinfo * ai)
 {
+    assert(desc);
+    assert(ai);
+
     int s = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
     if(s < 0)
     {
@@ -145,6 +152,8 @@ error:
 
 struct addrinfo * get_addrinfo(net_sock_desc_t * desc)
 {
+    assert(desc);
+
     struct addrinfo * info = NULL;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -197,6 +206,8 @@ error:
 
 int net_create(net_sock_desc_t * desc)
 {
+    assert(desc);
+
     struct addrinfo * info = get_addrinfo(desc);
     if(info == NULL)
     {
@@ -246,6 +257,8 @@ error:
 
 int64_t net_read(int sock, char * buf, int len)
 {
+    assert(sock >= 0);
+    assert(buf);
     int64_t bytes_read = recv(sock, (char*)buf, len, 0);
     return bytes_read;
 }
@@ -254,10 +267,13 @@ int64_t net_read(int sock, char * buf, int len)
 
 uint64_t net_select(int socks[], int n, const int timeout_sec)
 {
+    assert(socks);
+
     fd_set rfds;
     FD_ZERO(&rfds);
     for(int i = 0; i < n; ++i)
     {
+        assert(socks[i] >= 0);
         FD_SET(socks[i], &rfds);
     }
 

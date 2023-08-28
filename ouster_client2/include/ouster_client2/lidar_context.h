@@ -1,5 +1,6 @@
 #pragma once
 #include "ouster_client2/types.h"
+#include "ouster_client2/mat.h"
 
 
 typedef struct 
@@ -12,9 +13,10 @@ typedef struct
     int pixels_per_column;
 
     int frame_id;
+    int mid_min;
     int mid_max;
     int mid_last;
 } lidar_context_t;
 
 
-void lidar_context_get_range(lidar_context_t * ctx, char const * buf, ouster_mat_t * mat);
+void lidar_context_get_range(lidar_context_t * ctx, char const * buf, ouster_mat4_t * mat);

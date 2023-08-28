@@ -93,6 +93,9 @@
         "log.h": "c",
         "px.h": "c",
         "lidar_px.h": "c",
-        "lidar_context.h": "c"
+        "lidar_context.h": "c",
+        "errno.h": "c",
+        "mat.h": "c",
+        "assert.h": "c"
     }
 }

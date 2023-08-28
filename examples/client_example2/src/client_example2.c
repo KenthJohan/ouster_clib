@@ -7,6 +7,7 @@
 #include "ouster_client2/log.h"
 #include "ouster_client2/types.h"
 #include "ouster_client2/lidar_context.h"
+#include "ouster_client2/mat.h"
 
 
 
@@ -44,10 +45,8 @@ int main(int argc, char* argv[])
     socks[SOCK_INDEX_LIDAR] = ouster_client_create_lidar_udp_socket("7502");
     socks[SOCK_INDEX_IMU] = ouster_client_create_imu_udp_socket("7503");
 
-    ouster_mat_t mat = {0};
-    mat.esize = 4;
-    mat.stride = mat.esize * 16;
-    mat.data = malloc(mat.stride * 1024);
+    ouster_mat4_t mat = {.dim = {4, 16, 1024, 1}};
+    ouster_mat4_init(&mat);
 
     lidar_context_t lidctx =
     {
@@ -79,8 +78,8 @@ int main(int argc, char* argv[])
             lidar_context_get_range(&lidctx, buf, &mat);
             if(lidctx.mid_last == lidctx.mid_max)
             {
-                printf("Complete scan! num_valid_pixels=%i\n", mat.num_valid_pixels);
-                memset(&mat, 0, sizeof(ouster_mat_t));
+                printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
+                ouster_mat4_zero(&mat);
             }
         }
 

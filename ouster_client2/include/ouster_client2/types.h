@@ -61,21 +61,6 @@ typedef uint16_t ouster_field_nearir_t; // Ambient
 
 
 
-/*
-https://aishack.in/tutorials/2d-matrices-cvmat-opencv/
-*/
-typedef struct
-{
-    int esize;
-    int stride;
-    char * data;
-    int num_valid_pixels;
-} ouster_mat_t;
-
-
-
-
-
 
 
 

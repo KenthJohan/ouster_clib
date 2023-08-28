@@ -587,6 +587,7 @@ bool ScanBatcher::operator()(const uint8_t* packet_buf, LidarScan& ls) {
     for (int icol = 0; icol < pf.columns_per_packet; icol++) {
         const uint8_t* col_buf = pf.nth_col(icol, packet_buf);
         const uint16_t m_id = pf.col_measurement_id(col_buf);
+        //printf("m_id=%i\n", m_id);
         const uint64_t ts = pf.col_timestamp(col_buf);
         const uint32_t status = pf.col_status(col_buf);
         const bool valid = (status & 0x01);

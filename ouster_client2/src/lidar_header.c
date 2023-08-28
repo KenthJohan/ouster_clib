@@ -1,9 +1,11 @@
 #include "ouster_client2/lidar_header.h"
 #include "ouster_client2/log.h"
 #include <string.h>
+#include <assert.h>
 
 void ouster_lidar_header_log(ouster_lidar_header_t * p)
 {
+    assert(p);
     ouster_log("type=%ji, frame=%ji, init=%ji, prod=%ji, countdown_thermal_shutdown=%ji, countdown_shot_limiting=%ji, thermal_shutdown=%ji, shot_limiting=%ji, =================\n", 
     (intmax_t)p->packet_type, 
     (intmax_t)p->frame_id, 
@@ -19,6 +21,8 @@ void ouster_lidar_header_log(ouster_lidar_header_t * p)
 
 void ouster_lidar_header_get1(char const * buf, void * dst, int type)
 {
+    assert(buf);
+    assert(dst);
     switch (type)
     {
     case ouster_id(ouster_packet_type_t):
@@ -47,12 +51,17 @@ void ouster_lidar_header_get1(char const * buf, void * dst, int type)
     case ouster_id(ouster_shot_limiting_t):
         memcpy(dst, buf + 19, sizeof(ouster_shot_limiting_t));
         break;
+    default:
+        assert(0);
+        break;
     }
 }
 
 
 void ouster_lidar_header_get(char const * buf, ouster_lidar_header_t * dst)
 {
+    assert(buf);
+    assert(dst);
     ouster_lidar_header_get1(buf, &dst->packet_type, ouster_id(ouster_packet_type_t));
     ouster_lidar_header_get1(buf, &dst->frame_id, ouster_id(ouster_frame_id_t));
     ouster_lidar_header_get1(buf, &dst->init_id, ouster_id(ouster_init_id_t));

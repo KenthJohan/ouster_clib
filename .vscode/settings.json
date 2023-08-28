@@ -8,6 +8,8 @@
         "string.h": "c",
         "lidar_column.h": "c",
         "lidar_header.h": "c",
-        "lidar_context.h": "c"
+        "lidar_context.h": "c",
+        "os_file.h": "c",
+        "client.h": "c"
     }
 }

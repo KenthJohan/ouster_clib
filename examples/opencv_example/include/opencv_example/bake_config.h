@@ -14,8 +14,8 @@
  * dependencies will automatically show up in this file. Include bake_config.h
  * in your main project file. Do not edit! */
 
-#ifndef CLIENT_EXAMPLE2_BAKE_CONFIG_H
-#define CLIENT_EXAMPLE2_BAKE_CONFIG_H
+#ifndef OPENCV_EXAMPLE_BAKE_CONFIG_H
+#define OPENCV_EXAMPLE_BAKE_CONFIG_H
 
 /* Headers of public dependencies */
 /* No dependencies */

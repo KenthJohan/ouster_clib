@@ -26,6 +26,7 @@ char * jsmn_strerror(int r)
 
 void ouster_meta_parse(char const * json, ouster_meta_t * out)
 {
+    assert(json);
     jsmn_parser p;
     jsmn_init(&p);
     jsmntok_t tokens[TOK_COUNT];

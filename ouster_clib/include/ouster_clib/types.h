@@ -2,6 +2,10 @@
 #include <stdint.h>
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define ouster_id(T) OUSTER_ID##T##ID_
 
 typedef float ouster_f32_t;
@@ -145,3 +149,6 @@ typedef enum
 
 
 
+#ifdef __cplusplus
+}
+#endif

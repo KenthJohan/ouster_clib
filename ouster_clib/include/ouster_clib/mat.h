@@ -1,7 +1,9 @@
 #pragma once
 
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*
 https://aishack.in/tutorials/2d-matrices-cvmat-opencv/
 */
@@ -16,3 +18,7 @@ typedef struct
 
 void ouster_mat4_init(ouster_mat4_t * mat);
 void ouster_mat4_zero(ouster_mat4_t * mat);
+
+#ifdef __cplusplus
+}
+#endif

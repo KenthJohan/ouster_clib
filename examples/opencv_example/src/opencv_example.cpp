@@ -3,14 +3,22 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "ouster_clib/client.h"
-#include "ouster_clib/net.h"
-#include "ouster_clib/log.h"
-#include "ouster_clib/types.h"
-#include "ouster_clib/lidar_context.h"
-#include "ouster_clib/mat.h"
-#include "ouster_clib/os_file.h"
-#include "ouster_clib/meta.h"
+#include <ouster_clib/client.h>
+#include <ouster_clib/net.h>
+#include <ouster_clib/log.h>
+#include <ouster_clib/types.h>
+#include <ouster_clib/lidar_context.h>
+#include <ouster_clib/mat.h>
+#include <ouster_clib/os_file.h>
+#include <ouster_clib/meta.h>
+
+
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
 
 
 typedef enum 
@@ -42,11 +50,15 @@ int main(int argc, char* argv[])
 
     ouster_mat4_t mat = {.dim = {4, meta.pixels_per_column, (meta.column_window[1] - meta.column_window[0] + 1), 1}};
     ouster_mat4_init(&mat);
+    cv::namedWindow("mat8", cv::WINDOW_FREERATIO);
+    cv::resizeWindow("mat8", 2000, 200);
+
 
     ouster_lidar_context_t lidctx = {0};
 
     while(1)
     {
+        
         int timeout_seconds = 1;
         uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_seconds);
 
@@ -64,8 +76,17 @@ int main(int argc, char* argv[])
             ouster_lidar_context_get_range(&lidctx, &meta, buf, &mat);
             if(lidctx.last_mid == meta.column_window[1])
             {
+                cv::Mat mat32(mat.dim[2], mat.dim[1], CV_32S, mat.data);
+                cv::Mat mat8;
+                cv::normalize(mat32, mat8, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+                cv::imshow("mat8", mat8);
+
                 printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
                 ouster_mat4_zero(&mat);
+
+                //int key = cv::waitKey(1);
+                int key = cv::pollKey();
+                if(key == 27){break;}
             }
         }
 

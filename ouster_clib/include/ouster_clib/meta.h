@@ -1,6 +1,8 @@
 #pragma once
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 typedef struct
 {
     int column_window[2];
@@ -15,3 +17,7 @@ typedef struct
 
 
 void ouster_meta_parse(char const * jsonstr, ouster_meta_t * out_meta);
+
+#ifdef __cplusplus
+}
+#endif

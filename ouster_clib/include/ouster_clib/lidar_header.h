@@ -1,6 +1,9 @@
 #pragma once
 #include "types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct
 {
@@ -19,3 +22,8 @@ void ouster_lidar_header_log(ouster_lidar_header_t * p);
 
 
 void ouster_lidar_header_get(char const * buf, ouster_lidar_header_t * dst);
+
+
+#ifdef __cplusplus
+}
+#endif

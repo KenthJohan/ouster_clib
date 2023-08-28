@@ -13,6 +13,9 @@
 #define NET_FLAGS_CONNECT 0x0200
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct
 {
@@ -34,3 +37,8 @@ int64_t net_read(int sock, char * buf, int len);
 uint64_t net_select(int socks[], int n, const int timeout_sec);
 
 int32_t net_get_port(int sock);
+
+
+#ifdef __cplusplus
+}
+#endif

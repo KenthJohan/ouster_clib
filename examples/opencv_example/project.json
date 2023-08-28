@@ -1,0 +1,21 @@
+{
+    "id": "opencv_example",
+    "type": "application",
+    "value": {
+        "public": false,
+        "use" : ["ouster_clib"],
+        "language": "c++"
+    },
+    "lang.cpp": {
+        "cxxflags": ["-Wno-deprecated-declarations"],
+        "cpp-standard": "c++14",
+        "include": [
+            "/usr/include/opencv4"
+        ],
+        "lib": [
+            "ouster_clib", "curl",
+            "opencv_core", "opencv_imgproc", "opencv_features2d", "opencv_imgcodecs", "opencv_highgui",
+            "GLEW", "glfw", "GL"
+        ]
+    }
+}

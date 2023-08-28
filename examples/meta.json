@@ -106,8 +106,8 @@
     {
         "column_window": 
         [
-            740,
-            881
+            0,
+            1023
         ],
         "columns_per_frame": 1024,
         "columns_per_packet": 16,

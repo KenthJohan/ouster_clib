@@ -34,7 +34,7 @@ void ouster_lidar_context_get_range(ouster_lidar_context_t * ctx, ouster_meta_t 
 
     if (ctx->frame_id != header.frame_id)
     {
-        ouster_log("New Frame!\n");
+        //ouster_log("New Frame!\n");
         ctx->frame_id = header.frame_id;
         mat->num_valid_pixels = 0;
         ctx->last_mid = 0;
@@ -48,21 +48,19 @@ void ouster_lidar_context_get_range(ouster_lidar_context_t * ctx, ouster_meta_t 
         {
             continue;
         }
-        ouster_column_log(&column);
-        //char const * pxbuf = colbuf + ctx->column_header_size;
-        //char * matdst = mat->data + column.mid * mat->step[1];
+        //ouster_column_log(&column);
+        char const * pxbuf = colbuf + OUSTER_COLUMN_HEADER_SIZE;
+        char * matdst = mat->data + (meta->column_window[1] - column.mid) * mat->step[1];
 
         // TODO: Copy rest of the fields also
-        /*
         pxcpy(
             matdst, 
             mat->step[0], 
             pxbuf, 
-            ctx->channel_data_size, 
+            meta->channel_data_size, 
             mat->dim[1], 
             mat->step[0]
         );
-        */
         mat->num_valid_pixels += meta->pixels_per_column;
         ctx->last_mid = column.mid;
     }

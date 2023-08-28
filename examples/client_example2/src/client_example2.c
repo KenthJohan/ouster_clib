@@ -13,31 +13,12 @@
 #include "ouster_client2/meta.h"
 
 
-
-
-
-
-
-#define OUSTER_CHANNEL_DATA_SIZE 12
-#define OUSTER_COLUMS_PER_PACKET 16
-#define OUSTER_PIXELS_PER_COLUMN 16
-#define OUSTER_COLUMN_HEADER_SIZE 12
-#define OUSTER_COL_SIZE ((OUSTER_PIXELS_PER_COLUMN*OUSTER_CHANNEL_DATA_SIZE)+OUSTER_COLUMN_HEADER_SIZE)
-
-
-
-
-
 typedef enum 
 {
     SOCK_INDEX_LIDAR,
     SOCK_INDEX_IMU,
     SOCK_INDEX_COUNT
 } sock_index_t;
-
-
-
-
 
 
 
@@ -64,7 +45,6 @@ int main(int argc, char* argv[])
 
     ouster_lidar_context_t lidctx = {0};
 
-    //for(int i = 0; i < 100; ++i)
     while(1)
     {
         int timeout_seconds = 1;

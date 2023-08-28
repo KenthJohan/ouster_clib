@@ -12,8 +12,7 @@
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "_GNU_SOURCE",
-                "SOKOL_GLCORE33"
+                "_GNU_SOURCE"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",

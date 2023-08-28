@@ -1,16 +1,13 @@
 {
-    "id": "client_example",
+    "id": "client_example2",
     "type": "application",
     "value": {
+        "language": "c",
         "public": false,
-        "use" : ["ouster_viz", "ouster_pcap", "ouster_client"],
-        "language": "c++"
+        "use" : ["ouster_clib"]
     },
-    "lang.cpp": {
-        "cpp-standard": "c++14",
-        "include": [
-            "/usr/include/eigen3"
-        ],
-        "lib": ["ouster_client", "ouster_pcap", "jsoncpp", "fmt", "tins", "pcap", "curl"]
+    "lang.c": {
+        "lib": ["ouster_clib", "curl"],
+        "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable"]
     }
 }

@@ -98,6 +98,7 @@
         "mat.h": "c",
         "assert.h": "c",
         "os_file.h": "c",
-        "meta.h": "c"
+        "meta.h": "c",
+        "jsmn.h": "c"
     }
 }

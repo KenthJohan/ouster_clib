@@ -6,6 +6,8 @@ typedef struct
     int column_window[2];
     int columns_per_frame;
     int columns_per_packet;
+    int pixels_per_column;
+    char udp_profile_lidar[128];
 } ouster_meta_t;
 
 

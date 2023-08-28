@@ -92,6 +92,7 @@
         "stdarg.h": "c",
         "log.h": "c",
         "px.h": "c",
-        "lidar_px.h": "c"
+        "lidar_px.h": "c",
+        "lidar_context.h": "c"
     }
 }

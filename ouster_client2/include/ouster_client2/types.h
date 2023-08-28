@@ -68,7 +68,8 @@ typedef struct
 {
     int esize;
     int stride;
-    uint8_t * data;
+    char * data;
+    int num_valid_pixels;
 } ouster_mat_t;
 
 

@@ -4,4 +4,4 @@
 
 
 
-void ouster_pxcpy(char * dst, int dst_inc, char * src, int src_inc, int n, int esize);
+void ouster_pxcpy(char * dst, int dst_inc, char const * src, int src_inc, int n, int esize);

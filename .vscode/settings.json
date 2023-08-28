@@ -97,6 +97,7 @@
         "errno.h": "c",
         "mat.h": "c",
         "assert.h": "c",
-        "os_file.h": "c"
+        "os_file.h": "c",
+        "meta.h": "c"
     }
 }

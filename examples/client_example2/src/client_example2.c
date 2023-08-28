@@ -49,8 +49,9 @@ int main(int argc, char* argv[])
         printf("Current working dir: %s\n", cwd);
     }
 
-    char const * meta = ouster_os_file_read("./meta.json");
-    ouster_meta_parse(meta);
+    char const * metastr = ouster_os_file_read("./meta.json");
+    ouster_meta_t meta = {0};
+    ouster_meta_parse(metastr, &meta);
     //printf("Meta:\n%s\n", meta);
     return 0;
 

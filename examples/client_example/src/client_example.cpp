@@ -68,6 +68,7 @@ int main(int argc, char* argv[]) {
      */
     std::cerr << "Gathering metadata..." << std::endl;
     auto metadata = sensor::get_metadata(*handle);
+    std::cout << metadata << std::endl;
 
     // Raw metadata can be parsed into a `sensor_info` struct
     sensor::sensor_info info = sensor::parse_metadata(metadata);

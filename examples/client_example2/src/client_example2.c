@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "ouster_client2/client.h"
 #include "ouster_client2/net.h"
@@ -8,6 +9,8 @@
 #include "ouster_client2/types.h"
 #include "ouster_client2/lidar_context.h"
 #include "ouster_client2/mat.h"
+#include "ouster_client2/os_file.h"
+#include "ouster_client2/meta.h"
 
 
 
@@ -40,6 +43,16 @@ typedef enum
 
 int main(int argc, char* argv[])
 {
+    {
+        char cwd[1024] = {0};
+        getcwd(cwd, sizeof(cwd));
+        printf("Current working dir: %s\n", cwd);
+    }
+
+    char const * meta = ouster_os_file_read("./meta.json");
+    ouster_meta_parse(meta);
+    //printf("Meta:\n%s\n", meta);
+    return 0;
 
     int socks[2];
     socks[SOCK_INDEX_LIDAR] = ouster_client_create_lidar_udp_socket("7502");
@@ -78,7 +91,7 @@ int main(int argc, char* argv[])
             lidar_context_get_range(&lidctx, buf, &mat);
             if(lidctx.mid_last == lidctx.mid_max)
             {
-                printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
+                //printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
                 ouster_mat4_zero(&mat);
             }
         }

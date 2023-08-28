@@ -26,8 +26,8 @@ void lidar_context_get_range(lidar_context_t * ctx, char const * buf, ouster_mat
     assert(ctx->pixels_per_column == mat->dim[1]);
     
     char const * colbuf = buf + ctx->packet_header_size;
-    ouster_lidar_header_t header;
-    ouster_column_t column;
+    ouster_lidar_header_t header = {0};
+    ouster_column_t column = {0};
     ouster_lidar_header_get(buf, &header);
     //ouster_lidar_header_log(&header);
 
@@ -37,11 +37,12 @@ void lidar_context_get_range(lidar_context_t * ctx, char const * buf, ouster_mat
     */ 
     if (ctx->frame_id != header.frame_id)
     {
-        //ouster_log("New Frame!\n");
+        ouster_log("New Frame!\n");
         ouster_column_get(colbuf, &column);
         if((column.status & 0x01) == 0)
         {
-            return;
+            ouster_log("????????? %i\n", column.mid);
+            //return;
         }
         /*
         if(column.mid < 740)
@@ -64,10 +65,11 @@ void lidar_context_get_range(lidar_context_t * ctx, char const * buf, ouster_mat
             continue;
         }
         ouster_column_log(&column);
-        char const * pxbuf = colbuf + ctx->column_header_size;
-        char * matdst = mat->data + column.mid * mat->step[1];
+        //char const * pxbuf = colbuf + ctx->column_header_size;
+        //char * matdst = mat->data + column.mid * mat->step[1];
 
         // TODO: Copy rest of the fields also
+        /*
         pxcpy(
             matdst, 
             mat->step[0], 
@@ -76,10 +78,11 @@ void lidar_context_get_range(lidar_context_t * ctx, char const * buf, ouster_mat
             mat->dim[1], 
             mat->step[0]
         );
+        */
         mat->num_valid_pixels += ctx->pixels_per_column;
+        ctx->mid_last = column.mid;
     }
 
-    ctx->mid_last = column.mid;
     
     ouster_log("mid_min=%i, mid_max=%i, mid_last=%i\n", ctx->mid_min, ctx->mid_max, ctx->mid_last);
 }

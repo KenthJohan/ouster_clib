@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,6 +19,7 @@ typedef struct
 
 void ouster_mat4_init(ouster_mat4_t * mat);
 void ouster_mat4_zero(ouster_mat4_t * mat);
+void ouster_mat4_apply_mask_u32(ouster_mat4_t * mat, uint32_t mask);
 
 #ifdef __cplusplus
 }

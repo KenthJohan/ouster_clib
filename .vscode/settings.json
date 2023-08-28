@@ -10,6 +10,7 @@
         "lidar_header.h": "c",
         "lidar_context.h": "c",
         "os_file.h": "c",
-        "client.h": "c"
+        "client.h": "c",
+        "mat.h": "c"
     }
 }

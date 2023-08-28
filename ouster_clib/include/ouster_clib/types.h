@@ -141,8 +141,75 @@ typedef enum
 
 
 
+/*
 
+static const Table<ChanField, FieldInfo, 8> legacy_field_info{{
+    {ChanField::RANGE, {UINT32, 0, 0x000fffff, 0}},
+    {ChanField::FLAGS, {UINT8, 3, 0, 4}},
+    {ChanField::REFLECTIVITY, {UINT16, 4, 0, 0}},
+    {ChanField::SIGNAL, {UINT16, 6, 0, 0}},
+    {ChanField::NEAR_IR, {UINT16, 8, 0, 0}},
+    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+}};
 
+static const Table<ChanField, FieldInfo, 5> lb_field_info{{
+    {ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
+    {ChanField::FLAGS, {UINT8, 1, 0b10000000, 7}},
+    {ChanField::REFLECTIVITY, {UINT8, 2, 0, 0}},
+    {ChanField::NEAR_IR, {UINT8, 3, 0, -4}},
+    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+}};
+
+static const Table<ChanField, FieldInfo, 13> dual_field_info{{
+    {ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
+    {ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
+    {ChanField::REFLECTIVITY, {UINT8, 3, 0, 0}},
+    {ChanField::RANGE2, {UINT32, 4, 0x0007ffff, 0}},
+    {ChanField::FLAGS2, {UINT8, 6, 0b11111000, 3}},
+    {ChanField::REFLECTIVITY2, {UINT8, 7, 0, 0}},
+    {ChanField::SIGNAL, {UINT16, 8, 0, 0}},
+    {ChanField::SIGNAL2, {UINT16, 10, 0, 0}},
+    {ChanField::NEAR_IR, {UINT16, 12, 0, 0}},
+    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+    {ChanField::RAW32_WORD4, {UINT32, 12, 0, 0}},
+}};
+
+static const Table<ChanField, FieldInfo, 8> single_field_info{{
+    {ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
+    {ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
+    {ChanField::REFLECTIVITY, {UINT8, 4, 0, 0}},
+    {ChanField::SIGNAL, {UINT16, 6, 0, 0}},
+    {ChanField::NEAR_IR, {UINT16, 8, 0, 0}},
+    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+}};
+
+static const Table<ChanField, FieldInfo, 14> five_word_pixel_info{{
+    {ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
+    {ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
+    {ChanField::REFLECTIVITY, {UINT8, 3, 0, 0}},
+    {ChanField::RANGE2, {UINT32, 4, 0x0007ffff, 0}},
+    {ChanField::FLAGS2, {UINT8, 6, 0b11111000, 3}},
+    {ChanField::REFLECTIVITY2, {UINT8, 7, 0, 0}},
+    {ChanField::SIGNAL, {UINT16, 8, 0, 0}},
+    {ChanField::SIGNAL2, {UINT16, 10, 0, 0}},
+    {ChanField::NEAR_IR, {UINT16, 12, 0, 0}},
+    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+    {ChanField::RAW32_WORD4, {UINT32, 12, 0, 0}},
+    {ChanField::RAW32_WORD5, {UINT32, 16, 0, 0}},
+}};
+
+*/
+
+#define OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_MASK UINT32_C(0x0007ffff)
+#define OUSTER_PROFILE_RNG15_RFL8_NIR8_MASK UINT32_C(0x7fff)
 
 
 

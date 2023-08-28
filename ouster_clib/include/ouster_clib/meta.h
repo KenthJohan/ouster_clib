@@ -13,6 +13,7 @@ typedef struct
 
     int channel_data_size;
     int col_size;
+    int lidar_packet_size;
 } ouster_meta_t;
 
 

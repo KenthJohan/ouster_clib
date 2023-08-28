@@ -34,7 +34,7 @@ void ouster_lidar_context_get_range(ouster_lidar_context_t * ctx, ouster_meta_t 
 
     if (ctx->frame_id != (int)header.frame_id)
     {
-        ouster_log("New Frame!\n");
+        //ouster_log("New Frame!\n");
         ctx->frame_id = (int)header.frame_id;
         mat->num_valid_pixels = 0;
         ctx->last_mid = 0;

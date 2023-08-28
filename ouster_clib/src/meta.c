@@ -71,6 +71,20 @@ void ouster_meta_parse(char const * json, ouster_meta_t * out)
   col_size = col_header_size + pixels_per_column * channel_data_size +
               col_footer_size;
 
+        lidar_packet_size = packet_header_size + columns_per_packet * col_size +
+                            packet_footer_size;
+
 */
     out->col_size = OUSTER_COLUMN_HEADER_SIZE + out->pixels_per_column * out->channel_data_size + OUSTER_COLUMN_FOOTER_SIZE;
+    out->lidar_packet_size = OUSTER_PACKET_HEADER_SIZE + out->columns_per_packet * out->col_size + OUSTER_PACKET_FOOTER_SIZE;
+
+
+
+
+
+
+
+
+
+
 }

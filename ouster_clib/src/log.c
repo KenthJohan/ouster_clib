@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-void ouster_log(char *format, ...)
+void ouster_log(char const *format, ...)
 {
     assert(format);
     va_list args;

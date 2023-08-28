@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
     ouster_mat4_t mat = {.dim = {4, meta.pixels_per_column, (meta.column_window[1] - meta.column_window[0] + 1), 1}};
     ouster_mat4_init(&mat);
     cv::namedWindow("mat8", cv::WINDOW_FREERATIO);
-    cv::resizeWindow("mat8", 2000, 200);
+    cv::resizeWindow("mat8", mat.dim[1]*20, mat.dim[2]*2);
 
 
     ouster_lidar_context_t lidctx = {0};
@@ -72,16 +72,21 @@ int main(int argc, char* argv[])
         {
             char buf[1024*10];
             int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-            //ouster_log("%-10s %5ji:  \n", "SOCK_LIDAR", (intmax_t)n);
+            //ouster_log("%-10s %5ji %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
+            if(n != meta.lidar_packet_size)
+            {
+                ouster_log("%-10s %5ji of %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
+            }
             ouster_lidar_context_get_range(&lidctx, &meta, buf, &mat);
             if(lidctx.last_mid == meta.column_window[1])
             {
+                ouster_mat4_apply_mask_u32(&mat, OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_MASK);
                 cv::Mat mat32(mat.dim[2], mat.dim[1], CV_32S, mat.data);
                 cv::Mat mat8;
                 cv::normalize(mat32, mat8, 0, 255, cv::NORM_MINMAX, CV_8UC1);
                 cv::imshow("mat8", mat8);
 
-                printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
+                //printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
                 ouster_mat4_zero(&mat);
 
                 //int key = cv::waitKey(1);
@@ -94,7 +99,7 @@ int main(int argc, char* argv[])
         if(a & (1 << SOCK_INDEX_IMU))
         {
             char buf[1024*256];
-            int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
+            net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
             //ouster_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
         }
     }

@@ -11,6 +11,12 @@
         "lidar_context.h": "c",
         "os_file.h": "c",
         "client.h": "c",
-        "mat.h": "c"
+        "mat.h": "c",
+        "stdio.h": "c",
+        "net.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "initializer_list": "c"
     }
 }

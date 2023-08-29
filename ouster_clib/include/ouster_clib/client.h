@@ -1,21 +1,27 @@
-/*
-https://static.ouster.dev/sensor-docs/image_route1/image_route2/sensor_data/sensor-data.html#lidar-data-packet-format
-
-*/
-
 #pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int ouster_client_create_lidar_udp_socket(char const * hint_service);
 
-int ouster_client_create_imu_udp_socket(char const * hint_service);
+typedef struct 
+{
+    char * data;
+    int size;
+    int cap;
+} ouster_buffer_t;
 
-int ouster_client_create_imu_tcp_socket(char const * hint_name);
+typedef struct 
+{
+    void * curl;
+    char const * host;
+    ouster_buffer_t buf;
+} ouster_client_t;
 
-
+void ouster_client_init(ouster_client_t * client);
+void ouster_client_fini(ouster_client_t * client);
+void ouster_client_download_meta_file(ouster_client_t * client, char const * path);
 
 
 #ifdef __cplusplus

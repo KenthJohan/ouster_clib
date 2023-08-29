@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "ouster_clib/sock.h"
 #include "ouster_clib/client.h"
 #include "ouster_clib/net.h"
 #include "ouster_clib/log.h"
@@ -31,21 +32,30 @@ int main(int argc, char* argv[])
         printf("Current working dir: %s\n", cwd);
     }
 
-    char const * metastr = ouster_os_file_read("../meta.json");
+    
+    ouster_client_t client = 
+    {
+        .host = "192.168.1.137"
+    };
+    ouster_client_init(&client);
+    ouster_client_download_meta_file(&client, "../meta1.json");
+
+    char const * metastr = ouster_os_file_read("../meta1.json");
     ouster_meta_t meta = {0};
     ouster_meta_parse(metastr, &meta);
     printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
 
     int socks[2];
-    socks[SOCK_INDEX_LIDAR] = ouster_client_create_lidar_udp_socket("7502");
-    socks[SOCK_INDEX_IMU] = ouster_client_create_imu_udp_socket("7503");
+    socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
+    socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu("7503");
+    //int sock_tcp = ouster_sock_create_tcp("192.168.1.137");
 
     ouster_mat4_t mat = {.dim = {4, meta.pixels_per_column, (meta.column_window[1] - meta.column_window[0] + 1), 1}};
     ouster_mat4_init(&mat);
 
     ouster_lidar_context_t lidctx = {0};
 
-    while(1)
+    for(int i = 0; i < 10000; ++i)
     {
         int timeout_seconds = 1;
         uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_seconds);
@@ -78,6 +88,7 @@ int main(int argc, char* argv[])
         }
     }
 
+    ouster_client_fini(&client);
 
     return 0;
 }

@@ -11,10 +11,10 @@ typedef struct
 {
     int frame_id;
     int last_mid;
-} ouster_lidar_context_t;
+} ouster_lidar_t;
 
 
-void ouster_lidar_context_get_fields(ouster_lidar_context_t * ctx, ouster_meta_t * meta, char const * buf, ouster_field_t * fields, int fcount);
+void ouster_lidar_get_fields(ouster_lidar_t * lidar, ouster_meta_t * meta, char const * buf, ouster_field_t * fields, int fcount);
 
 #ifdef __cplusplus
 }

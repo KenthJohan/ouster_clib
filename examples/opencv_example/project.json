@@ -8,7 +8,7 @@
     },
     "lang.cpp": {
         "cxxflags": ["-Wno-deprecated-declarations"],
-        "cpp-standard": "c++14",
+        "cpp-standard": "c++20",
         "include": [
             "/usr/include/opencv4"
         ],

@@ -8,7 +8,7 @@
 #include <ouster_clib/net.h>
 #include <ouster_clib/log.h>
 #include <ouster_clib/types.h>
-#include <ouster_clib/lidar_context.h>
+#include <ouster_clib/lidar.h>
 #include <ouster_clib/mat.h>
 #include <ouster_clib/os_file.h>
 #include <ouster_clib/meta.h>
@@ -58,10 +58,10 @@ int main(int argc, char* argv[])
         {.quantity = OUSTER_QUANTITY_NEAR_IR},
     };
 
-    ouster_field_init(fields + 0, &meta);
+    ouster_field_init(fields, 2, &meta);
     //ouster_field_init(fields + 1, &meta);
 
-    ouster_lidar_context_t lidctx = {0};
+    ouster_lidar_t lidar = {0};
 
     for(int i = 0; i < 10000; ++i)
     {
@@ -79,8 +79,8 @@ int main(int argc, char* argv[])
             char buf[1024*10];
             int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
             //ouster_log("%-10s %5ji:  \n", "SOCK_LIDAR", (intmax_t)n);
-            ouster_lidar_context_get_fields(&lidctx, &meta, buf, fields, 1);
-            if(lidctx.last_mid == meta.column_window[1])
+            ouster_lidar_get_fields(&lidar, &meta, buf, fields, 1);
+            if(lidar.last_mid == meta.column_window[1])
             {
                 //ouster_mat4_apply_mask_u32(&field.mat, field.mask);
                 //printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);

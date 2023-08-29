@@ -23,7 +23,7 @@ typedef struct
 
 
 
-void ouster_field_init(ouster_field_t * field, ouster_meta_t * meta);
+void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t * meta);
 
 
 #ifdef __cplusplus

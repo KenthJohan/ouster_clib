@@ -69,75 +69,51 @@ static const Table<ChanField, FieldInfo, 14> five_word_pixel_info{{
 
 */
 
-int ouster_field_range_size(int profile)
+#define COMBINE(p,q) (((p) << 0) | ((q) << 8))
+
+void ouster_field_init1(ouster_field_t * f, int profile)
 {
-    switch (profile)
+    switch (COMBINE(profile, f->quantity))
     {
-    case OUSTER_PROFILE_LIDAR_LEGACY: return 4;
-    case OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL: return 4;
-    case OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16: return 4;
-    case OUSTER_PROFILE_RNG15_RFL8_NIR8: return 2;
-    case OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL: return 4;
-    }
-    return 0;
-}
-
-uint32_t ouster_field_range_offset(int profile)
-{
-    switch (profile)
-    {
-    case OUSTER_PROFILE_LIDAR_LEGACY: return 0;
-    case OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL: return 0;
-    case OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16: return 0;
-    case OUSTER_PROFILE_RNG15_RFL8_NIR8: return 0;
-    case OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL: return 0;
-    }
-    return 0;
-}
-
-uint32_t ouster_field_range_mask(int profile)
-{
-    switch (profile)
-    {
-    case OUSTER_PROFILE_LIDAR_LEGACY: return UINT32_C(0x000fffff);
-    case OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL: return UINT32_C(0x0007ffff);
-    case OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16: return UINT32_C(0x0007ffff);
-    case OUSTER_PROFILE_RNG15_RFL8_NIR8: return UINT32_C(0x7fff);
-    case OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL: return UINT32_C(0x0007ffff);
-    }
-    return 0;
-}
-
-
-
-
-
-
-
-
-
-
-void ouster_field_init(ouster_field_t * field, ouster_meta_t * meta)
-{
-    field->num_valid_pixels = 0;
-    switch (field->quantity)
-    {
-    case OUSTER_QUANTITY_RANGE:
-        field->mask = ouster_field_range_mask(meta->profile);
-        field->offset = ouster_field_range_offset(meta->profile);
-        field->mat.dim[0] = ouster_field_range_size(meta->profile);
+    case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_RANGE):
+        f->mask = UINT32_C(0x0007ffff);
+        f->offset = 0;
+        f->mat.dim[0] = 4;
         break;
-    case OUSTER_QUANTITY_NEAR_IR:
-        field->mask = ouster_field_range_mask(meta->profile);
-        field->offset = ouster_field_range_offset(meta->profile);
-        field->mat.dim[0] = ouster_field_range_size(meta->profile);
+    case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_REFLECTIVITY):
+        f->mask = 0;
+        f->offset = 4;
+        f->mat.dim[0] = 1;
         break;
-
+    case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_SIGNAL):
+        f->mask = 0;
+        f->offset = 6;
+        f->mat.dim[0] = 2;
+        break;
+    case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_NEAR_IR):
+        f->mask = 0;
+        f->offset = 8;
+        f->mat.dim[0] = 2;
+        break;
     default:
         break;
     }
-    field->mat.dim[1] = meta->pixels_per_column;
-    field->mat.dim[2] = meta->column_window[1] - meta->column_window[0] + 1;
-    field->mat.dim[3] = 1;
-    ouster_mat4_init(&field->mat);
+}
+
+
+
+
+
+void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t * meta)
+{
+    ouster_field_t * f = fields;
+    for(int i = 0; i < count; ++i, f++)
+    {
+        f->num_valid_pixels = 0;
+        ouster_field_init1(f, meta->profile);
+        f->mat.dim[1] = meta->pixels_per_column;
+        f->mat.dim[2] = meta->column_window[1] - meta->column_window[0] + 1;
+        f->mat.dim[3] = 1;
+        ouster_mat4_init(&f->mat);
+    }
 }

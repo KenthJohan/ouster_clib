@@ -7,7 +7,7 @@
 #include <ouster_clib/net.h>
 #include <ouster_clib/log.h>
 #include <ouster_clib/types.h>
-#include <ouster_clib/lidar_context.h>
+#include <ouster_clib/lidar.h>
 #include <ouster_clib/mat.h>
 #include <ouster_clib/os_file.h>
 #include <ouster_clib/meta.h>
@@ -29,6 +29,16 @@ typedef enum
 } sock_index_t;
 
 
+int pixsize_to_cv_type(int size)
+{
+    switch (size)
+    {
+    case 1: return CV_8U;
+    case 2: return CV_16U;
+    case 4: return CV_32S;
+    }
+    return 0;
+}
 
 
 int main(int argc, char* argv[])
@@ -48,20 +58,28 @@ int main(int argc, char* argv[])
     socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
     socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu("7503");
 
-    ouster_field_t fields[] = {
+    #define FIELD_COUNT 4
+    ouster_field_t fields[FIELD_COUNT] = {
         {.quantity = OUSTER_QUANTITY_RANGE},
-        {.quantity = OUSTER_QUANTITY_NEAR_IR},
+        {.quantity = OUSTER_QUANTITY_REFLECTIVITY},
+        {.quantity = OUSTER_QUANTITY_SIGNAL},
+        {.quantity = OUSTER_QUANTITY_NEAR_IR}
     };
 
-    ouster_field_init(fields + 0, &meta);
+    ouster_field_init(fields, FIELD_COUNT, &meta);
 
 
 
-    cv::namedWindow("mat8", cv::WINDOW_FREERATIO);
-    cv::resizeWindow("mat8", fields[0].mat.dim[1]*20, fields[0].mat.dim[2]*2);
+    cv::namedWindow("0", cv::WINDOW_FREERATIO);
+    cv::namedWindow("1", cv::WINDOW_FREERATIO);
+    cv::namedWindow("2", cv::WINDOW_FREERATIO);
+    cv::namedWindow("3", cv::WINDOW_FREERATIO);
+    cv::resizeWindow("0", fields[0].mat.dim[1]*20, fields[0].mat.dim[2]*2);
+    cv::resizeWindow("1", fields[1].mat.dim[1]*20, fields[1].mat.dim[2]*2);
+    cv::resizeWindow("2", fields[2].mat.dim[1]*20, fields[2].mat.dim[2]*2);
+    cv::resizeWindow("3", fields[3].mat.dim[1]*20, fields[3].mat.dim[2]*2);
 
-
-    ouster_lidar_context_t lidctx = {0};
+    ouster_lidar_t lidar = {0};
 
     while(1)
     {
@@ -84,14 +102,26 @@ int main(int argc, char* argv[])
             {
                 ouster_log("%-10s %5ji of %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
             }
-            ouster_lidar_context_get_fields(&lidctx, &meta, buf, fields, 1);
-            if(lidctx.last_mid == meta.column_window[1])
+            ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
+            if(lidar.last_mid == meta.column_window[1])
             {
                 ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
-                cv::Mat mat32(fields[0].mat.dim[2], fields[0].mat.dim[1], CV_32S, fields[0].mat.data);
-                cv::Mat mat8;
-                cv::normalize(mat32, mat8, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-                cv::imshow("mat8", mat8);
+                cv::Mat mat_f0(fields[0].mat.dim[2], fields[0].mat.dim[1], pixsize_to_cv_type(fields[0].mat.dim[0]), fields[0].mat.data);
+                cv::Mat mat_f1(fields[1].mat.dim[2], fields[1].mat.dim[1], pixsize_to_cv_type(fields[1].mat.dim[0]), fields[1].mat.data);
+                cv::Mat mat_f2(fields[2].mat.dim[2], fields[2].mat.dim[1], pixsize_to_cv_type(fields[2].mat.dim[0]), fields[2].mat.data);
+                cv::Mat mat_f3(fields[3].mat.dim[2], fields[2].mat.dim[1], pixsize_to_cv_type(fields[3].mat.dim[0]), fields[3].mat.data);
+                cv::Mat mat_f0_show;
+                cv::Mat mat_f1_show;
+                cv::Mat mat_f2_show;
+                cv::Mat mat_f3_show;
+                cv::normalize(mat_f0, mat_f0_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+                cv::normalize(mat_f1, mat_f1_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+                cv::normalize(mat_f2, mat_f2_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+                cv::normalize(mat_f3, mat_f3_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+                cv::imshow("0", mat_f0_show);
+                cv::imshow("1", mat_f1_show);
+                cv::imshow("2", mat_f2_show);
+                cv::imshow("3", mat_f3_show);
 
                 //printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
                 ouster_mat4_zero(&fields[0].mat);

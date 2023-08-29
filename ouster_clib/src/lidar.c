@@ -1,4 +1,4 @@
-#include "ouster_clib/lidar_context.h"
+#include "ouster_clib/lidar.h"
 #include "ouster_clib/lidar_header.h"
 #include "ouster_clib/lidar_column.h"
 #include "ouster_clib/log.h"
@@ -24,7 +24,7 @@ void field_copy(ouster_field_t * field, ouster_meta_t * meta, int mid, char cons
     pxcpy(
         dst, 
         field->mat.step[0], 
-        pxbuf, 
+        pxbuf + field->offset, 
         meta->channel_data_size, 
         field->mat.dim[1], 
         field->mat.step[0]
@@ -32,9 +32,9 @@ void field_copy(ouster_field_t * field, ouster_meta_t * meta, int mid, char cons
 }
 
 
-void ouster_lidar_context_get_fields(ouster_lidar_context_t * ctx, ouster_meta_t * meta, char const * buf, ouster_field_t * fields, int fcount)
+void ouster_lidar_get_fields(ouster_lidar_t * lidar, ouster_meta_t * meta, char const * buf, ouster_field_t * fields, int fcount)
 {
-    assert(ctx);
+    assert(lidar);
     assert(buf);
     assert(fields);
     assert(meta->pixels_per_column == fields[0].mat.dim[1]);
@@ -46,11 +46,11 @@ void ouster_lidar_context_get_fields(ouster_lidar_context_t * ctx, ouster_meta_t
     //ouster_lidar_header_log(&header);
 
 
-    if (ctx->frame_id != (int)header.frame_id)
+    if (lidar->frame_id != (int)header.frame_id)
     {
         //ouster_log("New Frame!\n");
-        ctx->frame_id = (int)header.frame_id;
-        ctx->last_mid = 0;
+        lidar->frame_id = (int)header.frame_id;
+        lidar->last_mid = 0;
         for(int j = 0; j < fcount; ++j)
         {
             fields[j].num_valid_pixels = 0;
@@ -76,6 +76,6 @@ void ouster_lidar_context_get_fields(ouster_lidar_context_t * ctx, ouster_meta_t
         }
 
 
-        ctx->last_mid = column.mid;
+        lidar->last_mid = column.mid;
     }
 }

@@ -115,58 +115,37 @@ typedef enum
 
 typedef enum{
 
-    OUSTER_QUANTITY_RANGE = 1,            ///< 1st return range in mm
-    OUSTER_QUANTITY_RANGE2 = 2,           ///< 2nd return range in mm
-    OUSTER_QUANTITY_INTENSITY = 3,        ///< @deprecated Use SIGNAL instead
-    OUSTER_QUANTITY_SIGNAL = 3,           ///< 1st return signal in photons
-    OUSTER_QUANTITY_SIGNAL2 = 4,          ///< 2nd return signal in photons
-    OUSTER_QUANTITY_REFLECTIVITY = 5,     ///< 1st return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
-    OUSTER_QUANTITY_REFLECTIVITY2 = 6,    ///< 2nd return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
-    OUSTER_QUANTITY_AMBIENT = 7,          ///< @deprecated Use NEAR_IR instead
-    OUSTER_QUANTITY_NEAR_IR = 7,          ///< near_ir in photons
-    OUSTER_QUANTITY_FLAGS = 8,            ///< 1st return flags
-    OUSTER_QUANTITY_FLAGS2 = 9,           ///< 2nd return flags
-    OUSTER_QUANTITY_RAW_HEADERS = 40,     ///< raw headers for packet/footer/column for dev use
-    OUSTER_QUANTITY_RAW32_WORD5 = 45,     ///< raw word access to packet for dev use
-    OUSTER_QUANTITY_RAW32_WORD6 = 46,     ///< raw word access to packet for dev use
-    OUSTER_QUANTITY_RAW32_WORD7 = 47,     ///< raw word access to packet for dev use
-    OUSTER_QUANTITY_RAW32_WORD8 = 48,     ///< raw word access to packet for dev use
-    OUSTER_QUANTITY_RAW32_WORD9 = 49,     ///< raw word access to packet for dev use
-    OUSTER_QUANTITY_CUSTOM0 = 50,         ///< custom user field
-    OUSTER_QUANTITY_CUSTOM1 = 51,         ///< custom user field
-    OUSTER_QUANTITY_CUSTOM2 = 52,         ///< custom user field
-    OUSTER_QUANTITY_CUSTOM3 = 53,         ///< custom user field
-    OUSTER_QUANTITY_CUSTOM4 = 54,         ///< custom user field
-    OUSTER_QUANTITY_CUSTOM5 = 55,         ///< custom user field
-    OUSTER_QUANTITY_CUSTOM6 = 56,         ///< custom user field
-    OUSTER_QUANTITY_CUSTOM7 = 57,         ///< custom user field
-    OUSTER_QUANTITY_CUSTOM8 = 58,         ///< custom user field
-    OUSTER_QUANTITY_CUSTOM9 = 59,         ///< custom user field
-    OUSTER_QUANTITY_RAW32_WORD1 = 60,     ///< raw word access to packet for dev use
-    OUSTER_QUANTITY_RAW32_WORD2 = 61,     ///< raw word access to packet for dev use
-    OUSTER_QUANTITY_RAW32_WORD3 = 62,     ///< raw word access to packet for dev use
-    OUSTER_QUANTITY_RAW32_WORD4 = 63,     ///< raw word access to packet for dev use
-    OUSTER_QUANTITY_CHAN_FIELD_MAX = 64,  ///< max which allows us to introduce future fields
+    OUSTER_QUANTITY_RANGE = 1,            // 1st return range in mm
+    OUSTER_QUANTITY_RANGE2 = 2,           // 2nd return range in mm
+    OUSTER_QUANTITY_SIGNAL = 3,           // 1st return signal in photons
+    OUSTER_QUANTITY_SIGNAL2 = 4,          // 2nd return signal in photons
+    OUSTER_QUANTITY_REFLECTIVITY = 5,     // 1st return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
+    OUSTER_QUANTITY_REFLECTIVITY2 = 6,    // 2nd return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
+    OUSTER_QUANTITY_NEAR_IR = 7,          // near_ir in photons
+    OUSTER_QUANTITY_FLAGS = 8,            // 1st return flags
+    OUSTER_QUANTITY_FLAGS2 = 9,           // 2nd return flags
+    OUSTER_QUANTITY_RAW_HEADERS = 40,     // raw headers for packet/footer/column for dev use
+    OUSTER_QUANTITY_RAW32_WORD5 = 45,     // raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD6 = 46,     // raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD7 = 47,     // raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD8 = 48,     // raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD9 = 49,     // raw word access to packet for dev use
+    OUSTER_QUANTITY_CUSTOM0 = 50,         // custom user field
+    OUSTER_QUANTITY_CUSTOM1 = 51,         // custom user field
+    OUSTER_QUANTITY_CUSTOM2 = 52,         // custom user field
+    OUSTER_QUANTITY_CUSTOM3 = 53,         // custom user field
+    OUSTER_QUANTITY_CUSTOM4 = 54,         // custom user field
+    OUSTER_QUANTITY_CUSTOM5 = 55,         // custom user field
+    OUSTER_QUANTITY_CUSTOM6 = 56,         // custom user field
+    OUSTER_QUANTITY_CUSTOM7 = 57,         // custom user field
+    OUSTER_QUANTITY_CUSTOM8 = 58,         // custom user field
+    OUSTER_QUANTITY_CUSTOM9 = 59,         // custom user field
+    OUSTER_QUANTITY_RAW32_WORD1 = 60,     // raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD2 = 61,     // raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD3 = 62,     // raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD4 = 63,     // raw word access to packet for dev use
+    OUSTER_QUANTITY_CHAN_FIELD_MAX = 64,  // max which allows us to introduce future fields
 } ouster_quantity_t;
-
-
-typedef enum{
-
-    OUSTER_EATTR_SIZE,
-    OUSTER_EATTR_OFFSET,
-    OUSTER_EATTR_MASK,
-    OUSTER_EATTR_TYPE
-} ouster_eattr_t;
-
-
-#define OUSTER_Q3(p,f,a) (((p) << 0) | ((f) << 8) | ((a) << 16))
-
-
-#define OUSTER_OS1_16 0
-#define OUSTER_OS1_32 1
-#define OUSTER_OS1_64 2
-#define OUSTER_OS1_128 3
-
 
 
 /*
@@ -187,11 +166,6 @@ typedef enum{
 #define OUSTER_PACKET_FOOTER_SIZE 32
 #define OUSTER_COLUMN_HEADER_SIZE 12
 #define OUSTER_COLUMN_FOOTER_SIZE 0
-
-
-
-
-
 
 
 

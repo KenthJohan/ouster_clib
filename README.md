@@ -1,17 +1,19 @@
-# Non official Ouster SDK
-This library is a API for Ouster LiDARS.<br>
-The official SDK API can be found at https://github.com/ouster-lidar/ouster_example.
+# Ouster Non Official SDK
+Simplistic small C library for Ouster LiDAR sensors.<br>
+The official SDK can be found at https://github.com/ouster-lidar/ouster_example.
 <br><br>
-This **ouster_clib** is meant to be simplistic and use zero dependencies.
-The examples that uses this library will have dependencies like OpenCV. 
-
+The `ouster_clib` is meant to be simplistic and use zero dependencies. Easy to debug, modify and extend.
+`libcurl` is currently used to get meta data but its not required to receive LiDAR frames.
 
 
 
 
 ## Examples
-* Minimal example
-* OpenCV example
+* Minimal example<br>
+This example receive frames from sensor.
+* OpenCV example<br>
+This example receive frames from sensor and converts `ouster_mat_t` to `cv::Mat` and then draws it on screen.
+
 
 ## Features
 * C++ compatable
@@ -19,7 +21,8 @@ The examples that uses this library will have dependencies like OpenCV.
 * Very easy to integrate with OpenCV or Eigen
 * Meta file parser and creation
 * Adaptive field size. No waste of black pixels.
-* Build time of nosdk **ouster_clib** : 0.168s. Build time official of **ouster_client** : 29.441s.
+* Build time of nosdk `ouster_clib` = `0.168s`. <br>
+Build time of official `ouster_client` = `29.441s`.
 * No hidden state
 * No Windows support
 
@@ -28,7 +31,7 @@ The examples that uses this library will have dependencies like OpenCV.
 * Support all format profiles
 * OS layer abstraction
 * LUT table for XYZ support
-* Maybe remove libcurl dependency
+* Maybe remove `libcurl` dependency
 
 
 

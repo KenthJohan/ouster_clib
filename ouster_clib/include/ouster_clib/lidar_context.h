@@ -2,6 +2,7 @@
 #include "ouster_clib/types.h"
 #include "ouster_clib/mat.h"
 #include "ouster_clib/meta.h"
+#include "ouster_clib/field.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,7 +14,7 @@ typedef struct
 } ouster_lidar_context_t;
 
 
-void ouster_lidar_context_get_range(ouster_lidar_context_t * ctx, ouster_meta_t * meta, char const * buf, ouster_mat4_t * mat);
+void ouster_lidar_context_get_fields(ouster_lidar_context_t * ctx, ouster_meta_t * meta, char const * buf, ouster_field_t * fields, int fcount);
 
 #ifdef __cplusplus
 }

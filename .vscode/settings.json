@@ -17,6 +17,10 @@
         "array": "c",
         "string": "c",
         "string_view": "c",
-        "initializer_list": "c"
+        "initializer_list": "c",
+        "types.h": "c",
+        "sock.h": "c",
+        "meta.h": "c",
+        "field.h": "c"
     }
 }

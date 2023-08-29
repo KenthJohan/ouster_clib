@@ -106,11 +106,60 @@ typedef enum
   OUSTER_PROFILE_LIDAR_LEGACY = 1,
   OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL = 2, // Dual Return Profile
   OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16 = 3, // Single Return Profile
-  OUSTER_PROFILE_RNG15_RFL8_NIR8 = 3, // Low Data Rate Profile
+  OUSTER_PROFILE_RNG15_RFL8_NIR8 = 4, // Low Data Rate Profile
   OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL = 5,
   OUSTER_PROFILE_COUNT
 } ouster_profile_t;
 
+
+
+typedef enum{
+
+    OUSTER_QUANTITY_RANGE = 1,            ///< 1st return range in mm
+    OUSTER_QUANTITY_RANGE2 = 2,           ///< 2nd return range in mm
+    OUSTER_QUANTITY_INTENSITY = 3,        ///< @deprecated Use SIGNAL instead
+    OUSTER_QUANTITY_SIGNAL = 3,           ///< 1st return signal in photons
+    OUSTER_QUANTITY_SIGNAL2 = 4,          ///< 2nd return signal in photons
+    OUSTER_QUANTITY_REFLECTIVITY = 5,     ///< 1st return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
+    OUSTER_QUANTITY_REFLECTIVITY2 = 6,    ///< 2nd return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
+    OUSTER_QUANTITY_AMBIENT = 7,          ///< @deprecated Use NEAR_IR instead
+    OUSTER_QUANTITY_NEAR_IR = 7,          ///< near_ir in photons
+    OUSTER_QUANTITY_FLAGS = 8,            ///< 1st return flags
+    OUSTER_QUANTITY_FLAGS2 = 9,           ///< 2nd return flags
+    OUSTER_QUANTITY_RAW_HEADERS = 40,     ///< raw headers for packet/footer/column for dev use
+    OUSTER_QUANTITY_RAW32_WORD5 = 45,     ///< raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD6 = 46,     ///< raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD7 = 47,     ///< raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD8 = 48,     ///< raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD9 = 49,     ///< raw word access to packet for dev use
+    OUSTER_QUANTITY_CUSTOM0 = 50,         ///< custom user field
+    OUSTER_QUANTITY_CUSTOM1 = 51,         ///< custom user field
+    OUSTER_QUANTITY_CUSTOM2 = 52,         ///< custom user field
+    OUSTER_QUANTITY_CUSTOM3 = 53,         ///< custom user field
+    OUSTER_QUANTITY_CUSTOM4 = 54,         ///< custom user field
+    OUSTER_QUANTITY_CUSTOM5 = 55,         ///< custom user field
+    OUSTER_QUANTITY_CUSTOM6 = 56,         ///< custom user field
+    OUSTER_QUANTITY_CUSTOM7 = 57,         ///< custom user field
+    OUSTER_QUANTITY_CUSTOM8 = 58,         ///< custom user field
+    OUSTER_QUANTITY_CUSTOM9 = 59,         ///< custom user field
+    OUSTER_QUANTITY_RAW32_WORD1 = 60,     ///< raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD2 = 61,     ///< raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD3 = 62,     ///< raw word access to packet for dev use
+    OUSTER_QUANTITY_RAW32_WORD4 = 63,     ///< raw word access to packet for dev use
+    OUSTER_QUANTITY_CHAN_FIELD_MAX = 64,  ///< max which allows us to introduce future fields
+} ouster_quantity_t;
+
+
+typedef enum{
+
+    OUSTER_EATTR_SIZE,
+    OUSTER_EATTR_OFFSET,
+    OUSTER_EATTR_MASK,
+    OUSTER_EATTR_TYPE
+} ouster_eattr_t;
+
+
+#define OUSTER_Q3(p,f,a) (((p) << 0) | ((f) << 8) | ((a) << 16))
 
 
 #define OUSTER_OS1_16 0
@@ -141,75 +190,6 @@ typedef enum
 
 
 
-/*
-
-static const Table<ChanField, FieldInfo, 8> legacy_field_info{{
-    {ChanField::RANGE, {UINT32, 0, 0x000fffff, 0}},
-    {ChanField::FLAGS, {UINT8, 3, 0, 4}},
-    {ChanField::REFLECTIVITY, {UINT16, 4, 0, 0}},
-    {ChanField::SIGNAL, {UINT16, 6, 0, 0}},
-    {ChanField::NEAR_IR, {UINT16, 8, 0, 0}},
-    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
-    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
-}};
-
-static const Table<ChanField, FieldInfo, 5> lb_field_info{{
-    {ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
-    {ChanField::FLAGS, {UINT8, 1, 0b10000000, 7}},
-    {ChanField::REFLECTIVITY, {UINT8, 2, 0, 0}},
-    {ChanField::NEAR_IR, {UINT8, 3, 0, -4}},
-    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-}};
-
-static const Table<ChanField, FieldInfo, 13> dual_field_info{{
-    {ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
-    {ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
-    {ChanField::REFLECTIVITY, {UINT8, 3, 0, 0}},
-    {ChanField::RANGE2, {UINT32, 4, 0x0007ffff, 0}},
-    {ChanField::FLAGS2, {UINT8, 6, 0b11111000, 3}},
-    {ChanField::REFLECTIVITY2, {UINT8, 7, 0, 0}},
-    {ChanField::SIGNAL, {UINT16, 8, 0, 0}},
-    {ChanField::SIGNAL2, {UINT16, 10, 0, 0}},
-    {ChanField::NEAR_IR, {UINT16, 12, 0, 0}},
-    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
-    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
-    {ChanField::RAW32_WORD4, {UINT32, 12, 0, 0}},
-}};
-
-static const Table<ChanField, FieldInfo, 8> single_field_info{{
-    {ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
-    {ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
-    {ChanField::REFLECTIVITY, {UINT8, 4, 0, 0}},
-    {ChanField::SIGNAL, {UINT16, 6, 0, 0}},
-    {ChanField::NEAR_IR, {UINT16, 8, 0, 0}},
-    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
-    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
-}};
-
-static const Table<ChanField, FieldInfo, 14> five_word_pixel_info{{
-    {ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
-    {ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
-    {ChanField::REFLECTIVITY, {UINT8, 3, 0, 0}},
-    {ChanField::RANGE2, {UINT32, 4, 0x0007ffff, 0}},
-    {ChanField::FLAGS2, {UINT8, 6, 0b11111000, 3}},
-    {ChanField::REFLECTIVITY2, {UINT8, 7, 0, 0}},
-    {ChanField::SIGNAL, {UINT16, 8, 0, 0}},
-    {ChanField::SIGNAL2, {UINT16, 10, 0, 0}},
-    {ChanField::NEAR_IR, {UINT16, 12, 0, 0}},
-    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
-    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
-    {ChanField::RAW32_WORD4, {UINT32, 12, 0, 0}},
-    {ChanField::RAW32_WORD5, {UINT32, 16, 0, 0}},
-}};
-
-*/
-
-#define OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_MASK UINT32_C(0x0007ffff)
-#define OUSTER_PROFILE_RNG15_RFL8_NIR8_MASK UINT32_C(0x7fff)
 
 
 

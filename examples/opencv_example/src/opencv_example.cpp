@@ -48,10 +48,17 @@ int main(int argc, char* argv[])
     socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
     socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu("7503");
 
-    ouster_mat4_t mat = {.dim = {4, meta.pixels_per_column, (meta.column_window[1] - meta.column_window[0] + 1), 1}};
-    ouster_mat4_init(&mat);
+    ouster_field_t fields[] = {
+        {.quantity = OUSTER_QUANTITY_RANGE},
+        {.quantity = OUSTER_QUANTITY_NEAR_IR},
+    };
+
+    ouster_field_init(fields + 0, &meta);
+
+
+
     cv::namedWindow("mat8", cv::WINDOW_FREERATIO);
-    cv::resizeWindow("mat8", mat.dim[1]*20, mat.dim[2]*2);
+    cv::resizeWindow("mat8", fields[0].mat.dim[1]*20, fields[0].mat.dim[2]*2);
 
 
     ouster_lidar_context_t lidctx = {0};
@@ -77,17 +84,17 @@ int main(int argc, char* argv[])
             {
                 ouster_log("%-10s %5ji of %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
             }
-            ouster_lidar_context_get_range(&lidctx, &meta, buf, &mat);
+            ouster_lidar_context_get_fields(&lidctx, &meta, buf, fields, 1);
             if(lidctx.last_mid == meta.column_window[1])
             {
-                ouster_mat4_apply_mask_u32(&mat, OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_MASK);
-                cv::Mat mat32(mat.dim[2], mat.dim[1], CV_32S, mat.data);
+                ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
+                cv::Mat mat32(fields[0].mat.dim[2], fields[0].mat.dim[1], CV_32S, fields[0].mat.data);
                 cv::Mat mat8;
                 cv::normalize(mat32, mat8, 0, 255, cv::NORM_MINMAX, CV_8UC1);
                 cv::imshow("mat8", mat8);
 
                 //printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
-                ouster_mat4_zero(&mat);
+                ouster_mat4_zero(&fields[0].mat);
 
                 //int key = cv::waitKey(1);
                 int key = cv::pollKey();

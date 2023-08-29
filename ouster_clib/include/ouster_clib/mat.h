@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "ouster_clib/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,8 +14,11 @@ typedef struct
   int dim[4];
   int step[4];
   char * data;
-  int num_valid_pixels;
 } ouster_mat4_t;
+
+
+
+
 
 
 void ouster_mat4_init(ouster_mat4_t * mat);

@@ -40,6 +40,13 @@ int pixsize_to_cv_type(int size)
     return 0;
 }
 
+cv::Mat ouster_get_cvmat(ouster_field_t * field)
+{
+    cv::Mat m(field->mat.dim[2], field->mat.dim[1], pixsize_to_cv_type(field->mat.dim[0]), field->mat.data);
+    return m;
+}
+
+
 
 int main(int argc, char* argv[])
 {
@@ -106,10 +113,10 @@ int main(int argc, char* argv[])
             if(lidar.last_mid == meta.column_window[1])
             {
                 ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
-                cv::Mat mat_f0(fields[0].mat.dim[2], fields[0].mat.dim[1], pixsize_to_cv_type(fields[0].mat.dim[0]), fields[0].mat.data);
-                cv::Mat mat_f1(fields[1].mat.dim[2], fields[1].mat.dim[1], pixsize_to_cv_type(fields[1].mat.dim[0]), fields[1].mat.data);
-                cv::Mat mat_f2(fields[2].mat.dim[2], fields[2].mat.dim[1], pixsize_to_cv_type(fields[2].mat.dim[0]), fields[2].mat.data);
-                cv::Mat mat_f3(fields[3].mat.dim[2], fields[2].mat.dim[1], pixsize_to_cv_type(fields[3].mat.dim[0]), fields[3].mat.data);
+                cv::Mat mat_f0 = ouster_get_cvmat(fields + 0);
+                cv::Mat mat_f1 = ouster_get_cvmat(fields + 1);
+                cv::Mat mat_f2 = ouster_get_cvmat(fields + 2);
+                cv::Mat mat_f3 = ouster_get_cvmat(fields + 3);
                 cv::Mat mat_f0_show;
                 cv::Mat mat_f1_show;
                 cv::Mat mat_f2_show;

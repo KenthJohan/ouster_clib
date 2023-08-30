@@ -20,7 +20,7 @@ jsmntok_t * parse_intv(char const * json, jsmntok_t * t, int v[], int n)
     assert(t);
     assert(v);
     assert(t->type == JSMN_ARRAY);
-    assert(t->size == 2);
+    assert(t->size == n);
     t++;
     for(int i = 0; i < n; ++i)
     {

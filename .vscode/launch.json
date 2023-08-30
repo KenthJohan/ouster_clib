@@ -38,8 +38,7 @@
             },
             "linux": {
                 "externalConsole": false,
-            },
-            "preLaunchTask": "build"
+            }
         }
     ]
 }

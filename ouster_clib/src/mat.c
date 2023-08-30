@@ -9,7 +9,7 @@ void ouster_mat4_init(ouster_mat4_t * mat)
     mat->step[1] = mat->step[0] * mat->dim[1];
     mat->step[2] = mat->step[1] * mat->dim[2];
     mat->step[3] = mat->step[2] * mat->dim[3];
-    mat->data = calloc(mat->step[3], 1);
+    mat->data = calloc(mat->step[3] + (1024*1024), 1);
 }
 
 

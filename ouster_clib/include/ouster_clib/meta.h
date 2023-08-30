@@ -4,6 +4,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+#define OUSTER_STRING_LENGTH 128
+
 typedef struct
 {
     int column_window[2];
@@ -14,6 +18,10 @@ typedef struct
     int channel_data_size;
     int col_size;
     int lidar_packet_size;
+    int pixel_shift_by_row[OUSTER_STRING_LENGTH];
+
+
+    int xxx_column_offset;
 } ouster_meta_t;
 
 

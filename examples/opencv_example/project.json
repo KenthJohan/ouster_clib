@@ -7,13 +7,14 @@
         "language": "c++"
     },
     "lang.cpp": {
-        "cxxflags": ["-Wno-deprecated-declarations"],
+        "cxxflags": ["-Wno-deprecated-declarations", "-pthread"],
         "cpp-standard": "c++20",
         "include": [
             "/usr/include/opencv4"
         ],
         "lib": [
             "ouster_clib", "curl",
+            "pthread",
             "opencv_core", "opencv_imgproc", "opencv_features2d", "opencv_imgcodecs", "opencv_highgui",
             "GLEW", "glfw", "GL"
         ]

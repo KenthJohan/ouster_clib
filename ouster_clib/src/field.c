@@ -1,5 +1,6 @@
 #include "ouster_clib/field.h"
-
+#include "ouster_clib/mat.h"
+#include <string.h>
 
 
 /*
@@ -107,13 +108,54 @@ void ouster_field_init1(ouster_field_t * f, int profile)
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t * meta)
 {
     ouster_field_t * f = fields;
+    int cols = meta->column_window[1] - meta->column_window[0] + 1;
+    meta->xxx_column_offset = meta->column_window[0];
+
     for(int i = 0; i < count; ++i, f++)
     {
         f->num_valid_pixels = 0;
         ouster_field_init1(f, meta->profile);
-        f->mat.dim[1] = meta->pixels_per_column;
-        f->mat.dim[2] = meta->column_window[1] - meta->column_window[0] + 1;
+        f->mat.dim[1] = cols;
+        f->mat.dim[2] = meta->pixels_per_column;
         f->mat.dim[3] = 1;
         ouster_mat4_init(&f->mat);
+    }
+}
+
+
+/*
+template <typename T>
+inline img_t<T> destagger(const Eigen::Ref<const img_t<T>>& img,
+                          const std::vector<int>& pixel_shift_by_row,
+                          bool inverse) {
+    const size_t h = img.rows();
+    const size_t w = img.cols();
+
+    if (pixel_shift_by_row.size() != h)
+        throw std::invalid_argument{"image height does not match shifts size"};
+
+    img_t<T> destaggered{h, w};
+    for (size_t u = 0; u < h; u++) {
+        const std::ptrdiff_t offset =
+            ((inverse ? -1 : 1) * pixel_shift_by_row[u] + w) % w;
+
+        destaggered.row(u).segment(offset, w - offset) =
+            img.row(u).segment(0, w - offset);
+        destaggered.row(u).segment(0, offset) =
+            img.row(u).segment(w - offset, offset);
+    }
+    return destaggered;
+}
+*/
+void ouster_field_destagger(ouster_mat4_t * mat, ouster_meta_t * meta)
+{
+    for(int i = 0; i < meta->pixels_per_column; ++i)
+    {
+        int e = mat->step[0];
+        int w = mat->dim[1];
+        int offset = (meta->pixel_shift_by_row[i] + w) % w;
+        char * row = mat->data + i * mat->step[1];
+        memmove(row + e*offset, row, e*(w - offset));
+        memmove(row, row + e*(w - offset), e*offset);
     }
 }

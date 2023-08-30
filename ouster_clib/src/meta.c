@@ -60,9 +60,12 @@ void ouster_meta_parse(char const * json, ouster_meta_t * out)
     json_parse_int(json, tokens, (char const *[]){"lidar_data_format", "columns_per_packet", NULL}, &out->columns_per_packet);
     json_parse_int(json, tokens, (char const *[]){"lidar_data_format", "pixels_per_column", NULL}, &out->pixels_per_column);
     json_parse_intv(json, tokens, (char const *[]){"lidar_data_format", "column_window", NULL}, out->column_window, 2);
+    assert(out->pixels_per_column > 0);
+    assert(out->pixels_per_column <= 128);
+    json_parse_intv(json, tokens, (char const *[]){"lidar_data_format", "pixel_shift_by_row", NULL}, out->pixel_shift_by_row, out->pixels_per_column);
 
     char buf[128];
-    json_parse_string(json, tokens, (char const *[]){"lidar_data_format", "udp_profile_lidar", NULL}, buf, 128);
+    json_parse_string(json, tokens, (char const *[]){"lidar_data_format", "udp_profile_lidar", NULL}, buf, OUSTER_STRING_LENGTH);
 
     if(strcmp(buf, "LIDAR_LEGACY") == 0)
     {

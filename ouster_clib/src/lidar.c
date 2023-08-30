@@ -20,13 +20,13 @@ void pxcpy(char * dst, int dst_inc, char const * src, int src_inc, int n, int es
 
 void field_copy(ouster_field_t * field, ouster_meta_t * meta, int mid, char const * pxbuf)
 {
-    char * dst = field->mat.data + (mid - meta->column_window[0]) * field->mat.step[1];
+    char * dst = field->mat.data + (mid - meta->xxx_column_offset) * field->mat.step[0];
     pxcpy(
         dst, 
-        field->mat.step[0], 
+        field->mat.step[1], 
         pxbuf + field->offset, 
         meta->channel_data_size, 
-        field->mat.dim[1], 
+        field->mat.dim[2], 
         field->mat.step[0]
     );
 }
@@ -37,13 +37,13 @@ void ouster_lidar_get_fields(ouster_lidar_t * lidar, ouster_meta_t * meta, char 
     assert(lidar);
     assert(buf);
     assert(fields);
-    assert(meta->pixels_per_column == fields[0].mat.dim[1]);
+    assert(meta->pixels_per_column == fields[0].mat.dim[2]);
     
     char const * colbuf = buf + OUSTER_PACKET_HEADER_SIZE;
     ouster_lidar_header_t header = {0};
     ouster_column_t column = {0};
     ouster_lidar_header_get(buf, &header);
-    //ouster_lidar_header_log(&header);
+    ouster_lidar_header_log(&header);
 
 
     if (lidar->frame_id != (int)header.frame_id)
@@ -57,16 +57,16 @@ void ouster_lidar_get_fields(ouster_lidar_t * lidar, ouster_meta_t * meta, char 
         }
     }
 
+    //col_size = 1584
     for(int icol = 0; icol < meta->columns_per_packet; icol++, colbuf += meta->col_size)
     {
         ouster_column_get(colbuf, &column);
+        ouster_column_log(&column);
         if((column.status & 0x01) == 0)
         {
             continue;
         }
-        //ouster_column_log(&column);
         char const * pxbuf = colbuf + OUSTER_COLUMN_HEADER_SIZE;
-        
 
         for(int j = 0; j < fcount; ++j)
         {

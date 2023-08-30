@@ -17,7 +17,7 @@ int ouster_sock_create_udp_lidar(char const * hint_service)
     net_sock_desc_t desc = {0};
     desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
     desc.hint_name = NULL;
-    desc.rcvbuf_size = 256 * 1024;
+    desc.rcvbuf_size = 1024 * 1024;
     desc.hint_service = hint_service;
     return net_create(&desc);
 }
@@ -27,7 +27,7 @@ int ouster_sock_create_udp_imu(char const * hint_service)
     net_sock_desc_t desc = {0};
     desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
     desc.hint_name = NULL;
-    desc.rcvbuf_size = 256 * 1024;
+    desc.rcvbuf_size = 1024 * 1024;
     desc.hint_service = hint_service;
     return net_create(&desc);
 }

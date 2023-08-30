@@ -33,15 +33,17 @@ int main(int argc, char* argv[])
         printf("Current working dir: %s\n", cwd);
     }
 
-    
+    /*
     ouster_client_t client = 
     {
         .host = "192.168.1.137"
     };
     ouster_client_init(&client);
     ouster_client_download_meta_file(&client, "../meta1.json");
+    ouster_client_fini(&client);
+    */
 
-    char const * metastr = ouster_os_file_read("../meta1.json");
+    char const * metastr = ouster_os_file_read("../in.json");
     ouster_meta_t meta = {0};
     ouster_meta_parse(metastr, &meta);
     printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
@@ -63,7 +65,7 @@ int main(int argc, char* argv[])
 
     ouster_lidar_t lidar = {0};
 
-    for(int i = 0; i < 10000; ++i)
+    while(1)
     {
         int timeout_seconds = 1;
         uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_seconds);
@@ -83,7 +85,7 @@ int main(int argc, char* argv[])
             if(lidar.last_mid == meta.column_window[1])
             {
                 //ouster_mat4_apply_mask_u32(&field.mat, field.mask);
-                //printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
+                printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
                 ouster_mat4_zero(&fields[0].mat);
             }
         }
@@ -97,7 +99,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    ouster_client_fini(&client);
 
     return 0;
 }

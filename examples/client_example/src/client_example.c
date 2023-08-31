@@ -45,11 +45,12 @@ int main(int argc, char* argv[])
     */
 
     ouster_meta_t meta = {0};
+    ouster_lut_t lut = {0};
     {
         char * content = ouster_os_file_read("../in.json");
         ouster_meta_parse(content, &meta);
         free(content);
-        ouster_lut1(&meta);
+        ouster_lut_init(&lut, &meta);
         printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
         return 0;
     }
@@ -63,14 +64,16 @@ int main(int argc, char* argv[])
 
 
     ouster_field_t fields[] = {
-        {.quantity = OUSTER_QUANTITY_RANGE},
-        {.quantity = OUSTER_QUANTITY_NEAR_IR},
+        {.quantity = OUSTER_QUANTITY_RANGE}
     };
 
     ouster_field_init(fields, 2, &meta);
     //ouster_field_init(fields + 1, &meta);
 
     ouster_lidar_t lidar = {0};
+
+
+    //double * xyz = calloc(1);
 
     while(1)
     {
@@ -92,8 +95,8 @@ int main(int argc, char* argv[])
             ouster_lidar_get_fields(&lidar, &meta, buf, fields, 1);
             if(lidar.last_mid == meta.column_window[1])
             {
-                //ouster_mat4_apply_mask_u32(&field.mat, field.mask);
-                printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
+                ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
+                //printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
                 ouster_mat4_zero(&fields[0].mat);
             }
         }

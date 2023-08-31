@@ -137,7 +137,17 @@ void mul3(double * r, double * a, double * x)
 
 
 
-void ouster_lut1(ouster_meta_t * meta)
+
+void ouster_lut_fini(ouster_lut_t * lut)
+{
+    free(lut->direction);
+    free(lut->offset);
+    lut->direction = NULL;
+    lut->offset = NULL;
+}
+
+
+void ouster_lut_init(ouster_lut_t * lut, ouster_meta_t * meta)
 {
     int w = meta->columns_per_frame;
     int h = meta->pixels_per_column;
@@ -211,6 +221,21 @@ void ouster_lut1(ouster_meta_t * meta)
         o[2] += trans[2];
     }
 
+    lut->direction = direction;
+    lut->direction = offset;
+}
 
 
+
+void ouster_lut_cartesian(ouster_lut_t * lut, uint32_t * range, double * out_xyz, int n)
+{
+    double * d = lut->direction;
+    double * o = lut->offset;
+    for(int i = 0; i < n; ++i, out_xyz += 3, d += 3, d += 3)
+    {
+        double r = range[i];
+        out_xyz[0] = r * lut->direction[0] + lut->offset[0];
+        out_xyz[1] = r * lut->direction[1] + lut->offset[1];
+        out_xyz[2] = r * lut->direction[2] + lut->offset[2];
+    }
 }

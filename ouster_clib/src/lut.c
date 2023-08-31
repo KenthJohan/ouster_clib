@@ -94,47 +94,61 @@ XYZLut make_xyz_lut(size_t w, size_t h, double range_unit,
 }
 */
 
-//[d0, d1] = R * [d0 d1]
 
 #define M4_ARGS_1(x) (x)[0],(x)[1],(x)[2],(x)[3] , (x)[4],(x)[5],(x)[6],(x)[7] , (x)[8],(x)[9],(x)[10],(x)[11] , (x)[12],(x)[13],(x)[14],(x)[15]
 #define M4_ARGS_2(x) (x)[0],(x)[4],(x)[8],(x)[12] , (x)[1],(x)[5],(x)[9],(x)[13] , (x)[2],(x)[6],(x)[10],(x)[14] , (x)[3],(x)[7],(x)[11],(x)[15]
 #define M4_FORMAT "%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n"
+
+#define M3_ARGS_1(x) (x)[0],(x)[1],(x)[2] , (x)[3],(x)[4],(x)[5] , (x)[6],(x)[7],(x)[8]
+#define M3_ARGS_2(x) (x)[0],(x)[3],(x)[6] , (x)[1],(x)[4],(x)[7] , (x)[2],(x)[5],(x)[8]
+#define M3_FORMAT "%f %f %f\n%f %f %f\n%f %f %f\n"
+
+#define V3_ARGS(x) (x)[0],(x)[1],(x)[2]
+#define V3_FORMAT "%f %f %f\n"
 void print_m4(double * a)
 {
-    printf(M4_FORMAT, M4_ARGS_2(a));
+    printf(M4_FORMAT, M4_ARGS_1(a));
+}
+
+void print_m3(double * a)
+{
+    printf(M3_FORMAT, M3_ARGS_1(a));
+}
+
+void print_v3(double * a)
+{
+    printf(V3_FORMAT, V3_ARGS(a));
 }
 
 
-void mul(double * r, double * a, double * b)
+#define M4(i,j) ((i)*4 + (j))
+#define M3(i,j) ((i)*3 + (j))
+
+void mul3(double * r, double * a, double * x)
 {
-    r[0] = 
-    (a[0] * b[0]) + 
-    (a[0] * b[1]) + 
-    (a[0] * b[2]);
-    r[1] = 
-    (a[1] * b[0]) + 
-    (a[1] * b[1]) + 
-    (a[1] * b[2]);
-    r[2] = 
-    (a[2] * b[0]) + 
-    (a[2] * b[1]) + 
-    (a[2] * b[2]);
+    double temp[3];
+    temp[0] = (a[M3(0,0)] * x[0]) + (a[M3(1,0)] * x[1]) + (a[M3(2,0)] * x[2]);
+    temp[1] = (a[M3(0,1)] * x[0]) + (a[M3(1,1)] * x[1]) + (a[M3(2,1)] * x[2]);
+    temp[2] = (a[M3(0,2)] * x[0]) + (a[M3(1,2)] * x[1]) + (a[M3(2,2)] * x[2]);
+    r[0] = temp[0];
+    r[1] = temp[1];
+    r[2] = temp[2];
 }
 
 
 
 void ouster_lut1(ouster_meta_t * meta)
 {
-    int w = 0;
-    int h = 0;
+    int w = meta->columns_per_frame;
+    int h = meta->pixels_per_column;
     double * encoder = calloc(1, w * h * sizeof(double));   // theta_e
     double * azimuth = calloc(1, w * h * sizeof(double));   // theta_a
     double * altitude = calloc(1, w * h * sizeof(double));  // phi
     double * direction = calloc(1, w * h * 3 * sizeof(double));
     double * offset = calloc(1, w * h * 3 * sizeof(double));
 
-    float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[0];
-    float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[0];
+    float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[M4(0,3)];
+    float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[M4(2,3)];
 
     // OS sensor - populate angles for each pixel
     double azimuth_radians = M_PI * 2.0 / w;
@@ -164,7 +178,20 @@ void ouster_lut1(ouster_meta_t * meta)
         offset[i*3 + 2] = beam_to_lidar_transform_23                   - direction[i*3 + 2] * meta->lidar_origin_to_beam_origin_mm;
     }
 
+    meta->lidar_to_sensor_transform[M4(0,1)] = 4;
     print_m4(meta->lidar_to_sensor_transform);
+
+    double r[9] = {
+        [M3(0,0)] = meta->lidar_to_sensor_transform[M4(0,0)],
+        [M3(1,0)] = meta->lidar_to_sensor_transform[M4(0,1)],
+        [M3(2,0)] = meta->lidar_to_sensor_transform[M4(0,2)],
+        [M3(0,1)] = meta->lidar_to_sensor_transform[M4(1,0)],
+        [M3(1,1)] = meta->lidar_to_sensor_transform[M4(1,1)],
+        [M3(2,1)] = meta->lidar_to_sensor_transform[M4(1,2)],
+        [M3(0,2)] = meta->lidar_to_sensor_transform[M4(2,0)],
+        [M3(1,2)] = meta->lidar_to_sensor_transform[M4(2,1)],
+        [M3(2,2)] = meta->lidar_to_sensor_transform[M4(2,2)],
+    };
 
     float trans[3] =
     {
@@ -172,11 +199,18 @@ void ouster_lut1(ouster_meta_t * meta)
         meta->lidar_to_sensor_transform[1*4 + 3],
         meta->lidar_to_sensor_transform[2*4 + 3],
     };
-    for (int i = 0; i < w*h; i++)
+
+    for(int i = 0; i < w*h; ++i)
     {
-        offset[i*3 + 0] += trans[0];
-        offset[i*3 + 0] += trans[1];
-        offset[i*3 + 0] += trans[2];
+        double * d = direction + i*3;
+        double * o = offset + i*3;
+        mul3(d, r, d);
+        mul3(o, r, o);
+        o[0] += trans[0];
+        o[1] += trans[1];
+        o[2] += trans[2];
     }
+
+
 
 }

@@ -1,7 +1,7 @@
 #include "ouster_clib/field.h"
 #include "ouster_clib/mat.h"
 #include <string.h>
-
+#include <assert.h>
 
 /*
 
@@ -147,15 +147,21 @@ inline img_t<T> destagger(const Eigen::Ref<const img_t<T>>& img,
     return destaggered;
 }
 */
+
+/*
+https://static.ouster.dev/sdk-docs/reference/lidar-scan.html#staggering-and-destaggering
+*/
 void ouster_field_destagger(ouster_mat4_t * mat, ouster_meta_t * meta)
 {
-    for(int i = 0; i < meta->pixels_per_column; ++i)
+    int rows = mat->dim[2];
+    int cols = mat->dim[1];
+    int e = mat->step[0]; // Pixel size
+    assert(meta->pixels_per_column == rows);
+    char * row = mat->data;
+    for(int irow = 0; irow < rows; ++irow, row += mat->step[1])
     {
-        int e = mat->step[0];
-        int w = mat->dim[1];
-        int offset = (meta->pixel_shift_by_row[i] + w) % w;
-        char * row = mat->data + i * mat->step[1];
-        memmove(row + e*offset, row, e*(w - offset));
-        memmove(row, row + e*(w - offset), e*offset);
+        int offset = (meta->pixel_shift_by_row[irow] + cols) % cols;
+        memmove(row + e*offset, row, e*(cols - offset));
+        memmove(row, row + e*(cols - offset), e*offset);
     }
 }

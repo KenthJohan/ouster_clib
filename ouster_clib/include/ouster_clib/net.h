@@ -34,7 +34,7 @@ int net_create(net_sock_desc_t * desc);
 
 int64_t net_read(int sock, char * buf, int len);
 
-uint64_t net_select(int socks[], int n, const int timeout_sec);
+uint64_t net_select(int socks[], int n, const int timeout_sec, const int timeout_usec);
 
 int32_t net_get_port(int sock);
 

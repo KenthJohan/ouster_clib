@@ -65,38 +65,39 @@ int main(int argc, char* argv[])
     socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
     socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu("7503");
 
-    #define FIELD_COUNT 1
+    #define FIELD_COUNT 4
     ouster_field_t fields[FIELD_COUNT] = {
         {.quantity = OUSTER_QUANTITY_RANGE},
-        //{.quantity = OUSTER_QUANTITY_REFLECTIVITY},
-        //{.quantity = OUSTER_QUANTITY_SIGNAL},
-        //{.quantity = OUSTER_QUANTITY_NEAR_IR}
+        {.quantity = OUSTER_QUANTITY_REFLECTIVITY},
+        {.quantity = OUSTER_QUANTITY_SIGNAL},
+        {.quantity = OUSTER_QUANTITY_NEAR_IR}
     };
 
     ouster_field_init(fields, FIELD_COUNT, &meta);
 
 
 
-    cv::namedWindow("0", cv::WINDOW_FREERATIO);
-    //cv::namedWindow("1", cv::WINDOW_FREERATIO);
-    //cv::namedWindow("2", cv::WINDOW_FREERATIO);
-    //cv::namedWindow("3", cv::WINDOW_FREERATIO);
-    cv::resizeWindow("0", fields[0].mat.dim[1]*5, fields[0].mat.dim[2]*5);
-    //cv::resizeWindow("1", fields[1].mat.dim[1]*20, fields[1].mat.dim[2]*2);
-    //cv::resizeWindow("2", fields[2].mat.dim[1]*20, fields[2].mat.dim[2]*2);
-    //cv::resizeWindow("3", fields[3].mat.dim[1]*20, fields[3].mat.dim[2]*2);
+    cv::namedWindow("RANGE", cv::WINDOW_FREERATIO);
+    cv::namedWindow("REFLECTIVITY", cv::WINDOW_FREERATIO);
+    cv::namedWindow("SIGNAL", cv::WINDOW_FREERATIO);
+    cv::namedWindow("NEAR_IR", cv::WINDOW_FREERATIO);
+    cv::resizeWindow("RANGE", fields[0].mat.dim[1]*5, fields[0].mat.dim[2]*5);
+    cv::resizeWindow("REFLECTIVITY", fields[1].mat.dim[1]*5, fields[1].mat.dim[2]*2);
+    cv::resizeWindow("SIGNAL", fields[2].mat.dim[1]*5, fields[2].mat.dim[2]*2);
+    cv::resizeWindow("RANGE", fields[3].mat.dim[1]*5, fields[3].mat.dim[2]*2);
 
     ouster_lidar_t lidar = {0};
 
     while(1)
     {
         
-        int timeout_seconds = 1;
-        uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_seconds);
+        int timeout_sec = 0;
+        int timeout_usec = 1000*20;
+        uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
 
         if(a == 0)
         {
-            ouster_log("Timeout\n");
+            //ouster_log("Timeout\n");
         }
 
         //https://static.ouster.dev/sdk-docs/reference/lidar-scan.html#staggering-and-destaggering
@@ -111,35 +112,38 @@ int main(int argc, char* argv[])
                 ouster_log("%-10s %5ji of %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
             }
             ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
+            ouster_log("mid_loss %i\n", lidar.mid_loss);
             if(lidar.last_mid == meta.column_window[1])
             {
-                ouster_field_destagger(&fields[0].mat, &meta);
-                //ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
-                //cv::Mat mat_f0 = ouster_get_cvmat(fields + 0);
-                //cv::Mat mat_f0(fields[0].mat.dim[2], fields[0].mat.dim[1], CV_16S, fields[0].mat.data);
-                cv::Mat mat_f0(fields[0].mat.dim[2], fields[0].mat.dim[1], pixsize_to_cv_type(fields[0].mat.dim[0]), fields[0].mat.data);
-                //cv::Mat mat_f1 = ouster_get_cvmat(fields + 1);
-                //cv::Mat mat_f2 = ouster_get_cvmat(fields + 2);
-                //cv::Mat mat_f3 = ouster_get_cvmat(fields + 3);
-                cv::Mat mat_f0_show;
-                //cv::Mat mat_f1_show;
-                //cv::Mat mat_f2_show;
-                //cv::Mat mat_f3_show;
-                cv::normalize(mat_f0, mat_f0_show, 255, 0, cv::NORM_MINMAX, CV_8UC1);
-                //cv::normalize(mat_f1, mat_f1_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-                //cv::normalize(mat_f2, mat_f2_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-                //cv::normalize(mat_f3, mat_f3_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-                cv::imshow("0", mat_f0_show);
-                //cv::imshow("1", mat_f1_show);
-                //cv::imshow("2", mat_f2_show);
-                //cv::imshow("3", mat_f3_show);
+                ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
 
+                ouster_field_destagger(&fields[0].mat, &meta);
+                ouster_field_destagger(&fields[1].mat, &meta);
+                ouster_field_destagger(&fields[2].mat, &meta);
+                ouster_field_destagger(&fields[3].mat, &meta);
+                cv::Mat mat_f0 = ouster_get_cvmat(fields + 0);
+                cv::Mat mat_f1 = ouster_get_cvmat(fields + 1);
+                cv::Mat mat_f2 = ouster_get_cvmat(fields + 2);
+                cv::Mat mat_f3 = ouster_get_cvmat(fields + 3);
+                cv::Mat mat_f0_show;
+                cv::Mat mat_f1_show;
+                cv::Mat mat_f2_show;
+                cv::Mat mat_f3_show;
+                cv::normalize(mat_f0, mat_f0_show, 255, 0, cv::NORM_MINMAX, CV_8UC1);
+                cv::normalize(mat_f1, mat_f1_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+                cv::normalize(mat_f2, mat_f2_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+                cv::normalize(mat_f3, mat_f3_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+                cv::imshow("RANGE", mat_f0_show);
+                cv::imshow("REFLECTIVITY", mat_f1_show);
+                cv::imshow("SIGNAL", mat_f2_show);
+                cv::imshow("NEAR_IR", mat_f3_show);
                 //printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
                 ouster_mat4_zero(&fields[0].mat);
+                ouster_mat4_zero(&fields[1].mat);
+                ouster_mat4_zero(&fields[2].mat);
+                ouster_mat4_zero(&fields[3].mat);
 
-                //int key = cv::waitKey(1);
-                int key = cv::pollKey();
-                if(key == 27){break;}
+
             }
         }
 
@@ -150,6 +154,10 @@ int main(int argc, char* argv[])
             net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
             //ouster_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
         }
+
+        //int key = cv::waitKey(1);
+        int key = cv::pollKey();
+        if(key == 27){break;}
     }
 
 

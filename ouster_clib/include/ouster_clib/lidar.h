@@ -11,6 +11,7 @@ typedef struct
 {
     int frame_id;
     int last_mid;
+    int mid_loss;
 } ouster_lidar_t;
 
 

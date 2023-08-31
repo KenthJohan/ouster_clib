@@ -44,24 +44,33 @@ void ouster_lidar_get_fields(ouster_lidar_t * lidar, ouster_meta_t * meta, char 
     ouster_column_t column = {0};
     ouster_lidar_header_get(buf, &header);
     ouster_lidar_header_log(&header);
+    ouster_column_get(colbuf, &column);
 
 
     if (lidar->frame_id != (int)header.frame_id)
     {
         //ouster_log("New Frame!\n");
         lidar->frame_id = (int)header.frame_id;
-        lidar->last_mid = 0;
+        //lidar->last_mid = 0;
+        lidar->last_mid = column.mid - 1;
+        lidar->mid_loss = 0;
         for(int j = 0; j < fcount; ++j)
         {
             fields[j].num_valid_pixels = 0;
         }
     }
 
+
+    int mid_delta = column.mid - lidar->last_mid;
+    //ouster_log("mid_delta %i\n", mid_delta);
+    lidar->mid_loss += (mid_delta - 1);
+
     //col_size = 1584
     for(int icol = 0; icol < meta->columns_per_packet; icol++, colbuf += meta->col_size)
     {
         ouster_column_get(colbuf, &column);
-        ouster_column_log(&column);
+        //ouster_column_log(&column);
+
         if((column.status & 0x01) == 0)
         {
             continue;
@@ -74,8 +83,6 @@ void ouster_lidar_get_fields(ouster_lidar_t * lidar, ouster_meta_t * meta, char 
             field_copy(fields + j, meta, column.mid, pxbuf);
             fields[j].num_valid_pixels += meta->pixels_per_column;
         }
-
-
         lidar->last_mid = column.mid;
     }
 }

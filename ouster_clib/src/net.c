@@ -265,7 +265,7 @@ int64_t net_read(int sock, char * buf, int len)
 
 
 
-uint64_t net_select(int socks[], int n, const int timeout_sec)
+uint64_t net_select(int socks[], int n, const int timeout_sec, const int timeout_usec)
 {
     assert(socks);
 
@@ -289,7 +289,7 @@ uint64_t net_select(int socks[], int n, const int timeout_sec)
     uint64_t result = 0;
     struct timeval tv;
     tv.tv_sec = timeout_sec;
-    tv.tv_usec = 0;
+    tv.tv_usec = timeout_usec;
 
     int rc = select((int)max + 1, &rfds, NULL, NULL, &tv);
     if(rc == -1)

@@ -20,6 +20,7 @@ This example receive frames from sensor and converts `ouster_mat_t` to `cv::Mat`
 * Debug friendly library
 * Very easy to integrate with OpenCV or Eigen
 * Meta file parser and creation
+* Destagger
 * Adaptive field size. No waste of black pixels.
 * Build time of nosdk `ouster_clib` = `0.168s`. <br>
 Build time of official `ouster_client` = `29.441s`.

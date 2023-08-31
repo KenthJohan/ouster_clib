@@ -21,7 +21,8 @@
         "types.h": "c",
         "sock.h": "c",
         "meta.h": "c",
-        "field.h": "c"
+        "field.h": "c",
+        "stdint.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

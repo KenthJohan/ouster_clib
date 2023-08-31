@@ -116,11 +116,7 @@ int main(int argc, char* argv[])
             if(lidar.last_mid == meta.column_window[1])
             {
                 ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
-
-                ouster_field_destagger(&fields[0].mat, &meta);
-                ouster_field_destagger(&fields[1].mat, &meta);
-                ouster_field_destagger(&fields[2].mat, &meta);
-                ouster_field_destagger(&fields[3].mat, &meta);
+                ouster_field_destagger(fields, FIELD_COUNT, &meta);
                 cv::Mat mat_f0 = ouster_get_cvmat(fields + 0);
                 cv::Mat mat_f1 = ouster_get_cvmat(fields + 1);
                 cv::Mat mat_f2 = ouster_get_cvmat(fields + 2);
@@ -129,7 +125,7 @@ int main(int argc, char* argv[])
                 cv::Mat mat_f1_show;
                 cv::Mat mat_f2_show;
                 cv::Mat mat_f3_show;
-                cv::normalize(mat_f0, mat_f0_show, 255, 0, cv::NORM_MINMAX, CV_8UC1);
+                cv::normalize(mat_f0, mat_f0_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
                 cv::normalize(mat_f1, mat_f1_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
                 cv::normalize(mat_f2, mat_f2_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
                 cv::normalize(mat_f3, mat_f3_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);

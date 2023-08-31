@@ -43,22 +43,21 @@ Build time of official `ouster_client` = `29.441s`.
 
 ### Requirement
 ```bash
-sudo apt install git build-essential libcurl4-openssl-dev  libglfw3-dev libglew-dev
 sudo apt update
-sudo apt install libopencv-dev
+sudo apt install git build-essential libcurl4-openssl-dev
 ```
 
 
 
 Install https://github.com/SanderMertens/bake<br>
 ```bash
+cd ~/Downloads
 git clone https://github.com/SanderMertens/bake
-mv bake bake_repo
-bake_repo/setup.sh
-rm -r bake_repo
+bake/setup.sh
 ```
 ### Build ouster_clib
 ```bash
+cd ~/Downloads
 git clone https://github.com/KenthJohan/ouster_clib/
 cd ouster_clib
 bake ouster_clib
@@ -73,6 +72,12 @@ sudo snap install code --classic
 
 
 ## Running examples
+### Requirement
+```bash
+sudo apt update
+sudo apt install git build-essential libcurl4-openssl-dev  libglfw3-dev libglew-dev libopencv-dev
+```
+
 ```bash
 bake run examples/client_example
 ```

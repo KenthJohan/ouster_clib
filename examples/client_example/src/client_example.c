@@ -67,8 +67,9 @@ int main(int argc, char* argv[])
 
     while(1)
     {
-        int timeout_seconds = 1;
-        uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_seconds);
+        int timeout_sec = 0;
+        int timeout_usec = 1000*20;
+        uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
 
         if(a == 0)
         {

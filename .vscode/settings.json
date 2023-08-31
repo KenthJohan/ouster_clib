@@ -22,7 +22,14 @@
         "sock.h": "c",
         "meta.h": "c",
         "field.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "lut.h": "c",
+        "math.h": "c",
+        "sstream": "c",
+        "jsmn.h": "c",
+        "type_traits": "c",
+        "assert.h": "c",
+        "json.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

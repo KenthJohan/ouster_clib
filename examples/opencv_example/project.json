@@ -7,7 +7,7 @@
         "language": "c++"
     },
     "lang.cpp": {
-        "cxxflags": ["-Wno-deprecated-declarations", "-pthread"],
+        "cxxflags": ["-pthread"],
         "cpp-standard": "c++20",
         "include": [
             "/usr/include/opencv4"

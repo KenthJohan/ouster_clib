@@ -43,10 +43,14 @@ int main(int argc, char* argv[])
     ouster_client_fini(&client);
     */
 
-    char const * metastr = ouster_os_file_read("../in.json");
     ouster_meta_t meta = {0};
-    ouster_meta_parse(metastr, &meta);
-    printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
+    {
+        char * content = ouster_os_file_read("../in.json");
+        ouster_meta_parse(content, &meta);
+        free(content);
+        printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
+    }
+
 
     int socks[2];
     socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");

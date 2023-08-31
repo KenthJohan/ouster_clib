@@ -56,12 +56,16 @@ int main(int argc, char* argv[])
         printf("Current working dir: %s\n", cwd);
     }
 
-    char const * metastr = ouster_os_file_read("../in.json");
     ouster_meta_t meta = {0};
-    ouster_meta_parse(metastr, &meta);
+    {
+        char const * content = ouster_os_file_read("../in.json");
+        ouster_meta_parse(content, &meta);
+        free((void*)content);
+    }
+
     printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
 
-    int socks[2];
+    int socks[SOCK_INDEX_COUNT];
     socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
     socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu("7503");
 
@@ -74,8 +78,6 @@ int main(int argc, char* argv[])
     };
 
     ouster_field_init(fields, FIELD_COUNT, &meta);
-
-
 
     cv::namedWindow("RANGE", cv::WINDOW_FREERATIO);
     cv::namedWindow("REFLECTIVITY", cv::WINDOW_FREERATIO);

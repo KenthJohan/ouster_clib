@@ -70,6 +70,8 @@ void ouster_meta_parse(char const * json, ouster_meta_t * out)
     json_parse_vector(json, tokens, (char const *[]){"beam_intrinsics", "beam_azimuth_angles", NULL}, out->beam_azimuth_angles, out->pixels_per_column, JSON_TYPE_F64);
     json_parse_vector(json, tokens, (char const *[]){"beam_intrinsics", "beam_to_lidar_transform", NULL}, out->beam_to_lidar_transform, 16, JSON_TYPE_F64);
 
+    json_parse_vector(json, tokens, (char const *[]){"lidar_intrinsics", "lidar_to_sensor_transform", NULL}, out->lidar_to_sensor_transform, 16, JSON_TYPE_F64);
+
 
 
 

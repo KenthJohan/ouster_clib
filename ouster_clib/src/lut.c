@@ -1,8 +1,7 @@
 #include "ouster_clib/lut.h"
-#include "ouster_clib/meta.h"
 #include <math.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 
 /*
 
@@ -95,6 +94,33 @@ XYZLut make_xyz_lut(size_t w, size_t h, double range_unit,
 }
 */
 
+//[d0, d1] = R * [d0 d1]
+
+#define M4_ARGS_1(x) (x)[0],(x)[1],(x)[2],(x)[3] , (x)[4],(x)[5],(x)[6],(x)[7] , (x)[8],(x)[9],(x)[10],(x)[11] , (x)[12],(x)[13],(x)[14],(x)[15]
+#define M4_ARGS_2(x) (x)[0],(x)[4],(x)[8],(x)[12] , (x)[1],(x)[5],(x)[9],(x)[13] , (x)[2],(x)[6],(x)[10],(x)[14] , (x)[3],(x)[7],(x)[11],(x)[15]
+#define M4_FORMAT "%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n"
+void print_m4(double * a)
+{
+    printf(M4_FORMAT, M4_ARGS_2(a));
+}
+
+
+void mul(double * r, double * a, double * b)
+{
+    r[0] = 
+    (a[0] * b[0]) + 
+    (a[0] * b[1]) + 
+    (a[0] * b[2]);
+    r[1] = 
+    (a[1] * b[0]) + 
+    (a[1] * b[1]) + 
+    (a[1] * b[2]);
+    r[2] = 
+    (a[2] * b[0]) + 
+    (a[2] * b[1]) + 
+    (a[2] * b[2]);
+}
+
 
 
 void ouster_lut1(ouster_meta_t * meta)
@@ -104,9 +130,14 @@ void ouster_lut1(ouster_meta_t * meta)
     double * encoder = calloc(1, w * h * sizeof(double));   // theta_e
     double * azimuth = calloc(1, w * h * sizeof(double));   // theta_a
     double * altitude = calloc(1, w * h * sizeof(double));  // phi
-    double azimuth_radians = M_PI * 2.0 / w;
+    double * direction = calloc(1, w * h * 3 * sizeof(double));
+    double * offset = calloc(1, w * h * 3 * sizeof(double));
 
-    // populate angles for each pixel
+    float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[0];
+    float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[0];
+
+    // OS sensor - populate angles for each pixel
+    double azimuth_radians = M_PI * 2.0 / w;
     for (int v = 0; v < w; v++)
     {
         for (int u = 0; u < h; u++)
@@ -117,4 +148,35 @@ void ouster_lut1(ouster_meta_t * meta)
             altitude[i] = meta->beam_altitude_angles[u] * M_PI / 180.0;
         }
     }
+
+    // unit vectors for each pixel
+    for (int i = 0; i < w*h; i++)
+    {
+        direction[i*3 + 0] = cos(encoder[i] + azimuth[i]) * cos(altitude[i]);
+        direction[i*3 + 1] = sin(encoder[i] + azimuth[i]) * cos(altitude[i]);
+        direction[i*3 + 2] = sin(altitude[i]);
+    }
+
+    for (int i = 0; i < w*h; i++)
+    {
+        offset[i*3 + 0] = cos(encoder[i]) * beam_to_lidar_transform_03 - direction[i*3 + 0] * meta->lidar_origin_to_beam_origin_mm;
+        offset[i*3 + 1] = sin(encoder[i]) * beam_to_lidar_transform_03 - direction[i*3 + 1] * meta->lidar_origin_to_beam_origin_mm;
+        offset[i*3 + 2] = beam_to_lidar_transform_23                   - direction[i*3 + 2] * meta->lidar_origin_to_beam_origin_mm;
+    }
+
+    print_m4(meta->lidar_to_sensor_transform);
+
+    float trans[3] =
+    {
+        meta->lidar_to_sensor_transform[0*4 + 3],
+        meta->lidar_to_sensor_transform[1*4 + 3],
+        meta->lidar_to_sensor_transform[2*4 + 3],
+    };
+    for (int i = 0; i < w*h; i++)
+    {
+        offset[i*3 + 0] += trans[0];
+        offset[i*3 + 0] += trans[1];
+        offset[i*3 + 0] += trans[2];
+    }
+
 }

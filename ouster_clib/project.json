@@ -9,6 +9,6 @@
         "export-symbols": true,
         "static": true,
         "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra"],
-        "lib": ["curl"]
+        "lib": ["curl", "m"]
     }
 }

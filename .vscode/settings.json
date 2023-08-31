@@ -29,7 +29,10 @@
         "jsmn.h": "c",
         "type_traits": "c",
         "assert.h": "c",
-        "json.h": "c"
+        "json.h": "c",
+        "cmath": "c",
+        "complex": "c",
+        "random": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

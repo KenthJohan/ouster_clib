@@ -13,6 +13,7 @@
 #include <ouster_clib/os_file.h>
 #include <ouster_clib/meta.h>
 #include <ouster_clib/field.h>
+#include <ouster_clib/lut.h>
 
 
 typedef enum 
@@ -48,7 +49,9 @@ int main(int argc, char* argv[])
         char * content = ouster_os_file_read("../in.json");
         ouster_meta_parse(content, &meta);
         free(content);
+        ouster_lut1(&meta);
         printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
+        return 0;
     }
 
 

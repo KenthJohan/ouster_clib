@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 /*
 
@@ -94,28 +95,31 @@ XYZLut make_xyz_lut(size_t w, size_t h, double range_unit,
 }
 */
 
+#define FMTF "%+20.10f"
+#define FMTF3 FMTF FMTF FMTF "\n"
+#define FMTF4 FMTF FMTF FMTF FMTF "\n"
 
 #define M4_ARGS_1(x) (x)[0],(x)[1],(x)[2],(x)[3] , (x)[4],(x)[5],(x)[6],(x)[7] , (x)[8],(x)[9],(x)[10],(x)[11] , (x)[12],(x)[13],(x)[14],(x)[15]
 #define M4_ARGS_2(x) (x)[0],(x)[4],(x)[8],(x)[12] , (x)[1],(x)[5],(x)[9],(x)[13] , (x)[2],(x)[6],(x)[10],(x)[14] , (x)[3],(x)[7],(x)[11],(x)[15]
-#define M4_FORMAT "%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n"
+#define M4_FORMAT FMTF4 FMTF4 FMTF4 FMTF4
 
 #define M3_ARGS_1(x) (x)[0],(x)[1],(x)[2] , (x)[3],(x)[4],(x)[5] , (x)[6],(x)[7],(x)[8]
 #define M3_ARGS_2(x) (x)[0],(x)[3],(x)[6] , (x)[1],(x)[4],(x)[7] , (x)[2],(x)[5],(x)[8]
-#define M3_FORMAT "%f %f %f\n%f %f %f\n%f %f %f\n"
+#define M3_FORMAT FMTF3 FMTF3 FMTF3
 
 #define V3_ARGS(x) (x)[0],(x)[1],(x)[2]
 #define V3_FORMAT "%f %f %f\n"
-void print_m4(double * a)
+void print_m4(double const * a)
 {
     printf(M4_FORMAT, M4_ARGS_1(a));
 }
 
-void print_m3(double * a)
+void print_m3(double const * a)
 {
     printf(M3_FORMAT, M3_ARGS_1(a));
 }
 
-void print_v3(double * a)
+void print_v3(double const * a)
 {
     printf(V3_FORMAT, V3_ARGS(a));
 }
@@ -124,7 +128,9 @@ void print_v3(double * a)
 #define M4(i,j) ((i)*4 + (j))
 #define M3(i,j) ((i)*3 + (j))
 
-void mul3(double * r, double * a, double * x)
+
+
+void mul3(double * r, double const * a, double const * x)
 {
     double temp[3];
     temp[0] = (a[M3(0,0)] * x[0]) + (a[M3(1,0)] * x[1]) + (a[M3(2,0)] * x[2]);
@@ -136,8 +142,6 @@ void mul3(double * r, double * a, double * x)
 }
 
 
-
-
 void ouster_lut_fini(ouster_lut_t * lut)
 {
     free(lut->direction);
@@ -147,29 +151,55 @@ void ouster_lut_fini(ouster_lut_t * lut)
 }
 
 
-void ouster_lut_init(ouster_lut_t * lut, ouster_meta_t * meta)
+/*
+https://static.ouster.dev/sensor-docs/image_route1/image_route3/sensor_data/sensor-data.html?highlight=cartesian#lidar-range-to-xyz
+
+*/
+void ouster_lut_init(ouster_lut_t * lut, ouster_meta_t const * meta)
 {
-    int w = meta->columns_per_frame;
+    assert(lut);
+    assert(meta);
+
+    int w = meta->column_window[1] - meta->column_window[0] + 1;
     int h = meta->pixels_per_column;
+    assert(w >= 0);
+    assert(w <= 1024);
+    assert(h >= 0);
+    assert(h <= 128);
+
     double * encoder = calloc(1, w * h * sizeof(double));   // theta_e
     double * azimuth = calloc(1, w * h * sizeof(double));   // theta_a
     double * altitude = calloc(1, w * h * sizeof(double));  // phi
     double * direction = calloc(1, w * h * 3 * sizeof(double));
     double * offset = calloc(1, w * h * 3 * sizeof(double));
+    assert(encoder);
+    assert(azimuth);
+    assert(altitude);
+    assert(direction);
+    assert(offset);
 
     float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[M4(0,3)];
     float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[M4(2,3)];
+    print_m4(meta->lidar_to_sensor_transform);
 
+    
+
+    // This represent a column measurement angle:
+    double azimuth_radians = M_PI * 2.0 / meta->columns_per_frame;
+    
     // OS sensor - populate angles for each pixel
-    double azimuth_radians = M_PI * 2.0 / w;
-    for (int v = 0; v < w; v++)
+    for (int c = 0; c < w; c++)
     {
-        for (int u = 0; u < h; u++)
+        for (int r = 0; r < h; r++)
         {
-            int i = u * w + v;
-            encoder[i] = 2.0 * M_PI - (v * azimuth_radians);
-            azimuth[i] = -meta->beam_azimuth_angles[u] * M_PI / 180.0;
-            altitude[i] = meta->beam_altitude_angles[u] * M_PI / 180.0;
+            // Row major - each row is continuous memory
+            int mid = meta->column_window[0] + c;
+            assert(mid >= meta->column_window[0]);
+            assert(mid <= meta->column_window[1]);
+            int i = r * w + mid;
+            encoder[i] = 2.0 * M_PI - (mid * azimuth_radians);
+            azimuth[i] = -meta->beam_azimuth_angles[r] * M_PI / 180.0;
+            altitude[i] = meta->beam_altitude_angles[r] * M_PI / 180.0;
         }
     }
 
@@ -188,10 +218,8 @@ void ouster_lut_init(ouster_lut_t * lut, ouster_meta_t * meta)
         offset[i*3 + 2] = beam_to_lidar_transform_23                   - direction[i*3 + 2] * meta->lidar_origin_to_beam_origin_mm;
     }
 
-    meta->lidar_to_sensor_transform[M4(0,1)] = 4;
-    print_m4(meta->lidar_to_sensor_transform);
-
-    double r[9] = {
+    // Extract the rotation matrix from transform
+    double rotation[9] = {
         [M3(0,0)] = meta->lidar_to_sensor_transform[M4(0,0)],
         [M3(1,0)] = meta->lidar_to_sensor_transform[M4(0,1)],
         [M3(2,0)] = meta->lidar_to_sensor_transform[M4(0,2)],
@@ -203,7 +231,8 @@ void ouster_lut_init(ouster_lut_t * lut, ouster_meta_t * meta)
         [M3(2,2)] = meta->lidar_to_sensor_transform[M4(2,2)],
     };
 
-    float trans[3] =
+    // Extract the translation vector from transform
+    float translation[3] =
     {
         meta->lidar_to_sensor_transform[0*4 + 3],
         meta->lidar_to_sensor_transform[1*4 + 3],
@@ -214,28 +243,34 @@ void ouster_lut_init(ouster_lut_t * lut, ouster_meta_t * meta)
     {
         double * d = direction + i*3;
         double * o = offset + i*3;
-        mul3(d, r, d);
-        mul3(o, r, o);
-        o[0] += trans[0];
-        o[1] += trans[1];
-        o[2] += trans[2];
+        mul3(d, rotation, d);
+        mul3(o, rotation, o);
+        o[0] += translation[0];
+        o[1] += translation[1];
+        o[2] += translation[2];
     }
 
+    free(encoder);
+    free(azimuth);
+    free(altitude);
+
     lut->direction = direction;
-    lut->direction = offset;
+    lut->offset = offset;
+    lut->w = w;
+    lut->h = h;
 }
 
 
 
-void ouster_lut_cartesian(ouster_lut_t * lut, uint32_t * range, double * out_xyz, int n)
+void ouster_lut_cartesian(ouster_lut_t const * lut, uint32_t const * range, double * out_xyz)
 {
-    double * d = lut->direction;
-    double * o = lut->offset;
-    for(int i = 0; i < n; ++i, out_xyz += 3, d += 3, d += 3)
+    double const * d = lut->direction;
+    double const * o = lut->offset;
+    for(int i = 0; i < (lut->w*lut->h); ++i, out_xyz += 3, d += 3, d += 3)
     {
-        double r = range[i];
-        out_xyz[0] = r * lut->direction[0] + lut->offset[0];
-        out_xyz[1] = r * lut->direction[1] + lut->offset[1];
-        out_xyz[2] = r * lut->direction[2] + lut->offset[2];
+        double mag = range[i];
+        out_xyz[0] = mag * d[0] + o[0];
+        out_xyz[1] = mag * d[1] + o[1];
+        out_xyz[2] = mag * d[2] + o[2];
     }
 }

@@ -46,6 +46,12 @@ int main(int argc, char* argv[])
 
     ouster_meta_t meta = {0};
     ouster_lut_t lut = {0};
+    ouster_mat4_t coords = {0};
+    coords.dim[0] = sizeof(double);
+    coords.dim[1] = 3;
+    coords.dim[2] = 3;
+    ouster_mat4_init(&coords);
+
     {
         char * content = ouster_os_file_read("../in.json");
         ouster_meta_parse(content, &meta);
@@ -73,7 +79,7 @@ int main(int argc, char* argv[])
     ouster_lidar_t lidar = {0};
 
 
-    //double * xyz = calloc(1);
+    double * xyz = calloc(1, lut.w * lut.h * sizeof(double));
 
     while(1)
     {
@@ -96,6 +102,7 @@ int main(int argc, char* argv[])
             if(lidar.last_mid == meta.column_window[1])
             {
                 ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
+                ouster_lut_cartesian(&lut, fields[0].mat.data, xyz);
                 //printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
                 ouster_mat4_zero(&fields[0].mat);
             }

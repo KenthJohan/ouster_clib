@@ -18,6 +18,7 @@ typedef struct
     int offset;
     ouster_mat4_t mat;
     int num_valid_pixels;
+    int column0;
 } ouster_field_t;
 
 
@@ -26,6 +27,12 @@ typedef struct
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t * meta);
 void ouster_mat_destagger(ouster_mat4_t * mat, ouster_meta_t * meta);
 void ouster_field_destagger(ouster_field_t * f, int count, ouster_meta_t * meta);
+
+
+
+
+
+
 
 #ifdef __cplusplus
 }

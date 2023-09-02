@@ -37,7 +37,7 @@ typedef struct
 		"lidar_origin_to_beam_origin_mm": 16.721
         */
 
-    int xxx_column_offset;
+    //int xxx_column_offset;
 } ouster_meta_t;
 
 

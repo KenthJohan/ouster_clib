@@ -32,7 +32,12 @@
         "json.h": "c",
         "cmath": "c",
         "complex": "c",
-        "random": "c"
+        "random": "c",
+        "sokol_log.h": "c",
+        "sokol_app.h": "c",
+        "sokol_gfx.h": "c",
+        "sokol_glue.h": "c",
+        "sokol_gl.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

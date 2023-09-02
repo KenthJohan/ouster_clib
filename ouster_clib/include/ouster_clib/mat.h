@@ -13,7 +13,7 @@ typedef struct
 {
   int dim[4];
   int step[4];
-  char * data;
+  void * data;
 } ouster_mat4_t;
 
 

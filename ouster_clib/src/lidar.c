@@ -20,7 +20,9 @@ void pxcpy(char * dst, int dst_inc, char const * src, int src_inc, int n, int es
 
 void field_copy(ouster_field_t * field, ouster_meta_t * meta, int mid, char const * pxbuf)
 {
-    char * dst = field->mat.data + (mid - meta->xxx_column_offset) * field->mat.step[0];
+    // Row major - each row is continuous memory
+    char * data = field->mat.data;
+    char * dst = data + (mid - meta->column_window[0]) * field->mat.step[0];
     pxcpy(
         dst, 
         field->mat.step[1], 

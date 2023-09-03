@@ -39,7 +39,9 @@
         "sokol_glue.h": "c",
         "sokol_gl.h": "c",
         "glid.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "modpointcloud.h": "c",
+        "flecs.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

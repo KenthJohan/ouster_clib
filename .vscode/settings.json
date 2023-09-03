@@ -37,7 +37,9 @@
         "sokol_app.h": "c",
         "sokol_gfx.h": "c",
         "sokol_glue.h": "c",
-        "sokol_gl.h": "c"
+        "sokol_gl.h": "c",
+        "glid.h": "c",
+        "stdlib.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

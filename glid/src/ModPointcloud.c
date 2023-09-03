@@ -43,29 +43,70 @@ static rgb_t compute_color(float t) {
     };
 }
 
-
 void Move(ecs_iter_t *it)
 {
     int frame_count = (int)sapp_frame_count();
     const float angle = fmodf((float)frame_count, 360.0f);
 
+    Pointcloud *cloud = ecs_field(it, Pointcloud, 1);
+    for(int i = 0; i < it->count; ++i, cloud++)
+    {
+        char * data_pos = cloud->pos;
+        char * data_col = cloud->col;
+        for(int j = 0; j < cloud->count; ++j, data_pos += cloud->pos_step, data_col += cloud->col_step)
+        {
+            double * pos = (void*)data_pos;
+            double * col = (void*)data_col;
+            const rgb_t color = compute_color(fmodf((float)(frame_count+j), 300.0f) / 300.0f);
+            const float a = sgl_rad(angle + j);
+            const float r = sinf(a*4);
+            const float s = sinf(a);
+            const float c = cosf(a);
+            const float x = s * r;
+            const float y = c * r;
+            pos[0] = x;
+            pos[1] = y;
+            col[0] = color.r;
+            col[1] = color.g;
+            col[2] = color.b;
+        }
+    }
+}
+
+void Draw(ecs_iter_t *it)
+{
     sgl_defaults();
     sgl_begin_points();
     float psize = 5.0f;
-    for (int i = 0; i < 300; i++) {
-        const float a = sgl_rad(angle + i);
-        const rgb_t color = compute_color(fmodf((float)(frame_count+i), 300.0f) / 300.0f);
-        const float r = sinf(a*4);
-        const float s = sinf(a);
-        const float c = cosf(a);
-        const float x = s * r;
-        const float y = c * r;
-        sgl_c3f(color.r, color.g, color.b);
-        sgl_point_size(psize);
-        sgl_v2f(x, y);
-        psize *= 1.005f;
+    Pointcloud *cloud = ecs_field(it, Pointcloud, 1);
+    for(int i = 0; i < it->count; ++i, cloud++)
+    {
+        char * data_pos = cloud->pos;
+        char * data_col = cloud->col;
+        for(int j = 0; j < cloud->count; ++j, data_pos += cloud->col_step, data_col += cloud->pos_step)
+        {
+            double * pos = (void*)data_pos;
+            double * col = (void*)data_col;
+            sgl_c3f(col[0], col[1], col[2]);
+            sgl_point_size(psize);
+            sgl_v2f(pos[0], pos[1]);
+            psize *= 1.005f;
+        }
     }
     sgl_end();
+}
+
+void Observer(ecs_iter_t *it)
+{
+    Pointcloud *p = ecs_field(it, Pointcloud, 1);
+    for(int i = 0; i < it->count; ++i, p++)
+    {
+        p->count = 300;
+        p->pos_step = 3 * sizeof(double);
+        p->col_step = 3 * sizeof(double);
+        p->pos = ecs_os_calloc(p->count * p->pos_step);
+        p->col = ecs_os_calloc(p->count * p->col_step);
+    }
 }
 
 void ModPointcloudImport(ecs_world_t *world)
@@ -73,4 +114,6 @@ void ModPointcloudImport(ecs_world_t *world)
     ECS_MODULE(world, ModPointcloud);
     ECS_COMPONENT_DEFINE(world, Pointcloud);
     ECS_SYSTEM(world, Move, EcsOnUpdate, Pointcloud);
+    ECS_SYSTEM(world, Draw, EcsOnUpdate, Pointcloud);
+    ECS_OBSERVER(world, Observer, EcsOnAdd, Pointcloud);
 }

@@ -1,9 +1,16 @@
 #pragma once
 #include <flecs.h>
 
+
+
+
 typedef struct
 {
-    double x, y;
+    char * pos;
+    char * col;
+    int pos_step;
+    int col_step;
+    int count;
 } Pointcloud;
 
 

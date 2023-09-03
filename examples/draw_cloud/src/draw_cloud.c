@@ -9,10 +9,10 @@ int main(int argc, char* argv[])
 
     ECS_IMPORT(world, ModPointcloud);
 
-    ecs_entity_t e = ecs_set(world, 0, Pointcloud, {10, 20});
-    ecs_set(world, e, Pointcloud, {1, 2});
+    ecs_entity_t e = ecs_new(world, 0);
+    ecs_add(world, e, Pointcloud);
 
-    
+
     glid_state_t state = 
     {
         .world = world

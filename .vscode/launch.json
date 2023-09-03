@@ -46,7 +46,9 @@
             "request": "launch",
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/examples/draw_cloud",
-            "environment": [],
+            "environment": [
+                {"name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/bin/x64-Linux-debug:${workspaceFolder}/../flecs/bin/x64-Linux-debug"},
+            ],
             "program": "${workspaceFolder}/examples/draw_cloud/bin/x64-Linux-debug/draw_cloud",
             "args": ["192.168.1.137"],
             "osx": {

@@ -6,6 +6,6 @@ typedef struct
     ecs_world_t * world;
     float rx;
     float ry;
-} glid_state_t;
+} viz_state_t;
 
-void glid_init(glid_state_t * state);
+void viz_init(viz_state_t * state);

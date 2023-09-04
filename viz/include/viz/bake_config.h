@@ -14,25 +14,25 @@
  * dependencies will automatically show up in this file. Include bake_config.h
  * in your main project file. Do not edit! */
 
-#ifndef GLID_BAKE_CONFIG_H
-#define GLID_BAKE_CONFIG_H
+#ifndef VIZ_BAKE_CONFIG_H
+#define VIZ_BAKE_CONFIG_H
 
 /* Headers of public dependencies */
 #include <flecs.h>
 
 /* Convenience macro for exporting symbols */
-#ifndef glid_STATIC
-#if defined(glid_EXPORTS) && (defined(_MSC_VER) || defined(__MINGW32__))
-  #define GLID_API __declspec(dllexport)
-#elif defined(glid_EXPORTS)
-  #define GLID_API __attribute__((__visibility__("default")))
+#ifndef viz_STATIC
+#if defined(viz_EXPORTS) && (defined(_MSC_VER) || defined(__MINGW32__))
+  #define VIZ_API __declspec(dllexport)
+#elif defined(viz_EXPORTS)
+  #define VIZ_API __attribute__((__visibility__("default")))
 #elif defined(_MSC_VER)
-  #define GLID_API __declspec(dllimport)
+  #define VIZ_API __declspec(dllimport)
 #else
-  #define GLID_API
+  #define VIZ_API
 #endif
 #else
-  #define GLID_API
+  #define VIZ_API
 #endif
 
 #endif

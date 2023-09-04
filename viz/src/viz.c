@@ -1,4 +1,4 @@
-#include "glid/glid.h"
+#include "viz/viz.h"
 #include "sokol_app.h"
 #include "sokol_gfx.h"
 #include "sokol_log.h"
@@ -21,7 +21,7 @@ static void init(void* user_data) {
 
 
 static void frame(void* user_data) {
-    glid_state_t * state = user_data;
+    viz_state_t * state = user_data;
     ecs_world_t * world = state->world;
 
     ecs_progress(world, 0);
@@ -50,7 +50,7 @@ void event(const sapp_event* e) {
 
 
 
-void glid_init(glid_state_t * state)
+void glid_init(viz_state_t * state)
 {
     sapp_run(&(sapp_desc){
         .user_data = state,

@@ -47,7 +47,17 @@
         "stdarg.h": "c",
         "errno.h": "c",
         "fs.h": "c",
-        "viz.h": "c"
+        "viz.h": "c",
+        "geometries.h": "c",
+        "optional": "c",
+        "ratio": "c",
+        "system_error": "c",
+        "functional": "c",
+        "tuple": "c",
+        "utility": "c",
+        "renderer.h": "c",
+        "renderings.h": "c",
+        "lidar.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

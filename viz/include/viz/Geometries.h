@@ -4,12 +4,11 @@
 
 
 
+
 typedef struct
 {
-    char * pos;
-    char * col;
-    int pos_step;
-    int col_step;
+    float * pos; //xyz
+    float * col; //rgba
     int count;
 } Pointcloud;
 
@@ -17,4 +16,4 @@ typedef struct
 extern ECS_COMPONENT_DECLARE(Pointcloud);
 
 
-void ModPointcloudImport(ecs_world_t *world);
+void GeometriesImport(ecs_world_t *world);

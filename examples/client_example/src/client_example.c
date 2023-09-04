@@ -3,14 +3,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+
+#include <platform/net.h>
+#include <platform/log.h>
+#include <platform/fs.h>
+
 #include <ouster_clib/sock.h>
 #include <ouster_clib/client.h>
-#include <ouster_clib/net.h>
-#include <ouster_clib/log.h>
 #include <ouster_clib/types.h>
 #include <ouster_clib/lidar.h>
 #include <ouster_clib/mat.h>
-#include <ouster_clib/os_file.h>
 #include <ouster_clib/meta.h>
 #include <ouster_clib/field.h>
 #include <ouster_clib/lut.h>
@@ -23,7 +25,11 @@ typedef enum
     SOCK_INDEX_COUNT
 } sock_index_t;
 
-
+typedef enum 
+{
+    FIELD_RANGE,
+    FIELD_COUNT
+} field_t;
 
 
 int main(int argc, char* argv[])
@@ -53,12 +59,11 @@ int main(int argc, char* argv[])
     ouster_mat4_init(&coords);
 
     {
-        char * content = ouster_os_file_read("../in.json");
+        char * content = fs_readfile("../in.json");
         ouster_meta_parse(content, &meta);
         free(content);
         ouster_lut_init(&lut, &meta);
         printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
-        return 0;
     }
 
 
@@ -69,42 +74,42 @@ int main(int argc, char* argv[])
 
 
 
-    ouster_field_t fields[] = {
-        {.quantity = OUSTER_QUANTITY_RANGE}
+    ouster_field_t fields[FIELD_COUNT] = {
+        [FIELD_RANGE] = {.quantity = OUSTER_QUANTITY_RANGE}
     };
 
-    ouster_field_init(fields, 2, &meta);
+    ouster_field_init(fields, FIELD_COUNT, &meta);
     //ouster_field_init(fields + 1, &meta);
 
     ouster_lidar_t lidar = {0};
 
 
-    double * xyz = calloc(1, lut.w * lut.h * sizeof(double));
+    double * xyz = calloc(1, lut.w * lut.h * sizeof(double) * 3);
 
     while(1)
     {
-        int timeout_sec = 0;
-        int timeout_usec = 1000*20;
+        int timeout_sec = 1;
+        int timeout_usec = 0;
         uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
 
         if(a == 0)
         {
-            ouster_log("Timeout\n");
+            platform_log("Timeout\n");
         }
 
 
         if(a & (1 << SOCK_INDEX_LIDAR))
         {
-            char buf[1024*10];
+            char buf[1024*100];
             int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
             //ouster_log("%-10s %5ji:  \n", "SOCK_LIDAR", (intmax_t)n);
-            ouster_lidar_get_fields(&lidar, &meta, buf, fields, 1);
+            ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
             if(lidar.last_mid == meta.column_window[1])
             {
-                ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
-                ouster_lut_cartesian(&lut, fields[0].mat.data, xyz);
+                ouster_mat4_apply_mask_u32(&fields[FIELD_RANGE].mat, fields[FIELD_RANGE].mask);
+                ouster_lut_cartesian(&lut, fields[FIELD_RANGE].mat.data, xyz);
                 //printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
-                ouster_mat4_zero(&fields[0].mat);
+                ouster_mat4_zero(&fields[FIELD_RANGE].mat);
             }
         }
 

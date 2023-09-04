@@ -24,6 +24,7 @@ typedef struct
     char const * hint_service;
     char const * hint_name;
     int rcvtimeout_sec;
+    char const * group;
 } net_sock_desc_t;
 
 

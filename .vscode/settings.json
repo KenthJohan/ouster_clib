@@ -41,7 +41,12 @@
         "glid.h": "c",
         "stdlib.h": "c",
         "modpointcloud.h": "c",
-        "flecs.h": "c"
+        "flecs.h": "c",
+        "inet.h": "c",
+        "in.h": "c",
+        "stdarg.h": "c",
+        "errno.h": "c",
+        "fs.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

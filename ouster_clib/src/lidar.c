@@ -1,7 +1,7 @@
 #include "ouster_clib/lidar.h"
 #include "ouster_clib/lidar_header.h"
 #include "ouster_clib/lidar_column.h"
-#include "ouster_clib/log.h"
+#include <platform/log.h>
 #include <assert.h>
 #include <string.h>
 

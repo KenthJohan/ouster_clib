@@ -64,8 +64,8 @@ void Move(ecs_iter_t *it)
             const float c = cosf(a);
             const float x = s * r;
             const float y = c * r;
-            pos[0] = x;
-            pos[1] = y;
+            //pos[0] = x;
+            //pos[1] = y;
             col[0] = color.r;
             col[1] = color.g;
             col[2] = color.b;

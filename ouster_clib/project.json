@@ -2,13 +2,15 @@
     "id": "ouster_clib",
     "type": "package",
     "value": {
+        "use":["platform_linux"],
         "language": "c",
         "public": true
     },
     "lang.c": {
+        "defines":["_GNU_SOURCE"],
         "export-symbols": true,
         "static": true,
         "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra"],
-        "lib": ["curl", "m"]
+        "lib": ["platform", "curl", "m"]
     }
 }

@@ -1,12 +1,13 @@
 #include "ouster_clib/lidar_header.h"
-#include "ouster_clib/log.h"
+
+#include <platform/log.h>
 #include <string.h>
 #include <assert.h>
 
 void ouster_lidar_header_log(ouster_lidar_header_t * p)
 {
     assert(p);
-    ouster_log("type=%ji, frame=%ji, init=%ji, prod=%ji, countdown_thermal_shutdown=%ji, countdown_shot_limiting=%ji, thermal_shutdown=%ji, shot_limiting=%ji, =================\n", 
+    platform_log("type=%ji, frame=%ji, init=%ji, prod=%ji, countdown_thermal_shutdown=%ji, countdown_shot_limiting=%ji, thermal_shutdown=%ji, shot_limiting=%ji, =================\n", 
     (intmax_t)p->packet_type, 
     (intmax_t)p->frame_id, 
     (intmax_t)p->init_id, 

@@ -266,7 +266,7 @@ void ouster_lut_cartesian(ouster_lut_t const * lut, uint32_t const * range, doub
 {
     double const * d = lut->direction;
     double const * o = lut->offset;
-    for(int i = 0; i < (lut->w*lut->h); ++i, out_xyz += 3, d += 3, d += 3)
+    for(int i = 0; i < (lut->w*lut->h); ++i, out_xyz += 3, d += 3, o += 3)
     {
         double mag = range[i];
         out_xyz[0] = mag * d[0] + o[0];

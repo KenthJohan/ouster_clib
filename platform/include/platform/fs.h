@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-char * ouster_os_file_read(char const * path);
+char * fs_readfile(char const * path);
 
 #ifdef __cplusplus
 }

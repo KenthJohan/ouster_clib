@@ -7,7 +7,7 @@
         "use" : ["ouster_clib"]
     },
     "lang.c": {
-        "lib": ["ouster_clib", "curl", "m"],
+        "lib": ["platform", "ouster_clib", "curl", "m"],
         "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable"]
     }
 }

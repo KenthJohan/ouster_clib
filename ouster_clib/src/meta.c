@@ -1,6 +1,8 @@
 #include "ouster_clib/meta.h"
-#include "ouster_clib/log.h"
 #include "ouster_clib/types.h"
+
+#include <platform/log.h>
+
 #define JSMN_HEADER
 #include "jsmn.h"
 #include "json.h"
@@ -51,7 +53,7 @@ void ouster_meta_parse(char const * json, ouster_meta_t * out)
     int r = jsmn_parse(&p, json, strlen(json), tokens, TOK_COUNT);
     if (r < 1)
     {
-        ouster_log("jsmn error: %s\n", jsmn_strerror(r));
+        platform_log("jsmn error: %s\n", jsmn_strerror(r));
         return;
     }
     assert(tokens[0].type == JSMN_OBJECT);

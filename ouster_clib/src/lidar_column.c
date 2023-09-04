@@ -1,5 +1,6 @@
 #include "ouster_clib/lidar_column.h"
-#include "ouster_clib/log.h"
+
+#include <platform/log.h>
 #include <string.h>
 #include <assert.h>
 
@@ -7,7 +8,7 @@
 void ouster_column_log(ouster_column_t const * column)
 {
     assert(column);
-    ouster_log("ts=%ji, status=%ji, mid=%ji\n", (intmax_t)column->ts, (intmax_t)column->status, (intmax_t)column->mid);
+    platform_log("ts=%ji, status=%ji, mid=%ji\n", (intmax_t)column->ts, (intmax_t)column->status, (intmax_t)column->mid);
 }
 
 

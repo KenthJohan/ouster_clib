@@ -1,6 +1,7 @@
 #include "ouster_clib/sock.h"
-#include "ouster_clib/net.h"
 
+
+#include <platform/net.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -19,6 +20,8 @@ int ouster_sock_create_udp_lidar(char const * hint_service)
     desc.hint_name = NULL;
     desc.rcvbuf_size = 1024 * 1024;
     desc.hint_service = hint_service;
+    //desc.group = "239.201.201.201";
+    desc.group = "239.255.255.250";
     return net_create(&desc);
 }
 

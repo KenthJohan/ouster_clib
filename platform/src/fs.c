@@ -6,6 +6,15 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+void print_cwd()
+{
+    char cwd[1024] = {0};
+    getcwd(cwd, sizeof(cwd));
+    printf("Current working dir: %s\n", cwd);
+}
+
 
 char * fs_readfile(char const * path)
 {
@@ -14,6 +23,7 @@ char * fs_readfile(char const * path)
     FILE* file = fopen(path, "r");
     if (file == NULL) 
     {
+        print_cwd();
         platform_log("%s (%s)\n", strerror(errno), path);
         goto error;
     }

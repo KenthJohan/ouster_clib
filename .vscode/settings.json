@@ -57,7 +57,8 @@
         "utility": "c",
         "renderer.h": "c",
         "renderings.h": "c",
-        "lidar.h": "c"
+        "lidar.h": "c",
+        "handmademath.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

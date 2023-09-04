@@ -105,6 +105,10 @@ void Observer_LidarUDP_OnAdd(ecs_iter_t *it)
 int main(int argc, char* argv[])
 {
     ecs_world_t * world = ecs_init_w_args(argc, argv);
+    //https://www.flecs.dev/explorer/?remote=true
+	ecs_set(world, EcsWorld, EcsRest, {.port = 0});
+	//ecs_plecs_from_file(world, "./src/config.flecs");
+
     //ecs_set_threads(world, 4);
 
     ECS_IMPORT(world, Geometries);
@@ -112,25 +116,31 @@ int main(int argc, char* argv[])
 
     ECS_OBSERVER(world, Observer_LidarUDP_OnAdd, EcsOnAdd, LidarUDP);
 
+
     ecs_entity_t s = ecs_system_init(world, &(ecs_system_desc_t){
         .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
         .callback = SysUpdateColor,
         .query.filter = {
             .expr = "Pointcloud, LidarUDP"
-        },
-        .multi_threaded = false,
-        .no_readonly = true
+        }
     });
+    
 
 
 
     {
-        ecs_entity_t e = ecs_new(world, 0);
-        ecs_add(world, e, Pointcloud);
+        ecs_entity_t e = ecs_new_entity(world, "Hello");
+        ecs_set(world, e, Pointcloud, {.count = 300});
         ecs_add(world, e, LidarUDP);
+        ecs_new_entity(world, "Hello1");
+        ecs_new_entity(world, "Hello2");
+        ecs_new_entity(world, "Hello3");
     }
 
-
+    while(0)
+    {
+        ecs_progress(world, 0);
+    }
 
     viz_state_t state = 
     {

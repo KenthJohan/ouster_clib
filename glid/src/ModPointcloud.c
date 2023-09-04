@@ -73,6 +73,10 @@ void Move(ecs_iter_t *it)
     }
 }
 
+
+
+
+
 void Draw(ecs_iter_t *it)
 {
     sgl_defaults();

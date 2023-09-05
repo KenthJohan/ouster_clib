@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
         {
             char buf[1024*100];
             int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-            platform_log("%-10s %5ji:  \n", "SOCK_LIDAR", (intmax_t)n);
+            //platform_log("%-10s %5ji:  \n", "SOCK_LIDAR", (intmax_t)n);
             ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
             //printf("lidar.last_mid %i\n", lidar.last_mid);
             if(lidar.last_mid == meta.mid1)
@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
         {
             char buf[1024*256];
             int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
-            platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
+            //platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
         }
     }
 

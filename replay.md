@@ -2,7 +2,10 @@
 
 https://www.kali.org/tools/tcpreplay/
 https://tcpreplay.appneta.com/
-
+https://superuser.com/questions/1638231/cant-receive-udp-data-unless-wireshark-is-running
+https://cse.sc.edu/~pokeefe/tutorials/wireshark/AppToolstcpdump.html
+https://explainshell.com/explain?cmd=tshark+--color+-V+-i+eth0+-d+udp.port%3D8472%2Cvxlan++-c+2+-f+%22port+8472%22
+https://wireshark-users.wireshark.narkive.com/YT5W0lCK/tshark-how-to-capture-snmp-traps-udp-port-162-that-might-be-fragmented
 ## Change IP src and dst in a pcap file
 ```bash
 $ sudo tcprewrite --cachefile=in.cache --endpoints=192.168.1.113:192.168.1.137  --infile=in.pcap --outfile=out.pcap
@@ -38,8 +41,11 @@ $ tshark -r out.pcap
 ## Replay UDP packets from pcap file
 
 ```bash
-sudo tcpreplay -v -i lo -tK --loop 5000 out.pcap
-sudo tcpreplay -v -i lo -o --loop 5000 out.pcap
+sudo tcpreplay -v -tK -i lo out.pcap
+sudo tcpreplay -v -o -i lo out.pcap
+
+sudo tcpreplay-edit -v -o -i lo --enet-dmac=00:00:00:00:00:00 hello.pcap
+sudo tcpreplay-edit -v -o -i lo --enet-smac=00:00:00:00:00:00 --enet-dmac=00:00:00:00:00:00 OS1-128.pcap
 ```
 
 
@@ -49,4 +55,19 @@ sudo tcpreplay -v -i lo -o --loop 5000 out.pcap
 sudo tcpdump -i any port 7502 or port 7503 -c 100 -w out.pcap
 sudo tcpdump -s0 -T snmp -i eno1 port 7502 or port 7503 -c 1000 -w OS1-16_1.pcap
 sudo tcpdump -nnXSs0 -T snmp -i eno1 port 7502 or port 7503 -c 1000 -w OS1-16_1.pcap
+tcpdump -i <interface> -s 1500 -w <some-file>
+```
+
+
+## View packet
+```bash
+sudo tshark -f "udp port 7502" -i lo -T fields -e eth.dst
+sudo tshark -i lo -T fields -e ip.proto -e frame.len -e ip.src -e udp.srcport -e udp.dstport
+```
+
+
+## Fix tshark
+```bash
+sudo dpkg-reconfigure wireshark-common
+sudo chmod +x /usr/bin/dumpcap
 ```

@@ -146,6 +146,7 @@ int try_create_socket(net_sock_desc_t * desc, struct addrinfo * ai)
             platform_log("setsockopt(): error\n");
             goto error;
         }
+        platform_log("IP_ADD_MEMBERSHIP(): %s\n", desc->group);
     }
 
 

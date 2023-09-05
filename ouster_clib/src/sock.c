@@ -21,7 +21,7 @@ int ouster_sock_create_udp_lidar(char const * hint_service)
     desc.rcvbuf_size = 1024 * 1024;
     desc.hint_service = hint_service;
     //desc.group = "239.201.201.201";
-    desc.group = "239.255.255.250";
+    //desc.group = "239.255.255.250";
     return net_create(&desc);
 }
 

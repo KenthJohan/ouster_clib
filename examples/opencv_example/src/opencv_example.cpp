@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
+    printf("Column window: %i %i\n", meta.mid0, meta.mid1);
 
     int socks[SOCK_INDEX_COUNT];
     socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
@@ -115,15 +115,16 @@ int main(int argc, char* argv[])
         {
             char buf[1024*1024];
             int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-            //ouster_log("%-10s %5ji %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
+            //platform_log("%-10s %5ji %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
             if(n != meta.lidar_packet_size)
             {
-                platform_log("%-10s %5ji of %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
+                //platform_log("%-10s %5ji of %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
             }
             ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
             platform_log("mid_loss %i\n", lidar.mid_loss);
-            if(lidar.last_mid == meta.column_window[1])
+            if(lidar.last_mid == meta.mid1)
             {
+
                 ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
                 ouster_field_destagger(fields, FIELD_COUNT, &meta);
                 cv::Mat mat_f0 = ouster_get_cvmat(fields + 0);
@@ -149,6 +150,7 @@ int main(int argc, char* argv[])
                 ouster_mat4_zero(&fields[3].mat);
 
 
+
             }
         }
 
@@ -156,8 +158,8 @@ int main(int argc, char* argv[])
         if(a & (1 << SOCK_INDEX_IMU))
         {
             char buf[1024*256];
-            net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
-            //ouster_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
+            int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
+            //platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
         }
 
         //int key = cv::waitKey(1);

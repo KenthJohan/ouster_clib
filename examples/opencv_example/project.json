@@ -3,7 +3,7 @@
     "type": "application",
     "value": {
         "public": false,
-        "use" : ["ouster_clib"],
+        "use" : ["platform", "ouster_clib"],
         "language": "c++"
     },
     "lang.cpp": {
@@ -13,7 +13,8 @@
             "/usr/include/opencv4"
         ],
         "lib": [
-            "ouster_clib", "curl",
+            "platform", "ouster_clib", 
+            "curl",
             "pthread",
             "opencv_core", "opencv_imgproc", "opencv_features2d", "opencv_imgcodecs", "opencv_highgui",
             "GLEW", "glfw", "GL"

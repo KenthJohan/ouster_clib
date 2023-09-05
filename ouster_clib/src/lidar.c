@@ -22,7 +22,7 @@ void field_copy(ouster_field_t * field, ouster_meta_t * meta, int mid, char cons
 {
     // Row major - each row is continuous memory
     char * data = field->mat.data;
-    char * dst = data + (mid - meta->column_window[0]) * field->mat.step[0];
+    char * dst = data + (mid - meta->mid0) * field->mat.step[0];
     pxcpy(
         dst, 
         field->mat.step[1], 
@@ -45,7 +45,7 @@ void ouster_lidar_get_fields(ouster_lidar_t * lidar, ouster_meta_t * meta, char 
     ouster_lidar_header_t header = {0};
     ouster_column_t column = {0};
     ouster_lidar_header_get(buf, &header);
-    ouster_lidar_header_log(&header);
+    //ouster_lidar_header_log(&header);
     ouster_column_get(colbuf, &column);
 
 

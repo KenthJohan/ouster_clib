@@ -159,8 +159,8 @@ void ouster_lut_init(ouster_lut_t * lut, ouster_meta_t const * meta)
 {
     assert(lut);
     assert(meta);
-
-    int w = meta->column_window[1] - meta->column_window[0] + 1;
+    
+    int w = meta->mid1 - meta->mid0 + 1;
     int h = meta->pixels_per_column;
     assert(w >= 0);
     assert(w <= 1024);
@@ -193,9 +193,9 @@ void ouster_lut_init(ouster_lut_t * lut, ouster_meta_t const * meta)
         for (int r = 0; r < h; r++)
         {
             // Row major - each row is continuous memory
-            int mid = meta->column_window[0] + c;
-            assert(mid >= meta->column_window[0]);
-            assert(mid <= meta->column_window[1]);
+            int mid = meta->mid0 + c;
+            assert(mid >= meta->mid0);
+            assert(mid <= meta->mid1);
             int i = r * w + mid;
             encoder[i] = 2.0 * M_PI - (mid * azimuth_radians);
             azimuth[i] = -meta->beam_azimuth_angles[r] * M_PI / 180.0;

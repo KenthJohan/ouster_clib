@@ -4,15 +4,15 @@
 #include <unistd.h>
 
 #include <ouster_clib/sock.h>
-#include <ouster_clib/net.h>
-#include <ouster_clib/log.h>
 #include <ouster_clib/types.h>
 #include <ouster_clib/lidar.h>
 #include <ouster_clib/mat.h>
-#include <ouster_clib/os_file.h>
 #include <ouster_clib/meta.h>
 
 
+#include <platform/net.h>
+#include <platform/log.h>
+#include <platform/fs.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -57,10 +57,17 @@ int main(int argc, char* argv[])
     }
 
     ouster_meta_t meta = {0};
+    if(argc > 1)
     {
-        char const * content = ouster_os_file_read("../in.json");
+        char const * content = fs_readfile(argv[1]);
+        if(content == NULL){return 0;}
         ouster_meta_parse(content, &meta);
         free((void*)content);
+    }
+    else
+    {
+        printf("Missing input file argument");
+        return 0;
     }
 
     printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
@@ -111,10 +118,10 @@ int main(int argc, char* argv[])
             //ouster_log("%-10s %5ji %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
             if(n != meta.lidar_packet_size)
             {
-                ouster_log("%-10s %5ji of %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
+                platform_log("%-10s %5ji of %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
             }
             ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
-            ouster_log("mid_loss %i\n", lidar.mid_loss);
+            platform_log("mid_loss %i\n", lidar.mid_loss);
             if(lidar.last_mid == meta.column_window[1])
             {
                 ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);

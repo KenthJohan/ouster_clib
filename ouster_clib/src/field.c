@@ -108,7 +108,7 @@ void ouster_field_init1(ouster_field_t * f, int profile)
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t * meta)
 {
     ouster_field_t * f = fields;
-    int cols = meta->column_window[1] - meta->column_window[0] + 1;
+    int cols = meta->mid1 - meta->mid0 + 1;
     //meta->xxx_column_offset = meta->column_window[0];
 
     for(int i = 0; i < count; ++i, f++)
@@ -119,7 +119,7 @@ void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t * meta)
         f->mat.dim[2] = meta->pixels_per_column;
         f->mat.dim[3] = 1;
         ouster_mat4_init(&f->mat);
-        f->column0 = meta->column_window[0];
+        f->column0 = meta->mid0;
     }
 }
 

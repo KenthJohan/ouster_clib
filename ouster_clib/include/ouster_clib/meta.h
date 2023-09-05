@@ -12,7 +12,7 @@ extern "C" {
 
 typedef struct
 {
-    int column_window[2];
+    
     int columns_per_frame;
     int columns_per_packet;
     int pixels_per_column;
@@ -38,6 +38,12 @@ typedef struct
         */
 
     //int xxx_column_offset;
+
+
+    int mid0;
+    int mid1;
+    int midw;
+
 } ouster_meta_t;
 
 

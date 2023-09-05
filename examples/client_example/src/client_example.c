@@ -34,12 +34,13 @@ typedef enum
 
 int main(int argc, char* argv[])
 {
+    fs_pwd();
+    
+    if(argc <= 1)
     {
-        char cwd[1024] = {0};
-        getcwd(cwd, sizeof(cwd));
-        printf("Current working dir: %s\n", cwd);
+        printf("Missing input meta file\n");
+        return 0;
     }
-
     /*
     ouster_client_t client = 
     {
@@ -59,11 +60,12 @@ int main(int argc, char* argv[])
     ouster_mat4_init(&coords);
 
     {
-        char * content = fs_readfile("../in.json");
+        char * content = fs_readfile(argv[1]);
+        if(content == NULL){return 0;}
         ouster_meta_parse(content, &meta);
         free(content);
         ouster_lut_init(&lut, &meta);
-        printf("Column window: %i %i\n", meta.column_window[0], meta.column_window[1]);
+        printf("Column window: %i %i\n", meta.mid0, meta.mid1);
     }
 
 
@@ -104,12 +106,14 @@ int main(int argc, char* argv[])
             int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
             //ouster_log("%-10s %5ji:  \n", "SOCK_LIDAR", (intmax_t)n);
             ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
-            if(lidar.last_mid == meta.column_window[1])
+            //printf("lidar.last_mid %i\n", lidar.last_mid);
+            if(lidar.last_mid == meta.mid1)
             {
                 ouster_mat4_apply_mask_u32(&fields[FIELD_RANGE].mat, fields[FIELD_RANGE].mask);
                 ouster_lut_cartesian(&lut, fields[FIELD_RANGE].mat.data, xyz);
                 //printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
                 ouster_mat4_zero(&fields[FIELD_RANGE].mat);
+                printf("mid_loss %i\n", lidar.mid_loss);
             }
         }
 

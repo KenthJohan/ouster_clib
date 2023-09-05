@@ -2,6 +2,7 @@
 #include "ouster_clib/types.h"
 
 #include <platform/log.h>
+#include <platform/basics.h>
 
 #define JSMN_HEADER
 #include "jsmn.h"
@@ -58,10 +59,11 @@ void ouster_meta_parse(char const * json, ouster_meta_t * out)
     }
     assert(tokens[0].type == JSMN_OBJECT);
 
+    int column_window[2];
     json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "columns_per_frame", NULL}, &out->columns_per_frame, JSON_TYPE_INT);
     json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "columns_per_packet", NULL}, &out->columns_per_packet, JSON_TYPE_INT);
     json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "pixels_per_column", NULL}, &out->pixels_per_column, JSON_TYPE_INT);
-    json_parse_vector(json, tokens, (char const *[]){"lidar_data_format", "column_window", NULL}, out->column_window, 2, JSON_TYPE_INT);
+    json_parse_vector(json, tokens, (char const *[]){"lidar_data_format", "column_window", NULL}, column_window, 2, JSON_TYPE_INT);
     assert(out->pixels_per_column > 0);
     assert(out->pixels_per_column <= 128);
     json_parse_vector(json, tokens, (char const *[]){"lidar_data_format", "pixel_shift_by_row", NULL}, out->pixel_shift_by_row, out->pixels_per_column, JSON_TYPE_INT);
@@ -120,4 +122,10 @@ void ouster_meta_parse(char const * json, ouster_meta_t * out)
     out->col_size = OUSTER_COLUMN_HEADER_SIZE + out->pixels_per_column * out->channel_data_size + OUSTER_COLUMN_FOOTER_SIZE;
     out->lidar_packet_size = OUSTER_PACKET_HEADER_SIZE + out->columns_per_packet * out->col_size + OUSTER_PACKET_FOOTER_SIZE;
 
+    out->mid0 = MIN(column_window[0], column_window[1]);
+    out->mid1 = MAX(column_window[0], column_window[1]);
+    out->midw = abs(column_window[0] - column_window[1]) + 1;
+
+    assert(out->mid0 < out->mid1);
+    assert(out->midw > 0);
 }

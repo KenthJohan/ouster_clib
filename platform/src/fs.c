@@ -8,11 +8,11 @@
 #include <string.h>
 #include <unistd.h>
 
-void print_cwd()
+void fs_pwd()
 {
     char cwd[1024] = {0};
     getcwd(cwd, sizeof(cwd));
-    printf("Current working dir: %s\n", cwd);
+    printf("%s\n", cwd);
 }
 
 
@@ -23,7 +23,8 @@ char * fs_readfile(char const * path)
     FILE* file = fopen(path, "r");
     if (file == NULL) 
     {
-        print_cwd();
+        fs_pwd();
+        printf("  ");
         platform_log("%s (%s)\n", strerror(errno), path);
         goto error;
     }

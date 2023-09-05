@@ -114,6 +114,7 @@ int try_create_socket(net_sock_desc_t * desc, struct addrinfo * ai)
 
     if(desc->flags & NET_FLAGS_BIND)
     {
+
         int rc = bind(s, ai->ai_addr, (socklen_t)ai->ai_addrlen);
         if(rc)
         {
@@ -249,11 +250,17 @@ int net_create(net_sock_desc_t * desc)
     {
         char buf[INET6_ADDRSTRLEN];
         inet_ntop_addrinfo(ai, buf, INET6_ADDRSTRLEN);
+        platform_log("get_addrinfo: %s\n", buf);
+    }
+    for (ai = info; ai != NULL; ai = ai->ai_next)
+    {
+        char buf[INET6_ADDRSTRLEN];
+        inet_ntop_addrinfo(ai, buf, INET6_ADDRSTRLEN);
         s = try_create_socket(desc, ai);
-        platform_log("try_create_socket: %s [%s%s] => socket=%i, port=%i\n", buf, 
+        platform_log("try_create_socket: %s:%i %s%s, socket=%i\n", buf, net_get_port(s), 
         (desc->flags & NET_FLAGS_TCP) ? "TCP" : "", 
         (desc->flags & NET_FLAGS_UDP) ? "UDP" : "", 
-        s, net_get_port(s));
+        s);
         if(s >= 0){break;}
     }
 

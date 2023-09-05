@@ -4,7 +4,7 @@
     "value": {
         "language": "c",
         "public": false,
-        "use" : ["ouster_clib"]
+        "use" : ["platform", "ouster_clib"]
     },
     "lang.c": {
         "lib": ["platform", "ouster_clib", "curl", "m"],

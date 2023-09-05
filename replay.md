@@ -1,3 +1,7 @@
+# UDP
+
+https://www.kali.org/tools/tcpreplay/
+https://tcpreplay.appneta.com/
 
 ## Change IP src and dst in a pcap file
 ```bash
@@ -35,4 +39,14 @@ $ tshark -r out.pcap
 
 ```bash
 sudo tcpreplay -v -i lo -tK --loop 5000 out.pcap
+sudo tcpreplay -v -i lo -o --loop 5000 out.pcap
+```
+
+
+## Save UDP packets in pcap file
+
+```bash
+sudo tcpdump -i any port 7502 or port 7503 -c 100 -w out.pcap
+sudo tcpdump -s0 -T snmp -i eno1 port 7502 or port 7503 -c 1000 -w OS1-16_1.pcap
+sudo tcpdump -nnXSs0 -T snmp -i eno1 port 7502 or port 7503 -c 1000 -w OS1-16_1.pcap
 ```

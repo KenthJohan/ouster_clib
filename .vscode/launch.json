@@ -30,7 +30,7 @@
             "cwd": "${workspaceFolder}/examples/opencv_example",
             "environment": [],
             "program": "${workspaceFolder}/examples/opencv_example/bin/x64-Linux-debug/opencv_example",
-            "args": ["192.168.1.137"],
+            "args": ["../OS1-128.json"],
             "osx": {
                 "MIMode": "lldb",
                 "targetArchitecture": "arm64",
@@ -50,7 +50,7 @@
                 {"name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/bin/x64-Linux-debug:${workspaceFolder}/../flecs/bin/x64-Linux-debug"},
             ],
             "program": "${workspaceFolder}/examples/draw_cloud/bin/x64-Linux-debug/draw_cloud",
-            "args": ["192.168.1.137"],
+            "args": ["../OS1-128.json"],
             "osx": {
                 "MIMode": "lldb",
                 "targetArchitecture": "arm64",

@@ -53,11 +53,6 @@ int main(int argc, char* argv[])
 
     ouster_meta_t meta = {0};
     ouster_lut_t lut = {0};
-    ouster_mat4_t coords = {0};
-    coords.dim[0] = sizeof(double);
-    coords.dim[1] = 3;
-    coords.dim[2] = 3;
-    ouster_mat4_init(&coords);
 
     {
         char * content = fs_readfile(argv[1]);

@@ -29,14 +29,15 @@ typedef enum
 
 typedef struct
 {
+    char const * metafile;
     int fd;
     ouster_meta_t meta;
     ouster_lut_t lut;
-    ouster_mat4_t coords;
     ouster_field_t fields[FIELD_COUNT];
     ouster_lidar_t lidar;
     double * xyz;
 } LidarUDP;
+
 ECS_COMPONENT_DECLARE(LidarUDP);
 
 
@@ -53,7 +54,7 @@ void SysUpdateColor(ecs_iter_t *it)
         {
             printf("n %ji\n", (intmax_t)n);
             ouster_lidar_get_fields(&lidar->lidar, &lidar->meta, buf, lidar->fields, FIELD_COUNT);
-            if(lidar->lidar.last_mid == lidar->meta.column_window[1])
+            if(lidar->lidar.last_mid == lidar->meta.mid1)
             {
                 ouster_mat4_apply_mask_u32(&lidar->fields[FIELD_RANGE].mat, lidar->fields[FIELD_RANGE].mask);
                 ouster_lut_cartesian(&lidar->lut, lidar->fields[FIELD_RANGE].mat.data, lidar->xyz);
@@ -79,20 +80,14 @@ void SysUpdateColor(ecs_iter_t *it)
 void Observer_LidarUDP_OnAdd(ecs_iter_t *it)
 {
     LidarUDP *item = ecs_field(it, LidarUDP, 1);
-    ecs_os_memset_n(item, 0, LidarUDP, it->count);
-    //ecs_os_sleep(1,0);
     for(int i = 0; i < it->count; ++i, item++)
     {
         item->fd = ouster_sock_create_udp_lidar("7502");
-        char * content = fs_readfile("../in.json");
-        item->coords.dim[0] = sizeof(double);
-        item->coords.dim[1] = 3;
-        item->coords.dim[2] = 3;
-        ouster_mat4_init(&item->coords);
+        char * content = fs_readfile(item->metafile);
         ouster_meta_parse(content, &item->meta);
         free(content);
         ouster_lut_init(&item->lut, &item->meta);
-        printf("Column window: %i %i\n", item->meta.column_window[0], item->meta.column_window[1]);
+        printf("Column window: %i %i\n", item->meta.mid0, item->meta.mid1);
         item->fields[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
         ouster_field_init(item->fields, FIELD_COUNT, &item->meta);
         item->xyz = calloc(1, item->lut.w * item->lut.h * sizeof(double) * 3);
@@ -104,7 +99,15 @@ void Observer_LidarUDP_OnAdd(ecs_iter_t *it)
 
 int main(int argc, char* argv[])
 {
-    ecs_world_t * world = ecs_init_w_args(argc, argv);
+    fs_pwd();
+    
+    if(argc <= 1)
+    {
+        printf("Missing input meta file\n");
+        return 0;
+    }
+
+    ecs_world_t * world = ecs_init();
     //https://www.flecs.dev/explorer/?remote=true
 	ecs_set(world, EcsWorld, EcsRest, {.port = 0});
 	//ecs_plecs_from_file(world, "./src/config.flecs");
@@ -114,7 +117,7 @@ int main(int argc, char* argv[])
     ECS_IMPORT(world, Geometries);
     ECS_COMPONENT_DEFINE(world, LidarUDP);
 
-    ECS_OBSERVER(world, Observer_LidarUDP_OnAdd, EcsOnAdd, LidarUDP);
+    ECS_OBSERVER(world, Observer_LidarUDP_OnAdd, EcsOnSet, LidarUDP);
 
 
     ecs_entity_t s = ecs_system_init(world, &(ecs_system_desc_t){
@@ -131,10 +134,8 @@ int main(int argc, char* argv[])
     {
         ecs_entity_t e = ecs_new_entity(world, "Hello");
         ecs_set(world, e, Pointcloud, {.count = 300});
-        ecs_add(world, e, LidarUDP);
-        ecs_new_entity(world, "Hello1");
-        ecs_new_entity(world, "Hello2");
-        ecs_new_entity(world, "Hello3");
+        //char const * metafile = argv[1];
+        //ecs_set(world, e, LidarUDP, {.metafile = metafile});
     }
 
     while(0)

@@ -28,31 +28,30 @@ static void init(void* user_data)
 }
 
 
-static void frame(void* user_data) {
+static void frame(void* user_data)
+{
     viz_state_t * state = user_data;
     ecs_world_t * world = state->world;
-
-    ecs_progress(world, 0);
-
-
     const sg_pass_action pass_action = {
         .colors[0] = {
             .load_action = SG_LOADACTION_CLEAR,
-            .clear_value = { 0.0f, 0.0f, 0.0f, 1.0f }
+            .clear_value = { 0.0f, 1.0f, 0.0f, 1.0f }
         }
     };
     sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
-    sgl_draw();
     sg_end_pass();
+    ecs_progress(world, 0);
     sg_commit();
 }
 
-static void cleanup(void* user_data) {
+static void cleanup(void* user_data)
+{
     sgl_shutdown();
     sg_shutdown();
 }
 
-void event(const sapp_event* e) {
+void event(const sapp_event* e)
+{
 
 }
 

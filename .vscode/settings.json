@@ -62,7 +62,9 @@
         "deque": "c",
         "vector": "c",
         "cameras.h": "c",
-        "sensors.h": "c"
+        "sensors.h": "c",
+        "*.tcc": "c",
+        "userevents.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

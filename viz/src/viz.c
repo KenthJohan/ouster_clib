@@ -1,5 +1,6 @@
 #include "viz/viz.h"
 #include "viz/Renderings.h"
+#include "viz/Userevents.h"
 
 #include "vendor/sokol_app.h"
 #include "vendor/sokol_gfx.h"
@@ -14,9 +15,8 @@
 
 
 
-static void init(void* user_data)
+static void init(viz_state_t * state)
 {
-    viz_state_t * state = user_data;
     ecs_world_t * world = state->world;
 
 
@@ -30,9 +30,8 @@ static void init(void* user_data)
 }
 
 
-static void frame(void* user_data)
+static void frame(viz_state_t * state)
 {
-    viz_state_t * state = user_data;
     ecs_world_t * world = state->world;
     const sg_pass_action pass_action = {
         .colors[0] = {
@@ -46,27 +45,73 @@ static void frame(void* user_data)
     sg_commit();
 }
 
-static void cleanup(void* user_data)
+static void cleanup(viz_state_t * state)
 {
     sgl_shutdown();
     sg_shutdown();
 }
 
-void event(const sapp_event* e)
+void event(const sapp_event* evt, viz_state_t * state)
 {
+    ecs_world_t * world = state->world;
+    UsereventsInput *input = ecs_singleton_get_mut(world, UsereventsInput);
 
+    switch (evt->type) {
+    case SAPP_EVENTTYPE_MOUSE_DOWN:
+        if (evt->mouse_button == SAPP_MOUSEBUTTON_LEFT)
+        {
+
+        }
+            //mouse_down(&input->mouse.left);
+        
+        if (evt->mouse_button == SAPP_MOUSEBUTTON_RIGHT)
+        {
+            
+        }
+            //mouse_down(&input->mouse.right);
+        break;
+    case SAPP_EVENTTYPE_MOUSE_UP:
+        if (evt->mouse_button == SAPP_MOUSEBUTTON_LEFT)
+        {
+            
+        }
+            //mouse_up(&input->mouse.left);
+        
+        if (evt->mouse_button == SAPP_MOUSEBUTTON_RIGHT)
+        {
+            
+        }
+            //mouse_up(&input->mouse.right);
+        break;
+    case SAPP_EVENTTYPE_MOUSE_SCROLL:
+        break;
+    case SAPP_EVENTTYPE_KEY_UP:
+        assert(evt->key_code < 128);
+        input->keys[evt->key_code] = 0;
+        //key_up(key_get(input, key_code(evt->key_code)));
+        break;
+    case SAPP_EVENTTYPE_KEY_DOWN:
+        assert(evt->key_code < 128);
+        input->keys[evt->key_code] = 1;
+        //key_down(key_get(input, key_code(evt->key_code)));
+        break;
+    case SAPP_EVENTTYPE_RESIZED: {
+        break;
+    }
+    default:
+        break;
+    }
 }
-
 
 
 void viz_run(viz_state_t * state)
 {
     sapp_run(&(sapp_desc){
         .user_data = state,
-        .init_userdata_cb = init,
-        .frame_userdata_cb = frame,
-        .cleanup_userdata_cb = cleanup,  // cleanup doesn't need access to the state struct
-        .event_cb = event,
+        .init_userdata_cb = (void(*)(void*))init,
+        .frame_userdata_cb = (void(*)(void*))frame,
+        .cleanup_userdata_cb = (void(*)(void*))cleanup,
+        .event_userdata_cb = (void(*)(const sapp_event*, void*))event,
         .width = 800,
         .height = 600,
         .sample_count = 4,

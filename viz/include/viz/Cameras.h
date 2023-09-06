@@ -3,6 +3,7 @@
 
 typedef struct
 {
+    float pos[3];
     float mvp[16];
 } Camera;
 

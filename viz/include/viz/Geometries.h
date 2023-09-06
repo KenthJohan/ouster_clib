@@ -14,6 +14,6 @@ typedef struct
 
 
 extern ECS_COMPONENT_DECLARE(Pointcloud);
-
+extern ecs_entity_t EntRenderPointcloud;
 
 void GeometriesImport(ecs_world_t *world);

@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <platform/fs.h>
+#include <platform/log.h>
 #define HANDMADE_MATH_IMPLEMENTATION
 #define HANDMADE_MATH_NO_SSE
 #include "HandmadeMath.h"
@@ -48,6 +49,9 @@ ECS_COMPONENT_DECLARE(RenderPointcloud);
 
 sg_shader create_shader(char * path_fs, char * path_vs)
 {
+    platform_log("Creating shaders from files %s %s in ", path_fs, path_vs);
+    fs_pwd();
+    platform_log("\n");
     sg_shader_desc desc = {0};
     desc.attrs[0].name = "pos";
     desc.attrs[1].name = "color0";

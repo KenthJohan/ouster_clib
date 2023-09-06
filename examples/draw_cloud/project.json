@@ -1,0 +1,14 @@
+{
+    "id": "draw_cloud",
+    "type": "application",
+    "value": {
+        "language": "c",
+        "public": false,
+        "use" : ["platform", "ouster_clib", "viz", "flecs"]
+    },
+    "lang.c": {
+        "defines": [],
+        "lib": ["platform", "ouster_clib", "viz", "curl", "m", "GL", "X11", "Xi", "Xcursor"],
+        "cflags":["-Werror", "-Wall", "-Wextra", "-Wno-error=unused-variable", "-Wno-error=pedantic"]
+    }
+}

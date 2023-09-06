@@ -1,0 +1,13 @@
+{
+    "id": "meta_download",
+    "type": "application",
+    "value": {
+        "language": "c",
+        "public": false,
+        "use" : ["platform", "ouster_clib"]
+    },
+    "lang.c": {
+        "lib": ["ouster_clib", "platform", "curl", "m"],
+        "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable"]
+    }
+}

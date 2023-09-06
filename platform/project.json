@@ -1,8 +1,7 @@
 {
-    "id": "ouster_clib",
+    "id": "platform",
     "type": "package",
     "value": {
-        "use":["platform"],
         "language": "c",
         "public": true
     },
@@ -11,6 +10,6 @@
         "export-symbols": true,
         "static": true,
         "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra"],
-        "lib": ["platform", "curl", "m"]
+        "lib": ["curl", "m"]
     }
 }

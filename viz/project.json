@@ -1,0 +1,16 @@
+{
+    "id": "viz",
+    "type": "package",
+    "value": {
+        "language": "c",
+        "public": true,
+        "use" : ["flecs", "platform"]
+    },
+    "lang.c": {
+        "export-symbols": true,
+        "static": true,
+        "defines": ["SOKOL_GLCORE33", "SOKOL_NO_ENTRY"],
+        "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=pedantic", "-Wno-error=unused-variable"],
+        "lib": ["platform", "m", "GL", "X11", "Xi", "Xcursor"]
+    }
+}

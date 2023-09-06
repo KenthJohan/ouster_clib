@@ -1,14 +1,22 @@
+#include "viz/Renderings.h"
 #include "viz/Geometries.h"
-#include "sokol_gfx.h"
-#include "sokol_gl.h"
-#include "sokol_app.h"
+#include "viz/Cameras.h"
+
+#include "vendor/sokol_gfx.h"
+#include "vendor/sokol_gl.h"
+#include "vendor/sokol_app.h"
+#include "vendor/sokol_log.h"
+#include "vendor/sokol_glue.h"
+#include "vendor/HandmadeMath.h"
+
 #include <math.h>
 #include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
+
 #include <platform/fs.h>
 #include <platform/log.h>
-#define HANDMADE_MATH_IMPLEMENTATION
-#define HANDMADE_MATH_NO_SSE
-#include "HandmadeMath.h"
+
 
 #define MAX_PARTICLES (512 * 1024)
 #define ATTR_vs_pos (0)
@@ -33,17 +41,21 @@ SOKOL_SHDC_ALIGN(16) typedef struct vs_params_t {
 #define NUM_PARTICLES_EMITTED_PER_FRAME (10)
 typedef struct
 {
+    ecs_i32_t cap;
+    vs_params_t vs_params;
     sg_pass_action pass_action;
     sg_pipeline pip;
     sg_bindings bind;
     int cur_num_particles;
     float ry;
-    int cap;
     hmm_vec3 * pos;
     hmm_vec3 * vel;
 } RenderPointcloud;
 
 
+
+ECS_COMPONENT_DECLARE(RenderingsContext);
+ECS_COMPONENT_DECLARE(RenderingsDraw);
 ECS_COMPONENT_DECLARE(RenderPointcloud);
 
 
@@ -71,9 +83,11 @@ sg_shader create_shader(char * path_fs, char * path_vs)
 }
 
 
-void RenderPointcloud_OnSet(ecs_iter_t *it)
+void RenderPointcloud_Setup(ecs_iter_t *it)
 {
     RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 1);
+    assert(rend->pos ==  NULL);
+    assert(rend->pos ==  NULL);
     for(int i = 0; i < it->count; ++i, ++rend)
     {
         rend->pass_action = (sg_pass_action) {
@@ -135,9 +149,11 @@ void RenderPointcloud_OnSet(ecs_iter_t *it)
 
 
         //Temporary:
+        rend->cap = MAX_PARTICLES;
         rend->pos = ecs_os_calloc_n(hmm_vec3, rend->cap);
         rend->vel = ecs_os_calloc_n(hmm_vec3, rend->cap);
 
+        ecs_set(it->world, it->entities[i], RenderingsDraw, {0});
     }
 }
 
@@ -178,11 +194,16 @@ void update(hmm_vec3 * pos, hmm_vec3 * vel, int * last, int cap, int emit_per_fr
 void RenderPointcloud_Draw(ecs_iter_t *it)
 {
     RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 1);
-    for(int i = 0; i < it->count; ++i, ++rend)
+    Camera *cam = ecs_field(it, Camera, 2);
+    
+    for(int i = 0; i < it->count; ++i, ++rend, ++cam)
     {
+        //printf("%s\n", ecs_get_name(it->world, it->entities[i]));
+        if(rend->cap <= 0){return;}
+
         const float frame_time = (float)(sapp_frame_duration());
 
-        update(rend->pos, rend->vel, &rend->cur_num_particles, MAX_PARTICLES, NUM_PARTICLES_EMITTED_PER_FRAME, frame_time);
+        update(rend->pos, rend->vel, &rend->cur_num_particles, rend->cap, NUM_PARTICLES_EMITTED_PER_FRAME, frame_time);
 
         // update instance data
         sg_update_buffer(rend->bind.vertex_buffers[1], &(sg_range){
@@ -190,20 +211,13 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
             .size = (size_t)rend->cur_num_particles * sizeof(hmm_vec3)
         });
 
-
-        // model-view-projection matrix
-        hmm_mat4 proj = HMM_Perspective(60.0f, sapp_widthf()/sapp_heightf(), 0.01f, 50.0f);
-        hmm_mat4 view = HMM_LookAt(HMM_Vec3(0.0f, 1.5f, 12.0f), HMM_Vec3(0.0f, 0.0f, 0.0f), HMM_Vec3(0.0f, 1.0f, 0.0f));
-        hmm_mat4 view_proj = HMM_MultiplyMat4(proj, view);
-        rend->ry += 60.0f * frame_time;
-        vs_params_t vs_params;
-        vs_params.mvp = HMM_MultiplyMat4(view_proj, HMM_Rotate(rend->ry, HMM_Vec3(0.0f, 1.0f, 0.0f)));
-
-        // ...and draw
         sg_begin_default_pass(&rend->pass_action, sapp_width(), sapp_height());
         sg_apply_pipeline(rend->pip);
         sg_apply_bindings(&rend->bind);
-        sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &SG_RANGE(vs_params));
+
+        ecs_os_memcpy_t(&rend->vs_params.mvp, cam->mvp, hmm_mat4);
+        sg_range a = { &rend->vs_params, sizeof(vs_params_t) };
+        sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &a);
         sg_draw(0, 24, rend->cur_num_particles);
         sg_end_pass();
     }
@@ -218,14 +232,12 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 
 
 
-ecs_entity_t EntRenderPointcloud;
 
 void Pointcloud_OnSet(ecs_iter_t *it)
 {
     Pointcloud *state = ecs_field(it, Pointcloud, 1);
     for(int i = 0; i < it->count; ++i, ++state)
     {
-        ecs_add_pair(it->world, it->entities[i], EcsChildOf, EntRenderPointcloud);
     }
 }
 
@@ -244,12 +256,53 @@ void Pointcloud_Draw(ecs_iter_t *it)
 void RenderingsImport(ecs_world_t *world)
 {
     ECS_MODULE(world, Renderings);
-    ECS_COMPONENT_DEFINE(world, RenderPointcloud);
-    ECS_OBSERVER(world, RenderPointcloud_OnSet, EcsOnSet, RenderPointcloud);
-    ECS_SYSTEM(world, RenderPointcloud_Draw, EcsOnUpdate, RenderPointcloud);
-    ECS_SYSTEM(world, Pointcloud_OnSet, EcsOnUpdate, Pointcloud, !RenderPointcloud(parent));
-    ECS_SYSTEM(world, Pointcloud_Draw, EcsOnUpdate, Pointcloud, RenderPointcloud(parent));
+    ECS_IMPORT(world, Cameras);
+    ECS_IMPORT(world, Geometries);
+    
 
-    EntRenderPointcloud = ecs_new_entity(world, "RenderPointcloud");
-    ecs_set(world, EntRenderPointcloud, RenderPointcloud, {.cap = MAX_PARTICLES});
+    ECS_COMPONENT_DEFINE(world, RenderingsContext);
+    ECS_COMPONENT_DEFINE(world, RenderingsDraw);
+    ECS_COMPONENT_DEFINE(world, RenderPointcloud);
+
+
+    ecs_system_init(world, &(ecs_system_desc_t){
+        .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+        .callback = RenderPointcloud_Setup,
+        .query.filter.terms =
+        {
+            { .id = ecs_id(RenderPointcloud) },
+            { .id = ecs_id(Camera) },
+            { .id = ecs_id(RenderingsDraw), .oper=EcsNot },
+            { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext) }
+            
+            //{ .id = ecs_id(RenderPointcloud), .src.trav = EcsIsA, .src.flags = EcsUp },
+            //{ .id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp },
+        }
+    });
+
+    ecs_system_init(world, &(ecs_system_desc_t){
+        .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+        .callback = RenderPointcloud_Draw,
+        .query.filter.terms =
+        {
+            { .id = ecs_id(RenderPointcloud) },
+            { .id = ecs_id(Camera) },
+            { .id = ecs_id(RenderingsDraw) },
+            { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext) }
+            
+            //{ .id = ecs_id(RenderPointcloud), .src.trav = EcsIsA, .src.flags = EcsUp },
+            //{ .id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp },
+        }
+    });
+
+	ecs_struct(world, {
+	.entity = ecs_id(RenderPointcloud),
+	.members = {
+	{ .name = "cap", .type = ecs_id(ecs_i32_t) },
+	}
+	});
+
+
+    //ECS_SYSTEM(world, Pointcloud_OnSet, EcsOnUpdate, Pointcloud, !RenderPointcloud(parent));
+    //ECS_SYSTEM(world, Pointcloud_Draw, EcsOnUpdate, Pointcloud, RenderPointcloud(parent));
 }

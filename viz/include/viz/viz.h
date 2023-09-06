@@ -9,3 +9,4 @@ typedef struct
 } viz_state_t;
 
 void viz_init(viz_state_t * state);
+void viz_run(viz_state_t * state);

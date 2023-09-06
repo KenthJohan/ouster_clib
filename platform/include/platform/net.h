@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 
+#define NET_UDP_MAX_SIZE 65535
 
 #define NET_FLAGS_NONBLOCK 0x0001
 #define NET_FLAGS_REUSE 0x0002

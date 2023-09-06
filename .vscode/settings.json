@@ -58,7 +58,11 @@
         "renderer.h": "c",
         "renderings.h": "c",
         "lidar.h": "c",
-        "handmademath.h": "c"
+        "handmademath.h": "c",
+        "deque": "c",
+        "vector": "c",
+        "cameras.h": "c",
+        "sensors.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

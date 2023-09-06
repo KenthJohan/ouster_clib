@@ -7,6 +7,7 @@
         "use" : ["flecs", "platform"]
     },
     "lang.c": {
+        "c-standard": "c11",
         "export-symbols": true,
         "static": true,
         "defines": ["SOKOL_GLCORE33", "SOKOL_NO_ENTRY"],

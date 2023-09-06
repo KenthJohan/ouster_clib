@@ -1,11 +1,11 @@
 #include "viz/viz.h"
 #include "viz/Renderings.h"
 
-#include "sokol_app.h"
-#include "sokol_gfx.h"
-#include "sokol_log.h"
-#include "sokol_gl.h"
-#include "sokol_glue.h"
+#include "vendor/sokol_app.h"
+#include "vendor/sokol_gfx.h"
+#include "vendor/sokol_log.h"
+#include "vendor/sokol_gl.h"
+#include "vendor/sokol_glue.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -18,13 +18,15 @@ static void init(void* user_data)
 {
     viz_state_t * state = user_data;
     ecs_world_t * world = state->world;
+
+
     sg_setup(&(sg_desc){
         .context = sapp_sgcontext(),
         .logger.func = slog_func,
     });
     sgl_setup(&(sgl_desc_t){ .logger.func = slog_func });
+    ecs_singleton_set(world, RenderingsContext, {0});
 
-    ECS_IMPORT(world, Renderings);
 }
 
 
@@ -57,7 +59,7 @@ void event(const sapp_event* e)
 
 
 
-void viz_init(viz_state_t * state)
+void viz_run(viz_state_t * state)
 {
     sapp_run(&(sapp_desc){
         .user_data = state,
@@ -72,5 +74,13 @@ void viz_init(viz_state_t * state)
         .icon.sokol_default = true,
         .logger.func = slog_func,
     });
+}
+
+
+
+
+void viz_init(viz_state_t * state)
+{
+
 }
 

@@ -19,6 +19,8 @@ ECS_MOVE(Pointcloud, dst, src, {
     ecs_os_free(dst->col);
     ecs_os_memcpy_t(dst, src, Pointcloud);
     ecs_os_memset_t(src, 0, Pointcloud);
+    src->pos = NULL;
+    src->col = NULL;
 })
 
 

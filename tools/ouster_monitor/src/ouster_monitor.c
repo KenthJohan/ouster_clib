@@ -16,6 +16,8 @@
 #include <ouster_clib/meta.h>
 #include <ouster_clib/field.h>
 #include <ouster_clib/lut.h>
+#include <ouster_clib/lidar_header.h>
+#include <ouster_clib/lidar_column.h>
 
 
 typedef enum 
@@ -31,16 +33,64 @@ typedef enum
     FIELD_COUNT
 } field_t;
 
+typedef enum 
+{
+    MONITOR_MODE_UNKNOWN,
+    MONITOR_MODE_LOSS,
+    MONITOR_MODE_PACKET,
+    MONITOR_MODE_HEADER,
+    MONITOR_MODE_COLUMN,
+    MONITOR_MODE_COUNT
+} monitor_mode_t;
+
+
+mode_t get_mode(char const * str)
+{
+    if(strcmp(str, "loss") == 0){return MONITOR_MODE_LOSS;}
+    if(strcmp(str, "packet") == 0){return MONITOR_MODE_PACKET;}
+    if(strcmp(str, "header") == 0){return MONITOR_MODE_HEADER;}
+    if(strcmp(str, "column") == 0){return MONITOR_MODE_COLUMN;}
+    return MONITOR_MODE_UNKNOWN;
+}
+
+
+
+void print_columns(ouster_meta_t * meta, char const * buf)
+{
+    char const * colbuf = buf + OUSTER_PACKET_HEADER_SIZE;
+    for(int icol = 0; icol < meta->columns_per_packet; icol++, colbuf += meta->col_size)
+    {
+        ouster_column_t column = {0};
+        ouster_column_get(colbuf, &column);
+        ouster_column_log(&column);
+    }
+}
+
+
+
+
+
 
 int main(int argc, char* argv[])
 {
+    printf("===================================================================\n");
     fs_pwd();
     
-    if(argc <= 1)
+    if(argc <= 2)
     {
-        printf("Missing input meta file\n");
+        printf("Hello welcome to %s!\n", argv[0]);
+        printf("This tool monitors UDP packages.\n");
+        printf("To use this tool you will have to provide the meta file that correspond to the LiDAR sensor configuration\n");
+        printf("\t$ %s <%s> %s\n", argv[0], "meta.json", "loss");
+        printf("\t$ %s <%s> %s\n", argv[0], "meta.json", "packet");
+        printf("\t$ %s <%s> %s\n", argv[0], "meta.json", "header");
+        printf("\t$ %s <%s> %s\n", argv[0], "meta.json", "column");
         return 0;
     }
+
+    monitor_mode_t mode = get_mode(argv[2]);
+
+
     /*
     ouster_client_t client = 
     {
@@ -99,15 +149,36 @@ int main(int argc, char* argv[])
         {
             char buf[1024*100];
             int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-            platform_log("%-10s %5ji, mid = %5ji\n", "SOCK_LIDAR", (intmax_t)n, (intmax_t)lidar.last_mid);
+            if(mode == MONITOR_MODE_PACKET)
+            {
+                printf("%-10s %5ji, mid = %04ji\n", "SOCK_LIDAR", (intmax_t)n, (intmax_t)lidar.last_mid);
+            }
             ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
+            if(mode == MONITOR_MODE_HEADER)
+            {
+                ouster_lidar_header_t header = {0};
+                ouster_lidar_header_get(buf, &header);
+                ouster_lidar_header_log(&header);
+            }
+
+            if(mode == MONITOR_MODE_COLUMN)
+            {
+                print_columns(&meta, buf);
+            }
+
+
             if(lidar.last_mid == meta.mid1)
             {
                 ouster_mat4_apply_mask_u32(&fields[FIELD_RANGE].mat, fields[FIELD_RANGE].mask);
                 ouster_lut_cartesian(&lut, fields[FIELD_RANGE].mat.data, xyz);
                 //printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
                 ouster_mat4_zero(&fields[FIELD_RANGE].mat);
-                platform_log("mid_loss %i\n", lidar.mid_loss);
+                if(mode == MONITOR_MODE_LOSS)
+                {
+                    ouster_lidar_header_t header = {0};
+                    ouster_lidar_header_get(buf, &header);
+                    printf("mid_loss=%i, frame=%i\n", lidar.mid_loss, header.frame_id);
+                }
             }
         }
 
@@ -116,7 +187,10 @@ int main(int argc, char* argv[])
         {
             char buf[1024*256];
             int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
-            platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
+            if(mode == MONITOR_MODE_PACKET)
+            {
+                platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
+            }
         }
     }
 

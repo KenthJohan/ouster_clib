@@ -1,0 +1,13 @@
+{
+    "id": "ouster_monitor",
+    "type": "application",
+    "value": {
+        "language": "c",
+        "public": false,
+        "use" : ["platform", "ouster_clib"]
+    },
+    "lang.c": {
+        "lib": ["platform", "ouster_clib", "curl", "m"],
+        "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable"]
+    }
+}

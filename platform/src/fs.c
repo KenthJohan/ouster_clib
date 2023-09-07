@@ -11,8 +11,13 @@
 void fs_pwd()
 {
     char cwd[1024] = {0};
-    getcwd(cwd, sizeof(cwd));
-    printf("%s\n", cwd);
+    char * rc = getcwd(cwd, sizeof(cwd));
+    if(rc == NULL)
+    {
+        platform_log("getcwd error: %s\n", strerror(errno));
+        return;
+    }
+    printf("Current working directory: %s%s%s\n", "\033[38;2;100;100;255m", cwd, "\033[0m");
 }
 
 

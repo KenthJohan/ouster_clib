@@ -1,6 +1,6 @@
 #include "viz/viz.h"
 #include "viz/Renderings.h"
-#include "viz/Userevents.h"
+#include "viz/Userinputs.h"
 
 #include "vendor/sokol_app.h"
 #include "vendor/sokol_gfx.h"
@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
 
 
 
@@ -33,6 +34,7 @@ static void init(viz_state_t * state)
 static void frame(viz_state_t * state)
 {
     ecs_world_t * world = state->world;
+    /*
     const sg_pass_action pass_action = {
         .colors[0] = {
             .load_action = SG_LOADACTION_CLEAR,
@@ -41,6 +43,7 @@ static void frame(viz_state_t * state)
     };
     sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
     sg_end_pass();
+    */
     ecs_progress(world, 0);
     sg_commit();
 }
@@ -54,7 +57,7 @@ static void cleanup(viz_state_t * state)
 void event(const sapp_event* evt, viz_state_t * state)
 {
     ecs_world_t * world = state->world;
-    UsereventsInput *input = ecs_singleton_get_mut(world, UsereventsInput);
+    UserinputsKeys *input = ecs_singleton_get_mut(world, UserinputsKeys);
 
     switch (evt->type) {
     case SAPP_EVENTTYPE_MOUSE_DOWN:
@@ -86,12 +89,12 @@ void event(const sapp_event* evt, viz_state_t * state)
     case SAPP_EVENTTYPE_MOUSE_SCROLL:
         break;
     case SAPP_EVENTTYPE_KEY_UP:
-        assert(evt->key_code < 128);
+        assert(evt->key_code < USEREVENTS_KEYS_MAX);
         input->keys[evt->key_code] = 0;
         //key_up(key_get(input, key_code(evt->key_code)));
         break;
     case SAPP_EVENTTYPE_KEY_DOWN:
-        assert(evt->key_code < 128);
+        assert(evt->key_code < USEREVENTS_KEYS_MAX);
         input->keys[evt->key_code] = 1;
         //key_down(key_get(input, key_code(evt->key_code)));
         break;

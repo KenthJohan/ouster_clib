@@ -64,7 +64,11 @@
         "cameras.h": "c",
         "sensors.h": "c",
         "*.tcc": "c",
-        "userevents.h": "c"
+        "userevents.h": "c",
+        "userinputs.h": "c",
+        "mathtypes.h": "c",
+        "lin_f32.h": "c",
+        "quat_f32.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

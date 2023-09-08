@@ -3,14 +3,14 @@
 
 typedef struct
 {
-    float mvp[16];
-    float proj[16];
+    float mvp[16]; // For shader
+    float proj[16]; // Projection matrix
 
-    float q[4];
+    float q[4]; // Orientation quaternion
 
-    float pos[3];
+    float pos[3]; // Position
 
-    float move[3];
+    float move[3]; // 
     float look[3];
 } Camera;
 

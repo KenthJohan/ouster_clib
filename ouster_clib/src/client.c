@@ -68,7 +68,8 @@ void req_get(ouster_client_t * client, char const * ip)
     curl_easy_setopt(client->curl, CURLOPT_WRITEDATA, &client->buf);
 
     CURLcode res = curl_easy_perform(client->curl);
-
+    platform_log("curl_easy_perform() %i, %s\n", res, curl_easy_strerror(res));
+    
     if (res == CURLE_SEND_ERROR) {
         // Specific versions of curl does't play well with the sensor http
         // server. When CURLE_SEND_ERROR happens for the first time silently
@@ -78,7 +79,8 @@ void req_get(ouster_client_t * client, char const * ip)
 
     if (res != CURLE_OK)
     {
-        platform_log("curl_easy_perform() error\n");
+        platform_log("curl_easy_perform() failed\n");
+        return;
     }
 
     long http_code = 0;

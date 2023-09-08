@@ -30,13 +30,13 @@ static void Camera_Controller(ecs_iter_t *it)
 
 void rot(v3f32 const * look, qf32  * q, float speed)
 {
-    // Rotation stage
+    assert(fabsf(qf32_norm2(q) - 1.0f) < 0.1f); // Check quaternion valididy:
     qf32 q_pitch; // Quaternion pitch rotation
     qf32 q_yaw;   // Quaternion yaw rotation
     qf32 q_roll;  // Quaternion roll rotation
-    qf32_xyza (&q_pitch, 1.0f, 0.0f, 0.0f, look->x*speed);
-    qf32_xyza (&q_yaw,   0.0f, 1.0f, 0.0f, look->y*speed);
-    qf32_xyza (&q_roll,  0.0f, 0.0f, 1.0f, look->z*speed);
+    qf32_xyza (&q_pitch, 1.0f, 0.0f, 0.0f, look->x*speed); // Make pitch quaternion
+    qf32_xyza (&q_yaw,   0.0f, 1.0f, 0.0f, look->y*speed); // Make yaw quaternion
+    qf32_xyza (&q_roll,  0.0f, 0.0f, 1.0f, look->z*speed); // Make roll quaternion
     qf32_mul (q, &q_roll, q);  // Apply roll rotation
     qf32_mul (q, &q_yaw, q);   // Apply yaw rotation
     qf32_mul (q, &q_pitch, q); // Apply pitch rotation

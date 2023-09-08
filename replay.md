@@ -22,3 +22,5 @@ sudo tcpreplay-edit -v -o -i lo --enet-smac=00:00:00:00:00:00 --enet-dmac=00:00:
 * https://explainshell.com/explain?cmd=tshark+--color+-V+-i+eth0+-d+udp.port%3D8472%2Cvxlan++-c+2+-f+%22port+8472%22
 * https://wireshark-users.wireshark.narkive.com/YT5W0lCK/tshark-how-to-capture-snmp-traps-udp-port-162-that-might-be-fragmented
 * https://www.youtube.com/watch?v=1gX_-DqGNxA<br>Don't filter by port number
+* https://wireshark.marwan.ma/docs/wsug_html_chunked/AppToolseditcap.html
+* https://wiki.wireshark.org/SLL.md

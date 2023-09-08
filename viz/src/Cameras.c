@@ -3,10 +3,11 @@
 
 #include "vendor/HandmadeMath.h"
 #include "vendor/sokol_app.h"
-#include "mathtypes.h"
-#include "lin_f32.h"
-#include "quat_f32.h"
-#include "transform.h"
+
+#include "easymath/mathtypes.h"
+#include "easymath/lin_f32.h"
+#include "easymath/quat_f32.h"
+#include "easymath/transform.h"
 #include <stdio.h>
 
 ECS_COMPONENT_DECLARE(Camera);

@@ -2,6 +2,10 @@
 //  shapes-sapp.c
 //  Simple sokol_shape.h demo.
 //------------------------------------------------------------------------------
+#include "viz/DrawShapes.h"
+#include "viz/Geometries.h"
+#include "viz/Cameras.h"
+
 #include "vendor/sokol_app.h"
 #include "vendor/sokol_gfx.h"
 #include "vendor/sokol_log.h"
@@ -19,6 +23,8 @@
 #include <string.h>
 #include <stddef.h>
 #include <assert.h>
+
+
 
 #if !defined(SOKOL_SHDC_ALIGN)
   #if defined(_MSC_VER)
@@ -251,7 +257,7 @@ hmm_mat4 model1(float dt)
 
 
 
-void draw_shapes_frame(void)
+void draw_shapes_frame(ecs_world_t * world)
 {
     // help text
     sdtx_canvas(sapp_width()*0.5f, sapp_height()*0.5f);
@@ -267,9 +273,14 @@ void draw_shapes_frame(void)
     hmm_mat4 view_proj = proj2(dt);
     hmm_mat4 rm = model1(dt);
 
+    ecs_entity_t e = ecs_lookup(world, "camera1");
+
+    Camera const * cam = ecs_get(world, e, Camera);
+    ecs_os_memcpy_t(&view_proj, cam->mvp, hmm_mat4);
+
 
     // render shapes...
-    sg_begin_default_pass(&state.pass_action, sapp_width()/3, sapp_height()/3);
+    sg_begin_default_pass(&state.pass_action, sapp_width(), sapp_height());
     sg_apply_pipeline(state.pip);
     sg_apply_bindings(&(sg_bindings) {
         .vertex_buffers[0] = state.vbuf,

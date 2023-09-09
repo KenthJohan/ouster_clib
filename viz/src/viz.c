@@ -57,7 +57,7 @@ static void frame(viz_state_t * state)
     sg_end_pass();
     
     ecs_progress(world, 0);
-    draw_shapes_frame();
+    draw_shapes_frame(world);
     sg_commit();
 }
 

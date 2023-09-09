@@ -73,7 +73,9 @@
         "easymath.h": "c",
         "sokol_shape.h": "c",
         "sokol_debugtext.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "drawtext.h": "c",
+        "drawshapes.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

@@ -11,7 +11,6 @@
 #include "vendor/sokol_log.h"
 #include "vendor/sokol_glue.h"
 #include "vendor/sokol_shape.h"
-#include "vendor/sokol_debugtext.h"
 #include "vendor/HandmadeMath.h"
 #include "vendor//dbgui.h"
 
@@ -110,7 +109,7 @@ static sg_shader create_shader(char * path_fs, char * path_vs)
     desc.attrs[3].name = "color0";
     desc.vs.source = fs_readfile(path_vs);
     desc.vs.entry = "main";
-    desc.vs.uniform_blocks[0].size = 80;
+    desc.vs.uniform_blocks[0].size = sizeof(float) * 5 * 4;
     desc.vs.uniform_blocks[0].layout = SG_UNIFORMLAYOUT_STD140;
     desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params";
     desc.vs.uniform_blocks[0].uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
@@ -259,16 +258,6 @@ hmm_mat4 model1(float dt)
 
 void draw_shapes_frame(ecs_world_t * world)
 {
-    // help text
-    sdtx_canvas(sapp_width()*0.5f, sapp_height()*0.5f);
-    sdtx_pos(0.5f, 0.5f);
-    sdtx_puts("press key to switch draw mode:\n\n"
-              "  1: vertex normals\n"
-              "  2: texture coords\n"
-              "  3: vertex color");
-
-
-
     float dt = sapp_frame_duration();
     hmm_mat4 view_proj = proj2(dt);
     hmm_mat4 rm = model1(dt);
@@ -286,16 +275,15 @@ void draw_shapes_frame(ecs_world_t * world)
         .vertex_buffers[0] = state.vbuf,
         .index_buffer = state.ibuf
     });
-    for (int i = 0; i < NUM_SHAPES; i++) {
+    for (int i = 0; i < NUM_SHAPES; i++)
+    {
         // per shape model-view-projection matrix
         hmm_mat4 model = HMM_MultiplyMat4(HMM_Translate(state.shapes[i].pos), rm);
         state.vs_params.mvp = HMM_MultiplyMat4(view_proj, model);
         sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &SG_RANGE(state.vs_params));
         sg_draw(state.shapes[i].draw.base_element, state.shapes[i].draw.num_elements, 1);
     }
-    sdtx_draw();
-    __dbgui_draw();
     sg_end_pass();
-    sg_commit();
+
 }
 

@@ -8,6 +8,7 @@
 #include "vendor/sokol_log.h"
 #include "vendor/sokol_glue.h"
 #include "vendor/HandmadeMath.h"
+#include "vendor/sokol_shape.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -19,10 +20,7 @@
 
 
 #define MAX_PARTICLES (512 * 1024)
-#define ATTR_vs_pos (0)
-#define ATTR_vs_color0 (1)
-#define ATTR_vs_inst_pos (2)
-#define SLOT_vs_params (0)
+
 #if !defined(SOKOL_SHDC_ALIGN)
   #if defined(_MSC_VER)
     #define SOKOL_SHDC_ALIGN(a) __declspec(align(a))
@@ -30,15 +28,37 @@
     #define SOKOL_SHDC_ALIGN(a) __attribute__((aligned(a)))
   #endif
 #endif
+#define ATTR_vs_position (0)
+#define ATTR_vs_normal (1)
+#define ATTR_vs_texcoord (2)
+#define ATTR_vs_color0 (3)
+#define SLOT_vs_params (0)
 #pragma pack(push,1)
 SOKOL_SHDC_ALIGN(16) typedef struct vs_params_t {
     hmm_mat4 mvp;
+    float draw_mode;
+    uint8_t _pad_68[12];
 } vs_params_t;
 #pragma pack(pop)
 
 
 #define MAX_PARTICLES (512 * 1024)
 #define NUM_PARTICLES_EMITTED_PER_FRAME (10)
+
+enum {
+    BOX = 0,
+    PLANE,
+    SPHERE,
+    CYLINDER,
+    TORUS,
+    NUM_SHAPES
+};
+
+typedef struct {
+    hmm_vec3 pos;
+    sshape_element_range_t draw;
+} shape_t;
+
 typedef struct
 {
     ecs_i32_t cap;
@@ -46,6 +66,7 @@ typedef struct
     sg_pass_action pass_action;
     sg_pipeline pip;
     sg_bindings bind;
+    shape_t shapes[NUM_SHAPES];
     int cur_num_particles;
     float ry;
     hmm_vec3 * pos;
@@ -65,16 +86,19 @@ static sg_shader create_shader(char * path_fs, char * path_vs)
     fs_pwd();
     platform_log("\n");
     sg_shader_desc desc = {0};
-    desc.attrs[0].name = "pos";
-    desc.attrs[1].name = "color0";
-    desc.attrs[2].name = "inst_pos";
+    desc.attrs[0].name = "position";
+    desc.attrs[1].name = "normal";
+    desc.attrs[2].name = "texcoord";
+    desc.attrs[3].name = "color0";
+    desc.attrs[4].name = "inst_pos";
+
     desc.vs.source = fs_readfile(path_vs);
     desc.vs.entry = "main";
-    desc.vs.uniform_blocks[0].size = 64;
+    desc.vs.uniform_blocks[0].size = sizeof(float) * 5 * 4;
     desc.vs.uniform_blocks[0].layout = SG_UNIFORMLAYOUT_STD140;
     desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params";
     desc.vs.uniform_blocks[0].uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
-    desc.vs.uniform_blocks[0].uniforms[0].array_count = 4;
+    desc.vs.uniform_blocks[0].uniforms[0].array_count = 5;
     desc.fs.source = fs_readfile(path_fs);
     desc.fs.entry = "main";
     desc.label = "instancing_shader";
@@ -105,44 +129,53 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
             .stencil.load_action = SG_LOADACTION_DONTCARE
         };
 
-        const float r = 0.05f;
-        const float vertices[] = {
-            // positions            colors
-            0.0f,   -r, 0.0f,       1.0f, 0.0f, 0.0f, 1.0f,
-            r, 0.0f, r,          0.0f, 1.0f, 0.0f, 1.0f,
-            r, 0.0f, -r,         0.0f, 0.0f, 1.0f, 1.0f,
-            -r, 0.0f, -r,         1.0f, 1.0f, 0.0f, 1.0f,
-            -r, 0.0f, r,          0.0f, 1.0f, 1.0f, 1.0f,
-            0.0f,    r, 0.0f,       1.0f, 0.0f, 1.0f, 1.0f
+        sshape_vertex_t vertices[6 * 1024];
+        uint16_t indices[16 * 1024];
+        sshape_buffer_t buf = {
+            .vertices.buffer = SSHAPE_RANGE(vertices),
+            .indices.buffer  = SSHAPE_RANGE(indices),
         };
-        rend->bind.vertex_buffers[0] = sg_make_buffer(&(sg_buffer_desc){
-            .data = SG_RANGE(vertices),
-            .label = "geometry-vertices"
+        
+        buf = sshape_build_sphere(&buf, &(sshape_sphere_t) {
+            .radius = 0.01f,
+            .slices = 10,
+            .stacks = 8,
+            .random_colors = true,
         });
-        const uint16_t indices[] = {
-            0, 1, 2,    0, 2, 3,    0, 3, 4,    0, 4, 1,
-            5, 1, 2,    5, 2, 3,    5, 3, 4,    5, 4, 1
-        };
-        rend->bind.index_buffer = sg_make_buffer(&(sg_buffer_desc){
-            .type = SG_BUFFERTYPE_INDEXBUFFER,
-            .data = SG_RANGE(indices),
-            .label = "geometry-indices"
+        
+        /*
+        buf = sshape_build_box(&buf, &(sshape_box_t){
+            .width  = 1.0f,
+            .height = 1.0f,
+            .depth  = 1.0f,
+            .tiles  = 10,
+            .random_colors = true,
         });
+        */
+        rend->shapes[BOX].draw = sshape_element_range(&buf);
+        assert(buf.valid);
+
+        const sg_buffer_desc vbuf_desc = sshape_vertex_buffer_desc(&buf);
+        const sg_buffer_desc ibuf_desc = sshape_index_buffer_desc(&buf);
+        rend->bind.vertex_buffers[0] = sg_make_buffer(&vbuf_desc);
+        rend->bind.index_buffer = sg_make_buffer(&ibuf_desc);
         rend->bind.vertex_buffers[1] = sg_make_buffer(&(sg_buffer_desc){
             .size = MAX_PARTICLES * sizeof(float) * 3,
             .usage = SG_USAGE_STREAM,
             .label = "instance-data"
         });
-        sg_shader shd = create_shader("../../viz/src/shader.fs.glsl", "../../viz/src/shader.vs.glsl");
+        sg_shader shd = create_shader("../../viz/src/instance.fs.glsl", "../../viz/src/instance.vs.glsl");
         // a pipeline object
         rend->pip = sg_make_pipeline(&(sg_pipeline_desc){
             .layout = {
-                // vertex buffer at slot 1 must step per instance
                 .buffers[1].step_func = SG_VERTEXSTEP_PER_INSTANCE,
+                .buffers[0] = sshape_vertex_buffer_layout_state(),
                 .attrs = {
-                    [ATTR_vs_pos]      = { .format=SG_VERTEXFORMAT_FLOAT3, .buffer_index=0 },
-                    [ATTR_vs_color0]   = { .format=SG_VERTEXFORMAT_FLOAT4, .buffer_index=0 },
-                    [ATTR_vs_inst_pos] = { .format=SG_VERTEXFORMAT_FLOAT3, .buffer_index=1 }
+                    [0] = sshape_position_vertex_attr_state(),
+                    [1] = sshape_normal_vertex_attr_state(),
+                    [2] = sshape_texcoord_vertex_attr_state(),
+                    [3] = sshape_color_vertex_attr_state(),
+                    [4] = { .format=SG_VERTEXFORMAT_FLOAT3, .buffer_index=1 }
                 }
             },
             .shader = shd,
@@ -227,7 +260,14 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
         ecs_os_memcpy_t(&rend->vs_params.mvp, cam->mvp, hmm_mat4);
         sg_range a = { &rend->vs_params, sizeof(vs_params_t) };
         sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &a);
-        sg_draw(0, 24, rend->cur_num_particles);
+
+
+
+        sg_draw(rend->shapes[BOX].draw.base_element, rend->shapes[i].draw.num_elements, rend->cur_num_particles);
+
+        //sg_draw(0, 24, rend->cur_num_particles);
+
+        
         sg_end_pass();
     }
 }

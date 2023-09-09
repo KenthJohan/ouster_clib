@@ -1,6 +1,7 @@
 #include "viz/Geometries.h"
 #include <assert.h>
 
+ECS_COMPONENT_DECLARE(Position2);
 ECS_COMPONENT_DECLARE(Position3);
 ECS_COMPONENT_DECLARE(Pointcloud);
 
@@ -44,6 +45,7 @@ void Observer(ecs_iter_t *it)
 void GeometriesImport(ecs_world_t *world)
 {
     ECS_MODULE(world, Geometries);
+    ECS_COMPONENT_DEFINE(world, Position2);
     ECS_COMPONENT_DEFINE(world, Position3);
     ECS_COMPONENT_DEFINE(world, Pointcloud);
     ECS_OBSERVER(world, Observer, EcsOnSet, Pointcloud);
@@ -54,6 +56,14 @@ void GeometriesImport(ecs_world_t *world)
         .move = ecs_move(Pointcloud),
         .dtor = ecs_dtor(Pointcloud),
     });
+
+	ecs_struct(world, {
+	.entity = ecs_id(Position2),
+	.members = {
+	{ .name = "x", .type = ecs_id(ecs_f32_t) },
+	{ .name = "y", .type = ecs_id(ecs_f32_t) },
+	}
+	});
 
 	ecs_struct(world, {
 	.entity = ecs_id(Position3),

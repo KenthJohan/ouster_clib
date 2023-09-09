@@ -2,6 +2,7 @@
 #include <viz/Geometries.h>
 #include <viz/Renderings.h>
 #include <viz/Cameras.h>
+#include <viz/DrawText.h>
 
 #include "Sensors.h"
 
@@ -35,6 +36,7 @@ int main(int argc, char* argv[])
     ECS_IMPORT(world, Geometries);
     ECS_IMPORT(world, Cameras);
     ECS_IMPORT(world, Renderings);
+    ECS_IMPORT(world, DrawText);
 
     //https://www.flecs.dev/explorer/?remote=true
 	ecs_set(world, EcsWorld, EcsRest, {.port = 0});

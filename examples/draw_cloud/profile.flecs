@@ -19,3 +19,8 @@ draw1 : camera1, render1 {
     - TagA
 }
 
+
+text1 {
+    - draw.text.Text{"Blackie"}
+    - geometries.Position2{0,0}
+}

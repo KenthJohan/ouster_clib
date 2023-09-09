@@ -6,9 +6,13 @@ typedef struct
 {
     float x;
     float y;
+} Position2;
+typedef struct
+{
+    float x;
+    float y;
     float z;
 } Position3;
-
 
 typedef struct
 {
@@ -18,6 +22,7 @@ typedef struct
 } Pointcloud;
 
 
+extern ECS_COMPONENT_DECLARE(Position2);
 extern ECS_COMPONENT_DECLARE(Position3);
 extern ECS_COMPONENT_DECLARE(Pointcloud);
 

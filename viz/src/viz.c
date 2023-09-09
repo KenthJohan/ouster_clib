@@ -2,6 +2,7 @@
 #include "viz/Renderings.h"
 #include "viz/Userinputs.h"
 #include "viz/DrawShapes.h"
+#include "viz/Windows.h"
 
 #include "vendor/sokol_app.h"
 #include "vendor/sokol_gfx.h"

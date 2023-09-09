@@ -4,6 +4,10 @@
 // To load this file yourself, call ecs_plecs_from_file("expressions.flecs");
 using flecs.meta
 
+window1 {
+    - windows.Window{"Hello cool title!"}
+}
+
 camera1 {
     - cameras.Camera
     - geometries.Position3
@@ -15,7 +19,7 @@ render1 {
 
 
 
-draw1 : camera1, render1 {
+draw1 : camera1, render1, window1 {
     - TagA
 }
 

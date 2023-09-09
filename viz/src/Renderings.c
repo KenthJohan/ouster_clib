@@ -1,10 +1,10 @@
 #include "viz/Renderings.h"
 #include "viz/Geometries.h"
 #include "viz/Cameras.h"
+#include "viz/Windows.h"
 
 #include "vendor/sokol_gfx.h"
 #include "vendor/sokol_gl.h"
-#include "vendor/sokol_app.h"
 #include "vendor/sokol_log.h"
 #include "vendor/sokol_glue.h"
 #include "vendor/HandmadeMath.h"
@@ -75,7 +75,6 @@ typedef struct
 
 
 
-ECS_COMPONENT_DECLARE(RenderingsContext);
 ECS_COMPONENT_DECLARE(RenderingsDraw);
 ECS_COMPONENT_DECLARE(RenderPointcloud);
 
@@ -237,15 +236,14 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 {
     RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 1);
     Camera *cam = ecs_field(it, Camera, 2);
+    Window *window = ecs_field(it, Window, 3);
     
     for(int i = 0; i < it->count; ++i, ++rend, ++cam)
     {
         //printf("%s\n", ecs_get_name(it->world, it->entities[i]));
         if(rend->cap <= 0){return;}
 
-        const float frame_time = (float)(sapp_frame_duration());
-
-        update(rend->pos, rend->vel, &rend->cur_num_particles, rend->cap, NUM_PARTICLES_EMITTED_PER_FRAME, frame_time);
+        update(rend->pos, rend->vel, &rend->cur_num_particles, rend->cap, NUM_PARTICLES_EMITTED_PER_FRAME, window->dt);
 
         // update instance data
         sg_update_buffer(rend->bind.vertex_buffers[1], &(sg_range){
@@ -253,21 +251,14 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
             .size = (size_t)rend->cur_num_particles * sizeof(hmm_vec3)
         });
 
-        sg_begin_default_pass(&rend->pass_action, sapp_width(), sapp_height());
+        sg_begin_default_pass(&rend->pass_action, window->w, window->h);
         sg_apply_pipeline(rend->pip);
         sg_apply_bindings(&rend->bind);
 
         ecs_os_memcpy_t(&rend->vs_params.mvp, cam->mvp, hmm_mat4);
         sg_range a = { &rend->vs_params, sizeof(vs_params_t) };
         sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &a);
-
-
-
         sg_draw(rend->shapes[BOX].draw.base_element, rend->shapes[i].draw.num_elements, rend->cur_num_particles);
-
-        //sg_draw(0, 24, rend->cur_num_particles);
-
-        
         sg_end_pass();
     }
 }
@@ -307,9 +298,9 @@ void RenderingsImport(ecs_world_t *world)
     ECS_MODULE(world, Renderings);
     ECS_IMPORT(world, Cameras);
     ECS_IMPORT(world, Geometries);
+    ECS_IMPORT(world, Windows);
     
 
-    ECS_COMPONENT_DEFINE(world, RenderingsContext);
     ECS_COMPONENT_DEFINE(world, RenderingsDraw);
     ECS_COMPONENT_DEFINE(world, RenderPointcloud);
 
@@ -336,6 +327,7 @@ void RenderingsImport(ecs_world_t *world)
         {
             { .id = ecs_id(RenderPointcloud) },
             { .id = ecs_id(Camera) },
+            { .id = ecs_id(Window) },
             { .id = ecs_id(RenderingsDraw) },
             { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext) }
             

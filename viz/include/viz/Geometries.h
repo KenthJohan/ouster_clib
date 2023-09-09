@@ -2,7 +2,12 @@
 #include <flecs.h>
 
 
-
+typedef struct
+{
+    float x;
+    float y;
+    float z;
+} Position3;
 
 
 typedef struct
@@ -13,6 +18,7 @@ typedef struct
 } Pointcloud;
 
 
+extern ECS_COMPONENT_DECLARE(Position3);
 extern ECS_COMPONENT_DECLARE(Pointcloud);
 
 void GeometriesImport(ecs_world_t *world);

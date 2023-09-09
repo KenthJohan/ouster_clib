@@ -1,5 +1,6 @@
 #include "viz/Cameras.h"
 #include "viz/Userinputs.h"
+#include "viz/Geometries.h"
 
 #include "vendor/HandmadeMath.h"
 #include "vendor/sokol_app.h"
@@ -50,14 +51,14 @@ static void Camera_Update(ecs_iter_t *it)
 {
 	//EG_ITER_INFO(it);
 	Camera *camera = ecs_field(it, Camera, 1);
-	for (int i = 0; i < it->count; ++i, ++camera)
+	Position3 *pos = ecs_field(it, Position3, 2);
+	for (int i = 0; i < it->count; ++i, ++camera, ++pos)
 	{
 		qf32  * q    = (qf32*)  (camera->q);
 		v3f32 * move = (v3f32*) (camera->move);
 		v3f32 * look = (v3f32*) (camera->look);
 		m4f32 * proj = (m4f32*) (camera->proj);
 		m4f32 * mvp = (m4f32*) (camera->mvp);
-		v3f32 * pos = (v3f32*) (camera->pos);
 
 
         rot(look, q, it->delta_time * 0.5f); // (look,q) -> q
@@ -70,7 +71,7 @@ static void Camera_Update(ecs_iter_t *it)
         v3f32 dir;
 		v3f32_m4_mul (&dir, &mr, move); // Multiply rotation matrix (mr) with move vector (move) to velocity vector (v)
         v3f32_mul (&dir, &dir, it->delta_time * 1.5f);
-        v3f32_add (pos, pos, &dir);
+        v3f32_add ((v3f32*)pos, (v3f32*)pos, &dir);
         //printf("%f %f %f => %f %f %f => %f %f %f\n", move->x, move->y, move->z, dir.x, dir.y, dir.z, pos->x, pos->y, pos->z);
 
         float rad2deg = (2.0f*M_PI)/360.0f;
@@ -78,7 +79,7 @@ static void Camera_Update(ecs_iter_t *it)
         m4f32_perspective1(proj, 45.0f*rad2deg, aspect, 0.01f, 10000.0f);
 
         m4f32 t = M4F32_IDENTITY;
-        m4f32_translation3(&t, pos);
+        m4f32_translation3(&t, (v3f32*)pos);
         m4f32_mul(&mr, &mr, &t);
         m4f32_mul(mvp, proj, &mr);
 
@@ -137,10 +138,11 @@ void CamerasImport(ecs_world_t *world)
 {
     ECS_MODULE(world, Cameras);
     ECS_IMPORT(world, Userinputs);
+    ECS_IMPORT(world, Geometries);
     ECS_COMPONENT_DEFINE(world, Camera);
 
     ECS_SYSTEM(world, Camera_Controller, EcsOnUpdate, Camera, UserinputsKeys($));
-    ECS_SYSTEM(world, Camera_Update, EcsOnUpdate, Camera);
+    ECS_SYSTEM(world, Camera_Update, EcsOnUpdate, Camera, Position3);
 
     ecs_set_hooks(world, Camera, {
         .ctor = ecs_ctor(Camera),

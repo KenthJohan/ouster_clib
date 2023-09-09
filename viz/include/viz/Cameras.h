@@ -8,11 +8,11 @@ typedef struct
 
     float q[4]; // Orientation quaternion
 
-    float pos[3]; // Position
-
     float move[3]; // 
     float look[3];
 } Camera;
+
+
 
 
 extern ECS_COMPONENT_DECLARE(Camera);

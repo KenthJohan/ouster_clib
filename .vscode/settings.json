@@ -69,7 +69,8 @@
         "mathtypes.h": "c",
         "lin_f32.h": "c",
         "quat_f32.h": "c",
-        "a.out.h": "c"
+        "a.out.h": "c",
+        "easymath.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

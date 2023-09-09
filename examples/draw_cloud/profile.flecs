@@ -6,6 +6,7 @@ using flecs.meta
 
 camera1 {
     - cameras.Camera
+    - geometries.Position3
 }
 
 render1 {

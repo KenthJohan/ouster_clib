@@ -59,7 +59,7 @@ ECS_COMPONENT_DECLARE(RenderingsDraw);
 ECS_COMPONENT_DECLARE(RenderPointcloud);
 
 
-sg_shader create_shader(char * path_fs, char * path_vs)
+static sg_shader create_shader(char * path_fs, char * path_vs)
 {
     platform_log("Creating shaders from files %s %s in ", path_fs, path_vs);
     fs_pwd();
@@ -90,12 +90,21 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
     assert(rend->pos ==  NULL);
     for(int i = 0; i < it->count; ++i, ++rend)
     {
+        /*
         rend->pass_action = (sg_pass_action) {
             .colors[0] = {
                 .load_action = SG_LOADACTION_CLEAR,
-                .clear_value = { 0.0f, 0.0f, 0.0f, 1.0f }
+                .clear_value = { 0.0f, 0.0f, 0.0f, 0.0f }
             }
         };
+        */
+
+        rend->pass_action  = (sg_pass_action) {
+            .colors[0].load_action = SG_LOADACTION_DONTCARE ,
+            .depth.load_action = SG_LOADACTION_DONTCARE,
+            .stencil.load_action = SG_LOADACTION_DONTCARE
+        };
+
         const float r = 0.05f;
         const float vertices[] = {
             // positions            colors

@@ -70,7 +70,10 @@
         "lin_f32.h": "c",
         "quat_f32.h": "c",
         "a.out.h": "c",
-        "easymath.h": "c"
+        "easymath.h": "c",
+        "sokol_shape.h": "c",
+        "sokol_debugtext.h": "c",
+        "stddef.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

@@ -1,12 +1,15 @@
 #include "viz/viz.h"
 #include "viz/Renderings.h"
 #include "viz/Userinputs.h"
+#include "viz/DrawShapes.h"
 
 #include "vendor/sokol_app.h"
 #include "vendor/sokol_gfx.h"
 #include "vendor/sokol_log.h"
 #include "vendor/sokol_gl.h"
 #include "vendor/sokol_glue.h"
+#include "vendor/sokol_debugtext.h"
+
 
 #include <stdlib.h>
 #include <math.h>
@@ -26,6 +29,15 @@ static void init(viz_state_t * state)
         .logger.func = slog_func,
     });
     sgl_setup(&(sgl_desc_t){ .logger.func = slog_func });
+
+    sdtx_setup(&(sdtx_desc_t) {
+        .fonts[0] = sdtx_font_oric(),
+        .logger.func = slog_func,
+    });
+    //__dbgui_setup(sapp_sample_count());
+
+    draw_shapes_init();
+
     ecs_singleton_set(world, RenderingsContext, {0});
 
 }
@@ -34,17 +46,18 @@ static void init(viz_state_t * state)
 static void frame(viz_state_t * state)
 {
     ecs_world_t * world = state->world;
-    /*
+    
     const sg_pass_action pass_action = {
         .colors[0] = {
             .load_action = SG_LOADACTION_CLEAR,
-            .clear_value = { 0.0f, 1.0f, 0.0f, 1.0f }
+            .clear_value = { 0.1f, 0.1f, 0.1f, 1.0f }
         }
     };
     sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
     sg_end_pass();
-    */
+    
     ecs_progress(world, 0);
+    draw_shapes_frame();
     sg_commit();
 }
 

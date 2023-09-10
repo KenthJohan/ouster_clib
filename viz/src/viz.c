@@ -39,6 +39,7 @@ static void init(viz_state_t * state)
 
     draw_shapes_init();
 
+    ecs_singleton_add(world, RenderingsContext);
     ecs_singleton_set(world, RenderingsContext, {0});
 
 }

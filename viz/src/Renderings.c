@@ -75,7 +75,6 @@ typedef struct
 
 
 
-ECS_COMPONENT_DECLARE(RenderingsDraw);
 ECS_COMPONENT_DECLARE(RenderPointcloud);
 
 
@@ -109,6 +108,7 @@ static sg_shader create_shader(char * path_fs, char * path_vs)
 void RenderPointcloud_Setup(ecs_iter_t *it)
 {
     RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 1);
+    if(rend->pos !=  NULL){return;}
     assert(rend->pos ==  NULL);
     assert(rend->pos ==  NULL);
     for(int i = 0; i < it->count; ++i, ++rend)
@@ -194,7 +194,8 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
         rend->pos = ecs_os_calloc_n(hmm_vec3, rend->cap);
         rend->vel = ecs_os_calloc_n(hmm_vec3, rend->cap);
 
-        ecs_set(it->world, it->entities[i], RenderingsDraw, {0});
+        ecs_remove_id(it->world, it->entities[i], Setup);
+        ecs_add_id(it->world, it->entities[i], Valid);
     }
 }
 
@@ -301,7 +302,6 @@ void RenderingsImport(ecs_world_t *world)
     ECS_IMPORT(world, Windows);
     
 
-    ECS_COMPONENT_DEFINE(world, RenderingsDraw);
     ECS_COMPONENT_DEFINE(world, RenderPointcloud);
 
 
@@ -311,14 +311,14 @@ void RenderingsImport(ecs_world_t *world)
         .query.filter.terms =
         {
             { .id = ecs_id(RenderPointcloud) },
-            { .id = ecs_id(Camera) },
-            { .id = ecs_id(RenderingsDraw), .oper=EcsNot },
-            { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext) }
+            { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
+            { .id = Setup },
             
             //{ .id = ecs_id(RenderPointcloud), .src.trav = EcsIsA, .src.flags = EcsUp },
             //{ .id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp },
         }
     });
+
 
     ecs_system_init(world, &(ecs_system_desc_t){
         .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
@@ -328,9 +328,8 @@ void RenderingsImport(ecs_world_t *world)
             { .id = ecs_id(RenderPointcloud) },
             { .id = ecs_id(Camera) },
             { .id = ecs_id(Window) },
-            { .id = ecs_id(RenderingsDraw) },
-            { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext) }
-            
+            { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
+            { .id = Valid },
             //{ .id = ecs_id(RenderPointcloud), .src.trav = EcsIsA, .src.flags = EcsUp },
             //{ .id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp },
         }

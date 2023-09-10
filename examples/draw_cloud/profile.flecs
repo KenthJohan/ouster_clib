@@ -15,6 +15,7 @@ camera1 {
 
 render1 {
     - renderings.RenderPointcloud {cap: 1000*1000}
+    - windows.Setup
 }
 
 

@@ -5,8 +5,13 @@
 
 ECS_COMPONENT_DECLARE(Window);
 ECS_COMPONENT_DECLARE(RenderingsContext);
+ECS_COMPONENT_DECLARE(Draw);
+ECS_TAG_DECLARE(Update);
+ECS_TAG_DECLARE(Invalid);
+ECS_TAG_DECLARE(Valid);
+ECS_TAG_DECLARE(Setup);
 
-void Update(ecs_iter_t *it)
+void it_update(ecs_iter_t *it)
 {
     Window *window = ecs_field(it, Window, 1);
     for(int i = 0; i < it->count; ++i, ++window)
@@ -17,7 +22,7 @@ void Update(ecs_iter_t *it)
     }
 }
 
-void Set(ecs_iter_t *it)
+void it_set(ecs_iter_t *it)
 {
     Window *window = ecs_field(it, Window, 1);
     for(int i = 0; i < it->count; ++i, ++window)
@@ -43,16 +48,22 @@ void WindowsImport(ecs_world_t *world)
 
     ECS_COMPONENT_DEFINE(world, Window);
     ECS_COMPONENT_DEFINE(world, RenderingsContext);
+    ECS_COMPONENT_DEFINE(world, Draw);
+    ECS_TAG_DEFINE(world, Update);
+    ECS_TAG_DEFINE(world, Invalid);
+    ECS_TAG_DEFINE(world, Valid);
+    ECS_TAG_DEFINE(world, Setup);
 
-    ECS_OBSERVER(world, Set, EcsOnSet, Window, RenderingsContext($));
+
+    ECS_OBSERVER(world, it_set, EcsOnSet, Window, Valid);
 
     ecs_system_init(world, &(ecs_system_desc_t){
         .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-        .callback = Update,
+        .callback = it_update,
         .query.filter.terms =
         {
             { .id = ecs_id(Window) },
-            { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext) }
+            { .id = Valid }
         }
     });
 

@@ -13,7 +13,16 @@ camera1 {
     - geometries.Position3
 }
 
-render1 {
+vbuf1 {
+
+}
+
+shape1 : vbuf1 {
+    - geometries.Sphere{r:100}
+    //- Index
+}
+
+render1 : shape1 {
     - renderings.RenderPointcloud {cap: 1000*1000}
     - windows.Setup
 }

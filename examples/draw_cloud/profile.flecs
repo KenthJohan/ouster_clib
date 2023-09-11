@@ -33,7 +33,12 @@ render1 : vbuf1 {
 }
 
 
-draw1 : camera1, render1, window1, shape2 {
+sensor1 {
+    - sensors.OusterSensorDesc{metafile:"/home/johan/Downloads/OS1_captures/OS1-16A.json"}
+}
+
+
+draw1 : camera1, render1, window1, shape1, sensor1 {
     - pointclouds.Pointcloud{cap: 1024*128}
 }
 
@@ -42,3 +47,4 @@ text1 {
     - draw.text.Text{"Blackie"}
     - geometries.Position2{0,0}
 }
+

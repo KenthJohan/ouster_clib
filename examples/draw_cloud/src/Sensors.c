@@ -15,6 +15,7 @@
 #include <platform/fs.h>
 
 #include <viz/Geometries.h>
+#include <viz/Pointclouds.h>
 
 #include <flecs.h>
 
@@ -46,6 +47,7 @@ typedef struct
 } OusterSensor;
 
 ECS_COMPONENT_DECLARE(OusterSensor);
+ECS_COMPONENT_DECLARE(OusterSensorDesc);
 
 
 void SysUpdateColor(ecs_iter_t *it)
@@ -58,35 +60,36 @@ void SysUpdateColor(ecs_iter_t *it)
         char buf[NET_UDP_MAX_SIZE];
         int64_t n = net_read(sensor->socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
         if(n <= 0){continue;}
-        printf("n %ji\n", (intmax_t)n);
+        //printf("n %ji\n", (intmax_t)n);
         ouster_lidar_get_fields(&sensor->lidar, &sensor->meta, buf, sensor->fields, FIELD_COUNT);
         if(sensor->lidar.last_mid != sensor->meta.mid1) {continue;}
         ouster_mat4_apply_mask_u32(&sensor->fields[FIELD_RANGE].mat, sensor->fields[FIELD_RANGE].mask);
         ouster_lut_cartesian(&sensor->lut, sensor->fields[FIELD_RANGE].mat.data, sensor->xyz);
-        //printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
+        //printf("mat = %i of %i\n", sensor->fields[0].num_valid_pixels, sensor->fields[0].mat.dim[1] * sensor->fields[0].mat.dim[2]);
         ouster_mat4_zero(&sensor->fields[FIELD_RANGE].mat);
         printf("New frame %ji\n", (intmax_t)sensor->lidar.frame_id);
-        int nj = ECS_MIN(cloud->count, sensor->lut.w * sensor->lut.h);
-        for(int j = 0; j < nj; ++j)
+        cloud->count = ECS_MIN(cloud->cap, sensor->lut.w * sensor->lut.h);
+        for(int j = 0; j < cloud->count; ++j)
         {
             float * dst = cloud->pos + j*3;
             double * src = sensor->xyz + j*3;
             dst[j*3 + 0] = src[j*3 + 0];
             dst[j*3 + 1] = src[j*3 + 1];
             dst[j*3 + 2] = src[j*3 + 2];
-            printf("xyz %f %f %f\n", dst[0], dst[1], dst[2]);
+            //printf("xyz %f %f %f\n", dst[0], dst[1], dst[2]);
         }
     }
 }
 
-void Observer_LidarUDP_OnAdd(ecs_iter_t *it)
+static void Observer_LidarUDP_OnAdd(ecs_iter_t *it)
 {
-    OusterSensor *sensor = ecs_field(it, OusterSensor, 1);
-    for(int i = 0; i < it->count; ++i, sensor++)
+    OusterSensorDesc *desc = ecs_field(it, OusterSensorDesc, 1);
+    for(int i = 0; i < it->count; ++i, ++desc)
     {
+        OusterSensor * sensor = ecs_get_mut(it->world, it->entities[i], OusterSensor);
         sensor->socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
         sensor->socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_lidar("7503");
-        char * content = fs_readfile(sensor->metafile);
+        char * content = fs_readfile(desc->metafile);
         ouster_meta_parse(content, &sensor->meta);
         free(content);
         ouster_lut_init(&sensor->lut, &sensor->meta);
@@ -101,17 +104,35 @@ void SensorsImport(ecs_world_t *world)
 {
     ECS_MODULE(world, Sensors);
     ECS_IMPORT(world, Geometries);
+    ECS_IMPORT(world, Pointclouds);
 
     ECS_COMPONENT_DEFINE(world, OusterSensor);
+    ECS_COMPONENT_DEFINE(world, OusterSensorDesc);
+
+	ecs_struct(world, {
+	.entity = ecs_id(OusterSensorDesc),
+	.members = {
+	{ .name = "metafile", .type = ecs_id(ecs_string_t) },
+	}
+	});
+
+    ecs_system_init(world, &(ecs_system_desc_t){
+        .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+        .callback = Observer_LidarUDP_OnAdd,
+        .query.filter.terms =
+        {
+            { .id = ecs_id(OusterSensorDesc), .src.flags = EcsSelf },
+            { .id = ecs_id(OusterSensor), .oper = EcsNot}, // Adds this
+        }
+    });
 
     ecs_system_init(world, &(ecs_system_desc_t){
         .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
         .callback = SysUpdateColor,
-        .query.filter = {
-            .expr = "Pointcloud, OusterSensor"
+        .query.filter.terms =
+        {
+            { .id = ecs_id(Pointcloud), .src.flags = EcsSelf },
+            { .id = ecs_id(OusterSensor), .src.trav = EcsIsA, .src.flags = EcsUp},
         }
     });
-
-
-    ECS_OBSERVER(world, Observer_LidarUDP_OnAdd, EcsOnSet, OusterSensor);
 }

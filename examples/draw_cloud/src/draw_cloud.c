@@ -41,6 +41,7 @@ int main(int argc, char* argv[])
     ECS_IMPORT(world, Renderings);
     ECS_IMPORT(world, DrawText);
     ECS_IMPORT(world, Windows);
+    ECS_IMPORT(world, Sensors);
 
     //https://www.flecs.dev/explorer/?remote=true
 	ecs_set(world, EcsWorld, EcsRest, {.port = 0});
@@ -48,7 +49,6 @@ int main(int argc, char* argv[])
     //ecs_set_threads(world, 4);
 
 
-    //ECS_IMPORT(world, Sensors);
 
 
 

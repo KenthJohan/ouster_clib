@@ -16,6 +16,7 @@ static void RenderText(ecs_iter_t *it)
 	{
         sdtx_pos(pos->x, pos->y);
         sdtx_puts(text->content);
+        sdtx_printf("%f\n", it->delta_time);
 	}
 }
 

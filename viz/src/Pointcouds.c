@@ -105,7 +105,9 @@ void PointcloudsImport(ecs_world_t *world)
     ECS_COMPONENT_DEFINE(world, Pointcloud);
 
     ECS_OBSERVER(world, Observer, EcsOnSet, Pointcloud);
+
     ECS_SYSTEM(world, Bouncer, EcsOnUpdate, Pointcloud);
+    ecs_enable(world, Bouncer, false);
 
 
     ecs_set_hooks(world, Pointcloud, {

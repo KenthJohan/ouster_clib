@@ -2,6 +2,7 @@
 #include "viz/Geometries.h"
 #include "viz/Cameras.h"
 #include "viz/Windows.h"
+#include "viz/Pointclouds.h"
 
 #include "vendor/sokol_gfx.h"
 #include "vendor/sokol_gl.h"
@@ -19,7 +20,7 @@
 #include <platform/log.h>
 
 
-#define MAX_PARTICLES (512 * 1024)
+
 
 #if !defined(SOKOL_SHDC_ALIGN)
   #if defined(_MSC_VER)
@@ -42,8 +43,6 @@ SOKOL_SHDC_ALIGN(16) typedef struct vs_params_t {
 #pragma pack(pop)
 
 
-#define MAX_PARTICLES (512 * 1024)
-#define NUM_PARTICLES_EMITTED_PER_FRAME (10)
 
 enum {
     BOX = 0,
@@ -67,10 +66,7 @@ typedef struct
     sg_pipeline pip;
     sg_bindings bind;
     shape_t shapes[NUM_SHAPES];
-    int cur_num_particles;
     float ry;
-    hmm_vec3 * pos;
-    hmm_vec3 * vel;
 } RenderPointcloud;
 
 
@@ -108,9 +104,7 @@ static sg_shader create_shader(char * path_fs, char * path_vs)
 void RenderPointcloud_Setup(ecs_iter_t *it)
 {
     RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 1);
-    if(rend->pos !=  NULL){return;}
-    assert(rend->pos ==  NULL);
-    assert(rend->pos ==  NULL);
+
     for(int i = 0; i < it->count; ++i, ++rend)
     {
         /*
@@ -136,9 +130,9 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
         };
         
         buf = sshape_build_sphere(&buf, &(sshape_sphere_t) {
-            .radius = 0.01f,
-            .slices = 10,
-            .stacks = 8,
+            .radius = 0.10f,
+            .slices = 5,
+            .stacks = 3,
             .random_colors = true,
         });
         
@@ -159,7 +153,7 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
         rend->bind.vertex_buffers[0] = sg_make_buffer(&vbuf_desc);
         rend->bind.index_buffer = sg_make_buffer(&ibuf_desc);
         rend->bind.vertex_buffers[1] = sg_make_buffer(&(sg_buffer_desc){
-            .size = MAX_PARTICLES * sizeof(float) * 3,
+            .size = rend->cap * sizeof(float) * 3,
             .usage = SG_USAGE_STREAM,
             .label = "instance-data"
         });
@@ -187,13 +181,6 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
             .label = "instancing-pipeline"
         });
 
-
-
-        //Temporary:
-        rend->cap = MAX_PARTICLES;
-        rend->pos = ecs_os_calloc_n(hmm_vec3, rend->cap);
-        rend->vel = ecs_os_calloc_n(hmm_vec3, rend->cap);
-
         ecs_remove_id(it->world, it->entities[i], Setup);
         ecs_add_id(it->world, it->entities[i], Valid);
     }
@@ -201,55 +188,26 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
 
 
 
-void update(hmm_vec3 * pos, hmm_vec3 * vel, int * last, int cap, int emit_per_frame, float t)
-{
-    // emit new particles
-    for (int i = 0; i < emit_per_frame; i++) {
-        if ((*last) < cap) {
-            pos[(*last)] = HMM_Vec3(0.0, 0.0, 0.0);
-            vel[(*last)] = HMM_Vec3(
-                ((float)(rand() & 0x7FFF) / 0x7FFF) - 0.5f,
-                ((float)(rand() & 0x7FFF) / 0x7FFF) * 0.5f + 2.0f,
-                ((float)(rand() & 0x7FFF) / 0x7FFF) - 0.5f);
-            (*last)++;
-        } else {
-            break;
-        }
-    }
 
-    // update particle positions
-    for (int i = 0; i < (*last); i++) {
-        vel[i].Y -= 1.0f * t;
-        pos[i].X += vel[i].X * t;
-        pos[i].Y += vel[i].Y * t;
-        pos[i].Z += vel[i].Z * t;
-        // bounce back from 'ground'
-        if (pos[i].Y < -2.0f) {
-            pos[i].Y = -1.8f;
-            vel[i].Y = -vel[i].Y;
-            vel[i].X *= 0.8f; vel[i].Y *= 0.8f; vel[i].Z *= 0.8f;
-        }
-    }
-}
 
 
 void RenderPointcloud_Draw(ecs_iter_t *it)
 {
-    RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 1);
-    Camera *cam = ecs_field(it, Camera, 2);
-    Window *window = ecs_field(it, Window, 3);
+    Pointcloud *cloud = ecs_field(it, Pointcloud, 1);
+    RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 2);
+    Camera *cam = ecs_field(it, Camera, 3);
+    Window *window = ecs_field(it, Window, 4); // up
     
-    for(int i = 0; i < it->count; ++i, ++rend, ++cam)
+    for(int i = 0; i < it->count; ++i, ++cloud)
     {
         //printf("%s\n", ecs_get_name(it->world, it->entities[i]));
-        if(rend->cap <= 0){return;}
-
-        update(rend->pos, rend->vel, &rend->cur_num_particles, rend->cap, NUM_PARTICLES_EMITTED_PER_FRAME, window->dt);
+        if(rend->cap <= 0){continue;}
+        if(cloud->count <= 0){continue;}
 
         // update instance data
         sg_update_buffer(rend->bind.vertex_buffers[1], &(sg_range){
-            .ptr = rend->pos,
-            .size = (size_t)rend->cur_num_particles * sizeof(hmm_vec3)
+            .ptr = cloud->pos,
+            .size = (size_t)cloud->count * sizeof(hmm_vec3)
         });
 
         sg_begin_default_pass(&rend->pass_action, window->w, window->h);
@@ -259,7 +217,7 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
         ecs_os_memcpy_t(&rend->vs_params.mvp, cam->mvp, hmm_mat4);
         sg_range a = { &rend->vs_params, sizeof(vs_params_t) };
         sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &a);
-        sg_draw(rend->shapes[BOX].draw.base_element, rend->shapes[i].draw.num_elements, rend->cur_num_particles);
+        sg_draw(rend->shapes[BOX].draw.base_element, rend->shapes[i].draw.num_elements, cloud->count);
         sg_end_pass();
     }
 }
@@ -271,35 +229,13 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 
 
 
-
-
-
-void Pointcloud_OnSet(ecs_iter_t *it)
-{
-    Pointcloud *state = ecs_field(it, Pointcloud, 1);
-    for(int i = 0; i < it->count; ++i, ++state)
-    {
-    }
-}
-
-
-void Pointcloud_Draw(ecs_iter_t *it)
-{
-    Pointcloud *potincloud = ecs_field(it, Pointcloud, 1);
-    RenderPointcloud *render = ecs_field(it, RenderPointcloud, 2);
-    for(int i = 0; i < it->count; ++i)
-    {
-
-    }
-}
-
-
 void RenderingsImport(ecs_world_t *world)
 {
     ECS_MODULE(world, Renderings);
     ECS_IMPORT(world, Cameras);
     ECS_IMPORT(world, Geometries);
     ECS_IMPORT(world, Windows);
+    ECS_IMPORT(world, Pointclouds);
     
 
     ECS_COMPONENT_DEFINE(world, RenderPointcloud);
@@ -325,9 +261,10 @@ void RenderingsImport(ecs_world_t *world)
         .callback = RenderPointcloud_Draw,
         .query.filter.terms =
         {
-            { .id = ecs_id(RenderPointcloud) },
-            { .id = ecs_id(Camera) },
-            { .id = ecs_id(Window) },
+            { .id = ecs_id(Pointcloud) },
+            { .id = ecs_id(RenderPointcloud), .src.trav = EcsIsA, .src.flags = EcsUp },
+            { .id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp },
+            { .id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp },
             { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
             { .id = Valid },
             //{ .id = ecs_id(RenderPointcloud), .src.trav = EcsIsA, .src.flags = EcsUp },

@@ -76,7 +76,8 @@
         "stddef.h": "c",
         "drawtext.h": "c",
         "drawshapes.h": "c",
-        "windows.h": "c"
+        "windows.h": "c",
+        "pointclouds.h": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

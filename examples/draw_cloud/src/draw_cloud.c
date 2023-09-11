@@ -4,6 +4,7 @@
 #include <viz/Cameras.h>
 #include <viz/DrawText.h>
 #include <viz/Windows.h>
+#include <viz/Pointclouds.h>
 
 #include "Sensors.h"
 
@@ -35,6 +36,7 @@ int main(int argc, char* argv[])
 
     // Must import before loading flecs file
     ECS_IMPORT(world, Geometries);
+    ECS_IMPORT(world, Pointclouds);
     ECS_IMPORT(world, Cameras);
     ECS_IMPORT(world, Renderings);
     ECS_IMPORT(world, DrawText);

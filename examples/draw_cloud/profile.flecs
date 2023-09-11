@@ -21,7 +21,7 @@ render1 {
 
 
 draw1 : camera1, render1, window1 {
-    - TagA
+    - pointclouds.Pointcloud {cap: 1024*128}
 }
 
 

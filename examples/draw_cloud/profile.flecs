@@ -23,7 +23,7 @@ shape1 : vbuf1 {
 }
 
 shape2 : vbuf1 {
-    - geometries.Sphere{r:0.01,slices:3,stacks:2}
+    - geometries.Sphere{r:0.01,slices:6,stacks:4}
     //- Index
 }
 

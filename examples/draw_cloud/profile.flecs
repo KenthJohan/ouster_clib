@@ -14,23 +14,27 @@ camera1 {
 }
 
 vbuf1 {
-
+    - geometries.ShapeBuffer{cap_vertices:6*1024, cap_indices:16 * 1024}
 }
 
 shape1 : vbuf1 {
-    - geometries.Sphere{r:100}
+    - geometries.Sphere{r:0.1,slices:1,stacks:1}
     //- Index
 }
 
-render1 : shape1 {
-    - renderings.RenderPointcloud {cap: 1000*1000}
+shape2 : vbuf1 {
+    - geometries.Sphere{r:0.01,slices:3,stacks:2}
+    //- Index
+}
+
+render1 : vbuf1 {
+    - renderings.RenderPointcloud{cap: 1000*1000}
     - windows.Setup
 }
 
 
-
-draw1 : camera1, render1, window1 {
-    - pointclouds.Pointcloud {cap: 1024*128}
+draw1 : camera1, render1, window1, shape2 {
+    - pointclouds.Pointcloud{cap: 1024*128}
 }
 
 

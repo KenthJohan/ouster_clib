@@ -3,6 +3,7 @@
 #include "viz/Cameras.h"
 #include "viz/Windows.h"
 #include "viz/Pointclouds.h"
+#include "GraphicsShapes.h"
 
 #include "vendor/sokol_gfx.h"
 #include "vendor/sokol_gl.h"
@@ -65,8 +66,6 @@ typedef struct
     sg_pass_action pass_action;
     sg_pipeline pip;
     sg_bindings bind;
-    shape_t shapes[NUM_SHAPES];
-    float ry;
 } RenderPointcloud;
 
 
@@ -104,6 +103,9 @@ static sg_shader create_shader(char * path_fs, char * path_vs)
 void RenderPointcloud_Setup(ecs_iter_t *it)
 {
     RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 1);
+    ShapeBufferImpl *sbuf = ecs_field(it, ShapeBufferImpl, 2);
+
+    
 
     for(int i = 0; i < it->count; ++i, ++rend)
     {
@@ -121,7 +123,7 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
             .depth.load_action = SG_LOADACTION_DONTCARE,
             .stencil.load_action = SG_LOADACTION_DONTCARE
         };
-
+        /*
         sshape_vertex_t vertices[6 * 1024];
         uint16_t indices[16 * 1024];
         sshape_buffer_t buf = {
@@ -130,11 +132,13 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
         };
         
         buf = sshape_build_sphere(&buf, &(sshape_sphere_t) {
-            .radius = 0.10f,
+            .radius = 0.010f,
             .slices = 5,
             .stacks = 3,
             .random_colors = true,
         });
+        */
+
         
         /*
         buf = sshape_build_box(&buf, &(sshape_box_t){
@@ -145,11 +149,10 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
             .random_colors = true,
         });
         */
-        rend->shapes[BOX].draw = sshape_element_range(&buf);
-        assert(buf.valid);
 
-        const sg_buffer_desc vbuf_desc = sshape_vertex_buffer_desc(&buf);
-        const sg_buffer_desc ibuf_desc = sshape_index_buffer_desc(&buf);
+        assert(sbuf->buf.valid);
+        const sg_buffer_desc vbuf_desc = sshape_vertex_buffer_desc(&sbuf->buf);
+        const sg_buffer_desc ibuf_desc = sshape_index_buffer_desc(&sbuf->buf);
         rend->bind.vertex_buffers[0] = sg_make_buffer(&vbuf_desc);
         rend->bind.index_buffer = sg_make_buffer(&ibuf_desc);
         rend->bind.vertex_buffers[1] = sg_make_buffer(&(sg_buffer_desc){
@@ -196,7 +199,8 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
     Pointcloud *cloud = ecs_field(it, Pointcloud, 1);
     RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 2);
     Camera *cam = ecs_field(it, Camera, 3);
-    Window *window = ecs_field(it, Window, 4); // up
+    ShapeIndex *shape = ecs_field(it, ShapeIndex, 4);
+    Window *window = ecs_field(it, Window, 5); // up
     
     for(int i = 0; i < it->count; ++i, ++cloud)
     {
@@ -217,7 +221,7 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
         ecs_os_memcpy_t(&rend->vs_params.mvp, cam->mvp, hmm_mat4);
         sg_range a = { &rend->vs_params, sizeof(vs_params_t) };
         sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &a);
-        sg_draw(rend->shapes[BOX].draw.base_element, rend->shapes[i].draw.num_elements, cloud->count);
+        sg_draw(shape->element.base_element, shape->element.num_elements, cloud->count);
         sg_end_pass();
     }
 }
@@ -236,6 +240,7 @@ void RenderingsImport(ecs_world_t *world)
     ECS_IMPORT(world, Geometries);
     ECS_IMPORT(world, Windows);
     ECS_IMPORT(world, Pointclouds);
+    ECS_IMPORT(world, GraphicsShapes);
     
 
     ECS_COMPONENT_DEFINE(world, RenderPointcloud);
@@ -247,6 +252,7 @@ void RenderingsImport(ecs_world_t *world)
         .query.filter.terms =
         {
             { .id = ecs_id(RenderPointcloud) },
+            { .id = ecs_id(ShapeBufferImpl) },
             { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
             { .id = Setup },
             
@@ -264,6 +270,7 @@ void RenderingsImport(ecs_world_t *world)
             { .id = ecs_id(Pointcloud) },
             { .id = ecs_id(RenderPointcloud), .src.trav = EcsIsA, .src.flags = EcsUp },
             { .id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp },
+            { .id = ecs_id(ShapeIndex), .src.trav = EcsIsA, .src.flags = EcsUp },
             { .id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp },
             { .id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
             { .id = Valid },

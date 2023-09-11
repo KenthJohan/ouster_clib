@@ -18,7 +18,7 @@ vbuf1 {
 }
 
 shape1 : vbuf1 {
-    - geometries.Sphere{r:0.1,slices:1,stacks:1}
+    - geometries.Sphere{r:0.1,slices:7,stacks:3}
     //- Index
 }
 

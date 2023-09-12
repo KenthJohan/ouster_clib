@@ -2,52 +2,38 @@
 #include "ouster_clib/types.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-
-
-
 
 #define OUSTER_MAX_ROWS 128
 
 typedef struct
 {
-    
-    int columns_per_frame;
-    int columns_per_packet;
-    int pixels_per_column;
-    ouster_profile_t profile;
-    int channel_data_size;
-    int col_size;
-    int lidar_packet_size;
-    int pixel_shift_by_row[OUSTER_MAX_ROWS];
 
-    double beam_altitude_angles[OUSTER_MAX_ROWS];
-    double beam_azimuth_angles[OUSTER_MAX_ROWS];
-    double beam_to_lidar_transform[16];
-    double lidar_origin_to_beam_origin_mm;
+	int columns_per_frame;
+	int columns_per_packet;
+	int pixels_per_column;
+	ouster_profile_t profile;
+	int channel_data_size;
+	int col_size;
+	int lidar_packet_size;
+	int pixel_shift_by_row[OUSTER_MAX_ROWS];
 
+	double beam_altitude_angles[OUSTER_MAX_ROWS];
+	double beam_azimuth_angles[OUSTER_MAX_ROWS];
+	double beam_to_lidar_transform[16];
+	double lidar_origin_to_beam_origin_mm;
 
-    double lidar_to_sensor_transform[16];
+	double lidar_to_sensor_transform[16];
 
-    /*
-		"beam_altitude_angles": [21.21, 20.95, 20.62, 20.27, 19.98, 19.72, 19.4, 19.03, 18.75, 18.47, 18.14, 17.79, 17.48, 17.21, 16.87, 16.51, 16.21, 15.92, 15.58, 15.22, 14.91, 14.62, 14.27, 13.91, 13.59, 13.29, 12.95, 12.59, 12.27, 11.96, 11.61, 11.24, 10.92, 10.61, 10.26, 9.88, 9.55, 9.24, 8.89, 8.52, 8.2, 7.86, 7.52, 7.15, 6.83, 6.49, 6.14, 5.76, 5.44, 5.1, 4.75, 4.38, 4.05, 3.71, 3.36, 3, 2.66, 2.31, 1.97, 1.6, 1.27, 0.91, 0.56, 0.2, -0.14, -0.5, -0.85, -1.19, -1.54, -1.9, -2.25, -2.58, -2.94, -3.28, -3.65, -3.99, -4.33, -4.67, -5.05, -5.39, -5.72, -6.08, -6.42, -6.77, -7.1, -7.46, -7.8, -8.15, -8.47, -8.83, -9.18, -9.51, -9.84, -10.2, -10.54, -10.86, -11.18, -11.56, -11.89, -12.2, -12.53, -12.89, -13.23, -13.54, -13.86, -14.21, -14.56, -14.85, -15.18, -15.52, -15.85, -16.15, -16.45, -16.82, -17.14, -17.42, -17.72, -18.1, -18.41, -18.68, -18.98, -19.35, -19.65, -19.92, -20.22, -20.57, -20.88, -21.15],
-		"beam_azimuth_angles": [4.17, 1.36, -1.44, -4.23, 4.17, 1.38, -1.43, -4.23, 4.18, 1.39, -1.43, -4.22, 4.18, 1.39, -1.43, -4.22, 4.19, 1.39, -1.43, -4.22, 4.18, 1.39, -1.43, -4.22, 4.19, 1.39, -1.42, -4.21, 4.18, 1.39, -1.42, -4.22, 4.17, 1.39, -1.43, -4.22, 4.18, 1.38, -1.43, -4.22, 4.19, 1.38, -1.42, -4.22, 4.19, 1.4, -1.42, -4.23, 4.19, 1.39, -1.41, -4.22, 4.19, 1.39, -1.41, -4.2, 4.19, 1.38, -1.41, -4.2, 4.19, 1.39, -1.41, -4.2, 4.19, 1.39, -1.42, -4.2, 4.19, 1.39, -1.42, -4.19, 4.2, 1.4, -1.42, -4.2, 4.2, 1.42, -1.41, -4.21, 4.21, 1.41, -1.4, -4.2, 4.21, 1.41, -1.39, -4.19, 4.21, 1.41, -1.39, -4.18, 4.22, 1.42, -1.39, -4.18, 4.22, 1.42, -1.38, -4.18, 4.23, 1.44, -1.38, -4.18, 4.23, 1.44, -1.38, -4.18, 4.23, 1.44, -1.38, -4.17, 4.24, 1.44, -1.37, -4.16, 4.26, 1.43, -1.36, -4.16, 4.25, 1.43, -1.36, -4.16, 4.24, 1.45, -1.37, -4.16],
-		"beam_to_lidar_transform": [1, 0, 0, 16.721, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-		"lidar_origin_to_beam_origin_mm": 16.721
-        */
-
-    //int xxx_column_offset;
-
-
-    int mid0;
-    int mid1;
-    int midw;
+	int mid0;
+	int mid1;
+	int midw;
 
 } ouster_meta_t;
 
-
-void ouster_meta_parse(char const * jsonstr, ouster_meta_t * out_meta);
+void ouster_meta_parse(char const *jsonstr, ouster_meta_t *out_meta);
 
 #ifdef __cplusplus
 }

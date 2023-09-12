@@ -4,17 +4,17 @@
 #include "ouster_clib/field.h"
 
 #ifdef __cplusplus
-extern "C" {
-#endif
-typedef struct 
+extern "C"
 {
-    int frame_id;
-    int last_mid;
-    int mid_loss;
+#endif
+typedef struct
+{
+	int frame_id;
+	int last_mid;
+	int mid_loss;
 } ouster_lidar_t;
 
-
-void ouster_lidar_get_fields(ouster_lidar_t * lidar, ouster_meta_t * meta, char const * buf, ouster_field_t * fields, int fcount);
+void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char const *buf, ouster_field_t *fields, int fcount);
 
 #ifdef __cplusplus
 }

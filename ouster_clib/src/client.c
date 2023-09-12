@@ -7,120 +7,117 @@
 #include <string.h>
 #include <assert.h>
 
-
-
-void ouster_buffer_init(ouster_buffer_t * b, int cap)
+void ouster_buffer_init(ouster_buffer_t *b, int cap)
 {
-    b->size = 0;
-    b->cap = cap;
-    b->data = calloc(1, b->cap);
+	b->size = 0;
+	b->cap = cap;
+	b->data = calloc(1, b->cap);
 }
 
-void ouster_buffer_fini(ouster_buffer_t * b)
+void ouster_buffer_fini(ouster_buffer_t *b)
 {
-    free(b->data);
-    b->size = 0;
-    b->cap = 0;
-    b->data = NULL;
+	free(b->data);
+	b->size = 0;
+	b->cap = 0;
+	b->data = NULL;
 }
 
-
-size_t write_memory_callback(void* contents, size_t element_size, size_t elements_count, void* user_pointer)
+size_t write_memory_callback(void *contents, size_t element_size, size_t elements_count, void *user_pointer)
 {
-    size_t size_increment = element_size * elements_count;
-    ouster_buffer_t * b = user_pointer;
-    int new_size = b->size + size_increment;
-    if(new_size > b->cap)
-    {
-        b->data = realloc(b->data, new_size);
-        if(b->data == NULL)
-        {
-            platform_log("realloc(): error\n");
-            return 0;
-        }
-        b->cap = new_size;
-    }
-    printf("contents:\n");
-    fwrite(contents, size_increment, 1, stdout);
-    printf("\n");
-    memcpy(b->data + b->size, contents, size_increment);
-    b->size += size_increment;
-    return size_increment;
+	size_t size_increment = element_size * elements_count;
+	ouster_buffer_t *b = user_pointer;
+	int new_size = b->size + size_increment;
+	if (new_size > b->cap)
+	{
+		b->data = realloc(b->data, new_size);
+		if (b->data == NULL)
+		{
+			platform_log("realloc(): error\n");
+			return 0;
+		}
+		b->cap = new_size;
+	}
+	printf("contents:\n");
+	fwrite(contents, size_increment, 1, stdout);
+	printf("\n");
+	memcpy(b->data + b->size, contents, size_increment);
+	b->size += size_increment;
+	return size_increment;
 }
 
-//http://192.168.1.137/api/v1/sensor/cmd/set_udp_dest_auto
-//http://192.168.1.137/api/v1/sensor/cmd/set_udp_dest_auto
-void req_get(ouster_client_t * client, char const * ip)
+// http://192.168.1.137/api/v1/sensor/cmd/set_udp_dest_auto
+// http://192.168.1.137/api/v1/sensor/cmd/set_udp_dest_auto
+void req_get(ouster_client_t *client, char const *ip)
 {
-    
 
-    {
-        char url[1024];
-        snprintf(url, 1024, "http://%s/%s", client->host, ip);
-        platform_log("\033[4;34m" "GET" "\033[0m" " %s\n", url);
-        curl_easy_setopt(client->curl, CURLOPT_URL, url);
-    }
+	{
+		char url[1024];
+		snprintf(url, 1024, "http://%s/%s", client->host, ip);
+		platform_log("\033[4;34m"
+					 "GET"
+					 "\033[0m"
+					 " %s\n",
+					 url);
+		curl_easy_setopt(client->curl, CURLOPT_URL, url);
+	}
 
-    curl_easy_setopt(client->curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(client->curl, CURLOPT_WRITEFUNCTION, write_memory_callback);
+	curl_easy_setopt(client->curl, CURLOPT_HTTPGET, 1L);
+	curl_easy_setopt(client->curl, CURLOPT_WRITEFUNCTION, write_memory_callback);
 
-    client->buf.size = 0;
-    curl_easy_setopt(client->curl, CURLOPT_WRITEDATA, &client->buf);
+	client->buf.size = 0;
+	curl_easy_setopt(client->curl, CURLOPT_WRITEDATA, &client->buf);
 
-    CURLcode res = curl_easy_perform(client->curl);
-    platform_log("curl_easy_perform() %i, %s\n", res, curl_easy_strerror(res));
-    
-    if (res == CURLE_SEND_ERROR) {
-        // Specific versions of curl does't play well with the sensor http
-        // server. When CURLE_SEND_ERROR happens for the first time silently
-        // re-attempting the http request resolves the problem.
-        res = curl_easy_perform(client->curl);
-    }
+	CURLcode res = curl_easy_perform(client->curl);
+	platform_log("curl_easy_perform() %i, %s\n", res, curl_easy_strerror(res));
 
-    if (res != CURLE_OK)
-    {
-        platform_log("curl_easy_perform() failed\n");
-        return;
-    }
+	if (res == CURLE_SEND_ERROR)
+	{
+		// Specific versions of curl does't play well with the sensor http
+		// server. When CURLE_SEND_ERROR happens for the first time silently
+		// re-attempting the http request resolves the problem.
+		res = curl_easy_perform(client->curl);
+	}
 
-    long http_code = 0;
-    curl_easy_getinfo(client->curl, CURLINFO_RESPONSE_CODE, &http_code);
+	if (res != CURLE_OK)
+	{
+		platform_log("curl_easy_perform() failed\n");
+		return;
+	}
 
-    if (http_code != 200)
-    {
-        platform_log("http_code error: %i\n", http_code);
-    }
+	long http_code = 0;
+	curl_easy_getinfo(client->curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+	if (http_code != 200)
+	{
+		platform_log("http_code error: %i\n", http_code);
+	}
 }
-
 
 #define URLAPI_METADATA "api/v1/sensor/metadata"
 #define URLAPI_FIRMWARE "api/v1/system/firmware"
 
-
-void ouster_client_init(ouster_client_t * client)
+void ouster_client_init(ouster_client_t *client)
 {
-    assert(client);
-    assert(client->host);
-    curl_global_init(CURL_GLOBAL_ALL);
-    client->curl = curl_easy_init();
-    ouster_buffer_init(&client->buf, 1024*10);
-    req_get(client, URLAPI_FIRMWARE);
+	assert(client);
+	assert(client->host);
+	curl_global_init(CURL_GLOBAL_ALL);
+	client->curl = curl_easy_init();
+	ouster_buffer_init(&client->buf, 1024 * 10);
+	req_get(client, URLAPI_FIRMWARE);
 }
 
-void ouster_client_fini(ouster_client_t * client)
+void ouster_client_fini(ouster_client_t *client)
 {
-    curl_easy_cleanup(client->curl);
-    client->curl = NULL;
-    ouster_buffer_fini(&client->buf);
+	curl_easy_cleanup(client->curl);
+	client->curl = NULL;
+	ouster_buffer_fini(&client->buf);
 }
 
-
-
-void ouster_client_download_meta_file(ouster_client_t * client, char const * path)
+void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
 {
-    platform_log("Downloading meta to %s\n", path);
-    req_get(client, URLAPI_METADATA);
-    FILE * f = fopen(path, "w+");
-    fwrite(client->buf.data, client->buf.size, 1, f);
-    fclose(f);
+	platform_log("Downloading meta to %s\n", path);
+	req_get(client, URLAPI_METADATA);
+	FILE *f = fopen(path, "w+");
+	fwrite(client->buf.data, client->buf.size, 1, f);
+	fclose(f);
 }

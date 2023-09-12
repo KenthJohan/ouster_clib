@@ -12,7 +12,6 @@
 #include <ouster_clib/client.h>
 #include <ouster_clib/types.h>
 #include <ouster_clib/lidar.h>
-#include <ouster_clib/mat.h>
 #include <ouster_clib/meta.h>
 #include <ouster_clib/field.h>
 #include <ouster_clib/lut.h>
@@ -169,10 +168,9 @@ int main(int argc, char* argv[])
 
             if(lidar.last_mid == meta.mid1)
             {
-                ouster_mat4_apply_mask_u32(&fields[FIELD_RANGE].mat, fields[FIELD_RANGE].mask);
-                ouster_lut_cartesian(&lut, fields[FIELD_RANGE].mat.data, xyz);
+                ouster_lut_cartesian(&lut, fields[FIELD_RANGE].data, xyz);
                 //printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
-                ouster_mat4_zero(&fields[FIELD_RANGE].mat);
+                ouster_field_zero(fields, FIELD_COUNT);
                 if(mode == MONITOR_MODE_LOSS)
                 {
                     ouster_lidar_header_t header = {0};

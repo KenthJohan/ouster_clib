@@ -18,12 +18,12 @@ vbuf1 {
 }
 
 shape1 : vbuf1 {
-    - geometries.Sphere{r:0.1,slices:7,stacks:3}
+    - geometries.Sphere{r:0.07,slices:7,stacks:3}
     //- Index
 }
 
 shape2 : vbuf1 {
-    - geometries.Sphere{r:0.01,slices:6,stacks:4}
+    - geometries.Sphere{r:0.07,slices:6,stacks:4}
     //- Index
 }
 
@@ -33,18 +33,18 @@ render1 : vbuf1 {
 }
 
 
-sensor1 {
+sensor1 : camera1, render1, window1, shape2 {
     - sensors.OusterSensorDesc{metafile:"/home/johan/Downloads/OS1_captures/OS1-16A.json"}
 }
 
 
-draw1 : camera1, render1, window1, shape1, sensor1 {
-    - pointclouds.Pointcloud{cap: 1024*128}
+draw1 {
+    //- pointclouds.Pointcloud{cap: 1024*128}
 }
 
 
 text1 {
-    - draw.text.Text{"Blackie"}
+    - draw.text.Text{""}
     - geometries.Position2{0,0}
 }
 

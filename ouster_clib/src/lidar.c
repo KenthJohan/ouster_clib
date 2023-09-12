@@ -87,4 +87,12 @@ void ouster_lidar_get_fields(ouster_lidar_t * lidar, ouster_meta_t * meta, char 
         }
         lidar->last_mid = column.mid;
     }
+
+    for(int j = 0; j < fcount; ++j)
+    {
+        //TODO: Refactor this mask procedure
+        ouster_field_apply_mask_u32(fields + j);
+    }
+
+
 }

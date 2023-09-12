@@ -12,7 +12,7 @@
             "cwd": "${workspaceFolder}/examples/client_example",
             "environment": [],
             "program": "${workspaceFolder}/examples/client_example/bin/x64-Linux-debug/client_example",
-            "args": ["~/Downloads/OS1_captures/OS1-128.json"],
+            "args": ["~/Downloads/OS1_captures/OS1-16A.json"],
             "osx": {
                 "MIMode": "lldb",
                 "targetArchitecture": "arm64",
@@ -50,7 +50,7 @@
                 {"name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/bin/x64-Linux-debug:${workspaceFolder}/../flecs/bin/x64-Linux-debug"},
             ],
             "program": "${workspaceFolder}/examples/draw_cloud/bin/x64-Linux-debug/draw_cloud",
-            "args": ["~/Downloads/OS1_captures/OS1-128.json"],
+            "args": ["~/Downloads/OS1_captures/OS1-16A.json"],
             "osx": {
                 "MIMode": "lldb",
                 "targetArchitecture": "arm64",
@@ -59,6 +59,24 @@
             "linux": {
                 "externalConsole": false,
             }
-        }
+        },
+        {
+            "name": "Launch ouster_monitor",
+            "type": "cppdbg",
+            "request": "launch",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/tools/ouster_monitor",
+            "environment": [],
+            "program": "${workspaceFolder}/tools/ouster_monitor/bin/x64-Linux-debug/ouster_monitor",
+            "args": ["~/Downloads/OS1_captures/OS1-16A.json", "loss"],
+            "osx": {
+                "MIMode": "lldb",
+                "targetArchitecture": "arm64",
+                "externalConsole": false,
+            },
+            "linux": {
+                "externalConsole": false,
+            }
+        },
     ]
 }

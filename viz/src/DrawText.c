@@ -10,19 +10,22 @@ ECS_COMPONENT_DECLARE(Text);
 
 static void RenderText(ecs_iter_t *it)
 {
+    static float temporary_fps = 0;
 	Text *text = ecs_field(it, Text, 1);
 	Position2 *pos = ecs_field(it, Position2, 2);
 	for (int i = 0; i < it->count; ++i, ++text, ++pos)
 	{
         sdtx_pos(pos->x, pos->y);
         sdtx_puts(text->content);
-        sdtx_printf("%f\n", it->delta_time);
+        // Temorary:
+        temporary_fps = 0.9*temporary_fps + 0.1*(1.0f / it->delta_time);
+        sdtx_printf("FPS %i\n", (int)temporary_fps);
 	}
 }
 
 static void Update0(ecs_iter_t *it)
 {
-    sdtx_canvas(sapp_width(), sapp_height());
+    sdtx_canvas(sapp_width()/10, sapp_height()/10);
     const sg_pass_action pass_action = (sg_pass_action) {
         .colors[0].load_action = SG_LOADACTION_DONTCARE ,
         .depth.load_action = SG_LOADACTION_DONTCARE,

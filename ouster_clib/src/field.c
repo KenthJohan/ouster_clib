@@ -82,17 +82,17 @@ void ouster_field_init1(ouster_field_t * f, int profile)
         f->depth = 4;
         break;
     case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_REFLECTIVITY):
-        f->mask = 0;
+        f->mask = UINT32_C(0xFFFFFFFF);
         f->offset = 4;
         f->depth = 1;
         break;
     case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_SIGNAL):
-        f->mask = 0;
+        f->mask = UINT32_C(0xFFFFFFFF);
         f->offset = 6;
         f->depth = 2;
         break;
     case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_NEAR_IR):
-        f->mask = 0;
+        f->mask = UINT32_C(0xFFFFFFFF);
         f->offset = 8;
         f->depth = 2;
         break;
@@ -172,13 +172,14 @@ void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t * 
     }
 }
 
-void ouster_field_apply_mask_u32(ouster_field_t * field, uint32_t mask)
+void ouster_field_apply_mask_u32(ouster_field_t * field)
 {
-    assert(field->depth == 4);
+    if(field->mask == 0xFFFFFFFF){return;}
+    if(field->depth != 4){return;}
     uint32_t * data32 = (uint32_t *)field->data;
     for(int i = 0; i < field->rows * field->cols; ++i)
     {
-        data32[i] &= mask;
+        data32[i] &= field->mask;
     }
 }
 

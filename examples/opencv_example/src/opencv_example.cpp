@@ -125,7 +125,6 @@ int main(int argc, char* argv[])
             if(lidar.last_mid == meta.mid1)
             {
 
-                ouster_field_apply_mask_u32(fields + 0, fields[0].mask);
                 ouster_field_destagger(fields, FIELD_COUNT, &meta);
 
                 cv::Mat mat_f0 = ouster_get_cvmat(fields + 0);

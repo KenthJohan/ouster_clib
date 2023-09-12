@@ -20,7 +20,7 @@ typedef struct
     int depth;
     int rows;
     int cols;
-    int step;
+    int rowsize;
     void * data;
 } ouster_field_t;
 

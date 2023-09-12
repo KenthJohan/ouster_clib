@@ -118,8 +118,8 @@ void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t * meta)
         f->cols = cols;
         f->rows = meta->pixels_per_column;
         f->column0 = meta->mid0;
-        f->step = f->cols * f->depth;
-        f->data = calloc(f->step * f->rows, 1);
+        f->rowsize = f->cols * f->depth;
+        f->data = calloc(f->rowsize * f->rows, 1);
     }
 }
 
@@ -152,10 +152,10 @@ inline img_t<T> destagger(const Eigen::Ref<const img_t<T>>& img,
 /*
 https://static.ouster.dev/sdk-docs/reference/lidar-scan.html#staggering-and-destaggering
 */
-void destagger(void * data, int cols, int rows, int depth, int step, int pixel_shift_by_row[])
+void destagger(void * data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[])
 {
     char * row = data;
-    for(int irow = 0; irow < rows; ++irow, row += step)
+    for(int irow = 0; irow < rows; ++irow, row += rowsize)
     {
         int offset = (pixel_shift_by_row[irow] + cols) % cols;
         memmove(row + depth*offset, row, depth*(cols - offset));
@@ -168,7 +168,7 @@ void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t * 
 {
     for(int i = 0; i < count; ++i, ++fields)
     {
-        destagger(fields->data, fields->cols, fields->rows, fields->depth, fields->step, meta->pixel_shift_by_row);
+        destagger(fields->data, fields->cols, fields->rows, fields->depth, fields->rowsize, meta->pixel_shift_by_row);
     }
 }
 
@@ -186,7 +186,7 @@ void ouster_field_zero(ouster_field_t fields[], int count)
 {
     for(int i = 0; i < count; ++i, ++fields)
     {
-        memset(fields->data, 0, fields->step * fields->rows);
+        memset(fields->data, 0, fields->rowsize * fields->rows);
     }
 }
 

@@ -25,7 +25,7 @@ void field_copy(ouster_field_t * field, ouster_meta_t * meta, int mid, char cons
     char * dst = data + (mid - meta->mid0) * field->depth;
     pxcpy(
         dst, 
-        field->step, 
+        field->rowsize, 
         pxbuf + field->offset, 
         meta->channel_data_size, 
         field->rows, 

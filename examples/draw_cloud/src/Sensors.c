@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 typedef enum
 {
@@ -42,6 +43,7 @@ typedef struct
 	ouster_lut_t lut;
 	ecs_os_mutex_t lock;
 	ouster_meta_t meta;
+	ouster_field_t fields[FIELD_COUNT];
 } OusterSensor;
 
 ECS_COMPONENT_DECLARE(OusterSensor);
@@ -51,15 +53,11 @@ void *thread_receiver(void *arg)
 {
 	OusterSensor *sensor = arg;
 
-	ouster_field_t fields[FIELD_COUNT] = {0};
 	ouster_lidar_t lidar = {0};
 
 	int socks[SOCK_INDEX_COUNT] = {0};
 	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
 	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_lidar("7503");
-
-	fields[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
-	ouster_field_init(fields, FIELD_COUNT, &sensor->meta);
 
 	while (1)
 	{
@@ -81,15 +79,16 @@ void *thread_receiver(void *arg)
 				continue;
 			}
 			// printf("n %ji\n", (intmax_t)n);
-			ouster_lidar_get_fields(&lidar, &sensor->meta, buf, fields, FIELD_COUNT);
-			if (lidar.last_mid != sensor->meta.mid1)
+			ecs_os_mutex_lock(sensor->lock);
+			ouster_lidar_get_fields(&lidar, &sensor->meta, buf, sensor->fields, FIELD_COUNT);
+			if (lidar.last_mid == sensor->meta.mid1)
 			{
-				continue;
+				ouster_lut_cartesian(&sensor->lut, sensor->fields[FIELD_RANGE].data, sensor->cloudimage);
 			}
+			ecs_os_mutex_unlock(sensor->lock);
 
-			ouster_lut_cartesian(&sensor->lut, fields[FIELD_RANGE].data, sensor->cloudimage);
 			// printf("mat = %i of %i\n", sensor->fields[0].num_valid_pixels, sensor->fields[0].mat.dim[1] * sensor->fields[0].mat.dim[2]);
-			ouster_field_zero(fields, FIELD_COUNT);
+			// ouster_field_zero(sensor->fields, FIELD_COUNT);
 			// printf("New frame %ji\n", (intmax_t)lidar.frame_id);
 
 			/*
@@ -115,17 +114,39 @@ void SysUpdateColor(ecs_iter_t *it)
 	for (int i = 0; i < it->count; ++i, ++cloud, ++sensor)
 	{
 		ecs_os_mutex_lock(sensor->lock);
-		int n = sensor->lut.w * sensor->lut.h;
-		for (int j = 0; j < n; ++j)
+		int w = sensor->lut.w;
+		int h = sensor->lut.h;
+		uint32_t *range = sensor->fields[FIELD_RANGE].data;
+		float *dst = cloud->pos;
+		int k = 0;
+		for (int c = 0; c < w; ++c)
 		{
-			double *src = sensor->cloudimage + j * 3;
-			float *dst = cloud->pos + j * 3;
-			dst[0] = src[0] * 0.01;
-			dst[1] = src[1] * 0.01;
-			dst[2] = src[2] * 0.01;
-			// printf("xyz %f %f %f\n", dst[0], dst[1], dst[2]);
+			for (int r = 0; r < h; ++r)
+			{
+				int j = r * w + c;
+				uint32_t d = range[j];
+				double *src = sensor->cloudimage + j * 3;
+
+				float d2 = sqrt(src[0] * src[0] + src[1] * src[1] + src[2] * src[2]);
+				if (d2 < 100)
+				{
+					continue;
+				}
+				if (d < 100)
+				{
+					// continue;
+				}
+
+				dst[0] = src[0] * 0.01;
+				dst[1] = src[1] * 0.01;
+				dst[2] = src[2] * 0.01;
+				dst += 3;
+				k++;
+				// printf("xyz %f %f %f\n", dst[0], dst[1], dst[2]);
+			}
+			ecs_os_mutex_unlock(sensor->lock);
 		}
-		ecs_os_mutex_unlock(sensor->lock);
+		cloud->count = k;
 	}
 }
 
@@ -141,6 +162,9 @@ static void Observer_LidarUDP_OnAdd(ecs_iter_t *it)
 		free(content);
 		ouster_lut_init(&sensor->lut, &sensor->meta);
 		printf("Column window: %i %i\n", sensor->meta.mid0, sensor->meta.mid1);
+
+		sensor->fields[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
+		ouster_field_init(sensor->fields, FIELD_COUNT, &sensor->meta);
 
 		int cap = sensor->lut.w * sensor->lut.h;
 		sensor->cloudimage = calloc(1, cap * sizeof(double) * 3);

@@ -251,6 +251,13 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	lut->offset = offset;
 	lut->w = w;
 	lut->h = h;
+
+	for (int i = 0; i < w * h; ++i)
+	{
+		double *d = direction + i * 3;
+		double *o = offset + i * 3;
+		printf("%+f %+f %+f %+f %+f %+f, %+f\n", o[0], o[1], o[2], d[0], d[1], d[2], sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
+	}
 }
 
 void ouster_lut_cartesian(ouster_lut_t const *lut, uint32_t const *range, double *out_xyz)

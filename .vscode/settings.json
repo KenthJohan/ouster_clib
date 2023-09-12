@@ -79,7 +79,8 @@
         "windows.h": "c",
         "pointclouds.h": "c",
         "verticesshapes.h": "c",
-        "graphicsshapes.h": "c"
+        "graphicsshapes.h": "c",
+        "numbers": "c"
     },
     "terminal.integrated.env.linux": {
         "GTK_PATH": ""

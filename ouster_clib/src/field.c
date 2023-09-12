@@ -1,7 +1,7 @@
 #include "ouster_clib/field.h"
-#include "ouster_clib/mat.h"
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
 
 /*
 
@@ -79,22 +79,22 @@ void ouster_field_init1(ouster_field_t * f, int profile)
     case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_RANGE):
         f->mask = UINT32_C(0x0007ffff);
         f->offset = 0;
-        f->mat.dim[0] = 4;
+        f->depth = 4;
         break;
     case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_REFLECTIVITY):
         f->mask = 0;
         f->offset = 4;
-        f->mat.dim[0] = 1;
+        f->depth = 1;
         break;
     case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_SIGNAL):
         f->mask = 0;
         f->offset = 6;
-        f->mat.dim[0] = 2;
+        f->depth = 2;
         break;
     case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_NEAR_IR):
         f->mask = 0;
         f->offset = 8;
-        f->mat.dim[0] = 2;
+        f->depth = 2;
         break;
     default:
         break;
@@ -115,11 +115,11 @@ void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t * meta)
     {
         f->num_valid_pixels = 0;
         ouster_field_init1(f, meta->profile);
-        f->mat.dim[1] = cols;
-        f->mat.dim[2] = meta->pixels_per_column;
-        f->mat.dim[3] = 1;
-        ouster_mat4_init(&f->mat);
+        f->cols = cols;
+        f->rows = meta->pixels_per_column;
         f->column0 = meta->mid0;
+        f->step = f->cols * f->depth;
+        f->data = calloc(f->step * f->rows, 1);
     }
 }
 
@@ -152,26 +152,41 @@ inline img_t<T> destagger(const Eigen::Ref<const img_t<T>>& img,
 /*
 https://static.ouster.dev/sdk-docs/reference/lidar-scan.html#staggering-and-destaggering
 */
-void ouster_mat_destagger(ouster_mat4_t * mat, ouster_meta_t * meta)
+void destagger(void * data, int cols, int rows, int depth, int step, int pixel_shift_by_row[])
 {
-    int rows = mat->dim[2];
-    int cols = mat->dim[1];
-    int e = mat->step[0]; // Pixel size
-    assert(meta->pixels_per_column == rows);
-    char * row = mat->data;
-    for(int irow = 0; irow < rows; ++irow, row += mat->step[1])
+    char * row = data;
+    for(int irow = 0; irow < rows; ++irow, row += step)
     {
-        int offset = (meta->pixel_shift_by_row[irow] + cols) % cols;
-        memmove(row + e*offset, row, e*(cols - offset));
-        memmove(row, row + e*(cols - offset), e*offset);
+        int offset = (pixel_shift_by_row[irow] + cols) % cols;
+        memmove(row + depth*offset, row, depth*(cols - offset));
+        memmove(row, row + depth*(cols - offset), depth*offset);
     }
 }
 
 
-void ouster_field_destagger(ouster_field_t * f, int count, ouster_meta_t * meta)
+void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t * meta)
 {
-    for(int i = 0; i < count; ++i, f++)
+    for(int i = 0; i < count; ++i, ++fields)
     {
-        ouster_mat_destagger(&f->mat, meta);
+        destagger(fields->data, fields->cols, fields->rows, fields->depth, fields->step, meta->pixel_shift_by_row);
     }
 }
+
+void ouster_field_apply_mask_u32(ouster_field_t * field, uint32_t mask)
+{
+    assert(field->depth == 4);
+    uint32_t * data32 = (uint32_t *)field->data;
+    for(int i = 0; i < field->rows * field->cols; ++i)
+    {
+        data32[i] &= mask;
+    }
+}
+
+void ouster_field_zero(ouster_field_t fields[], int count)
+{
+    for(int i = 0; i < count; ++i, ++fields)
+    {
+        memset(fields->data, 0, fields->step * fields->rows);
+    }
+}
+

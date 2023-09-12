@@ -6,7 +6,6 @@
 #include <ouster_clib/sock.h>
 #include <ouster_clib/types.h>
 #include <ouster_clib/lidar.h>
-#include <ouster_clib/mat.h>
 #include <ouster_clib/meta.h>
 
 
@@ -42,7 +41,7 @@ int pixsize_to_cv_type(int size)
 
 cv::Mat ouster_get_cvmat(ouster_field_t * field)
 {
-    cv::Mat m(field->mat.dim[2], field->mat.dim[1], pixsize_to_cv_type(field->mat.dim[0]), field->mat.data);
+    cv::Mat m(field->rows, field->cols, pixsize_to_cv_type(field->depth), field->data);
     return m;
 }
 
@@ -90,10 +89,11 @@ int main(int argc, char* argv[])
     cv::namedWindow("REFLECTIVITY", cv::WINDOW_FREERATIO);
     cv::namedWindow("SIGNAL", cv::WINDOW_FREERATIO);
     cv::namedWindow("NEAR_IR", cv::WINDOW_FREERATIO);
-    cv::resizeWindow("RANGE", fields[0].mat.dim[1]*5, fields[0].mat.dim[2]*5);
-    cv::resizeWindow("REFLECTIVITY", fields[1].mat.dim[1]*5, fields[1].mat.dim[2]*2);
-    cv::resizeWindow("SIGNAL", fields[2].mat.dim[1]*5, fields[2].mat.dim[2]*2);
-    cv::resizeWindow("RANGE", fields[3].mat.dim[1]*5, fields[3].mat.dim[2]*2);
+    cv::resizeWindow("RANGE", fields[0].cols*5, fields[0].rows*5);
+    cv::resizeWindow("REFLECTIVITY", fields[1].cols*5, fields[1].rows*2);
+    cv::resizeWindow("SIGNAL", fields[2].cols*5, fields[2].rows*2);
+    cv::resizeWindow("RANGE", fields[3].cols*5, fields[3].rows*2);
+    
 
     ouster_lidar_t lidar = {0};
 
@@ -125,8 +125,9 @@ int main(int argc, char* argv[])
             if(lidar.last_mid == meta.mid1)
             {
 
-                ouster_mat4_apply_mask_u32(&fields[0].mat, fields[0].mask);
+                ouster_field_apply_mask_u32(fields + 0, fields[0].mask);
                 ouster_field_destagger(fields, FIELD_COUNT, &meta);
+
                 cv::Mat mat_f0 = ouster_get_cvmat(fields + 0);
                 cv::Mat mat_f1 = ouster_get_cvmat(fields + 1);
                 cv::Mat mat_f2 = ouster_get_cvmat(fields + 2);
@@ -139,17 +140,19 @@ int main(int argc, char* argv[])
                 cv::normalize(mat_f1, mat_f1_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
                 cv::normalize(mat_f2, mat_f2_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
                 cv::normalize(mat_f3, mat_f3_show, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+
+                
                 cv::imshow("RANGE", mat_f0_show);
                 cv::imshow("REFLECTIVITY", mat_f1_show);
                 cv::imshow("SIGNAL", mat_f2_show);
                 cv::imshow("NEAR_IR", mat_f3_show);
+                
                 //printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
-                ouster_mat4_zero(&fields[0].mat);
-                ouster_mat4_zero(&fields[1].mat);
-                ouster_mat4_zero(&fields[2].mat);
-                ouster_mat4_zero(&fields[3].mat);
+                ouster_field_zero(fields, FIELD_COUNT);
 
 
+                int key = cv::pollKey();
+                if(key == 27){break;}
 
             }
         }
@@ -163,8 +166,6 @@ int main(int argc, char* argv[])
         }
 
         //int key = cv::waitKey(1);
-        int key = cv::pollKey();
-        if(key == 27){break;}
     }
 
 

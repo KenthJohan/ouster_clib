@@ -21,15 +21,15 @@ void pxcpy(char * dst, int dst_inc, char const * src, int src_inc, int n, int es
 void field_copy(ouster_field_t * field, ouster_meta_t * meta, int mid, char const * pxbuf)
 {
     // Row major - each row is continuous memory
-    char * data = field->mat.data;
-    char * dst = data + (mid - meta->mid0) * field->mat.step[0];
+    char * data = field->data;
+    char * dst = data + (mid - meta->mid0) * field->depth;
     pxcpy(
         dst, 
-        field->mat.step[1], 
+        field->step, 
         pxbuf + field->offset, 
         meta->channel_data_size, 
-        field->mat.dim[2], 
-        field->mat.step[0]
+        field->rows, 
+        field->depth
     );
 }
 
@@ -39,7 +39,7 @@ void ouster_lidar_get_fields(ouster_lidar_t * lidar, ouster_meta_t * meta, char 
     assert(lidar);
     assert(buf);
     assert(fields);
-    assert(meta->pixels_per_column == fields[0].mat.dim[2]);
+    assert(meta->pixels_per_column == fields[0].rows);
     
     char const * colbuf = buf + OUSTER_PACKET_HEADER_SIZE;
     ouster_lidar_header_t header = {0};

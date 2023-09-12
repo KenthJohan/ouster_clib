@@ -30,7 +30,7 @@
             "cwd": "${workspaceFolder}/examples/opencv_example",
             "environment": [],
             "program": "${workspaceFolder}/examples/opencv_example/bin/x64-Linux-debug/opencv_example",
-            "args": ["~/Downloads/OS1_captures/OS1-128.json"],
+            "args": ["~/Downloads/OS1_captures/OS1-16A.json"],
             "osx": {
                 "MIMode": "lldb",
                 "targetArchitecture": "arm64",

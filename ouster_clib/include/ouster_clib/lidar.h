@@ -1,6 +1,5 @@
 #pragma once
 #include "ouster_clib/types.h"
-#include "ouster_clib/mat.h"
 #include "ouster_clib/meta.h"
 #include "ouster_clib/field.h"
 

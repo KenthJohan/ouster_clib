@@ -178,7 +178,6 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[M4(0, 3)];
 	float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[M4(2, 3)];
 	print_m4(meta->lidar_to_sensor_transform);
-
 	// This represent a column measurement angle:
 	double azimuth_radians = M_PI * 2.0 / meta->columns_per_frame;
 
@@ -191,7 +190,7 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 			int mid = meta->mid0 + c;
 			assert(mid >= meta->mid0);
 			assert(mid <= meta->mid1);
-			int i = r * w + mid;
+			int i = r * w + c;
 			encoder[i] = 2.0 * M_PI - (mid * azimuth_radians);
 			azimuth[i] = -meta->beam_azimuth_angles[r] * M_PI / 180.0;
 			altitude[i] = meta->beam_altitude_angles[r] * M_PI / 180.0;

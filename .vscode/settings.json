@@ -85,7 +85,8 @@
 		"verticesshapes.h": "c",
 		"graphicsshapes.h": "c",
 		"numbers": "c",
-		"algorithm": "c"
+		"algorithm": "c",
+		"transform.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

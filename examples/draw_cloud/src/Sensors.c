@@ -79,6 +79,7 @@ void *thread_receiver(void *arg)
 		{
 			char buf[NET_UDP_MAX_SIZE];
 			int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
+			platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
 			if (n <= 0)
 			{
 				continue;
@@ -94,9 +95,9 @@ void *thread_receiver(void *arg)
 
 		if (a & (1 << SOCK_INDEX_IMU))
 		{
-			// char buf[1024*256];
-			// int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
-			// platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
+			char buf[1024 * 256];
+			int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
+			platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
 		}
 	}
 }

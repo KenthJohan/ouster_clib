@@ -10,8 +10,18 @@ A simple C socket program will not receive any. Changing destination MAC to 00:0
 ```bash
 tshark -nn -i eno1 -c 1000 -f 'host 192.168.1.137' -w capture.pcap
 sudo tcpreplay-edit -v -o -i lo --enet-smac=00:00:00:00:00:00 --enet-dmac=00:00:00:00:00:00 capture.pcap
+
+sudo tcpreplay-edit -v -o -i lo --enet-smac=00:00:00:00:00:00 --enet-dmac=00:00:00:00:00:00 --srcipmap=169.254.189.244:192.168.1.6 --dstipmap=169.254.189.246:127.0.0.1 ~/Downloads/OS1_128/20230830_1120_OS-1-128_122325000148.pcap
+
 ```
 
+## Rewrite
+```bash
+tcpprep --port --pcap=./a.pcap --cachefile=a.cache
+sudo tcprewrite --endpoints=69.254.189.246:127.0.0.1 --cachefile=a.cache  --infile=a.pcap --outfile=b.pcap
+sudo tcprewrite --endpoints=127.0.0.1:169.254.189.244 --enet-smac=00:00:00:00:00:00 --enet-dmac=00:00:00:00:00:00 --cachefile=a.cache  --infile=a.pcap --outfile=b.pcap
+
+```
 
 
 ### References

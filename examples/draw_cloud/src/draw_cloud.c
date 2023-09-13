@@ -18,12 +18,6 @@ int main(int argc, char *argv[])
 {
 	fs_pwd();
 
-	if (argc <= 1)
-	{
-		printf("Missing input meta file\n");
-		return 0;
-	}
-
 	ecs_world_t *world = ecs_init();
 
 	// Must import before loading flecs file

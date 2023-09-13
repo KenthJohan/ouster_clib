@@ -34,7 +34,7 @@ render1 : vbuf1 {
 
 
 sensor1 : camera1, render1, window1, shape2 {
-    - sensors.OusterSensorDesc{metafile:"/home/johan/Downloads/OS1_captures/OS1-16A.json", radius_filter:100.0}
+    - sensors.OusterSensorDesc{metafile:"/home/johan/Downloads/test2/a.json", radius_filter:100.0}
 }
 
 

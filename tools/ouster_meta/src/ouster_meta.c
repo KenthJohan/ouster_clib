@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-
 #include <platform/net.h>
 #include <platform/log.h>
 #include <platform/fs.h>
@@ -12,43 +11,35 @@
 #include <ouster_clib/client.h>
 #include <ouster_clib/types.h>
 #include <ouster_clib/lidar.h>
-#include <ouster_clib/mat.h>
 #include <ouster_clib/meta.h>
 #include <ouster_clib/field.h>
 #include <ouster_clib/lut.h>
 #include <ouster_clib/lidar_header.h>
 #include <ouster_clib/lidar_column.h>
 
-
-
-
-
-
-
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-    printf("===================================================================\n");
-    fs_pwd();
-    
-    if(argc <= 2)
-    {
-        printf("Hello welcome to %s!\n", argv[0]);
-        printf("This tool downloads meta file from Ouster sensor.\n");
-        printf("\t$ %s <%s> <%s>\n", argv[0], "ipaddr", "outputfile");
-        printf("\t$ %s %s %s\n", argv[0], "192.168.1.137", "meta.json");
-        return 0;
-    }
+	printf("===================================================================\n");
+	fs_pwd();
 
-    char const * host = argv[1];
-    char const * outputfile = argv[2];
+	if (argc <= 2)
+	{
+		printf("Hello welcome to %s!\n", argv[0]);
+		printf("This tool downloads meta file from Ouster sensor.\n");
+		printf("\t$ %s <%s> <%s>\n", argv[0], "ipaddr", "outputfile");
+		printf("\t$ %s %s %s\n", argv[0], "192.168.1.137", "meta.json");
+		return 0;
+	}
 
-    ouster_client_t client = 
-    {
-        .host = host
-    };
-    ouster_client_init(&client);
-    ouster_client_download_meta_file(&client, outputfile);
-    ouster_client_fini(&client);
+	char const *host = argv[1];
+	char const *outputfile = argv[2];
 
-    return 0;
+	ouster_client_t client =
+		{
+			.host = host};
+	ouster_client_init(&client);
+	ouster_client_download_meta_file(&client, outputfile);
+	ouster_client_fini(&client);
+
+	return 0;
 }

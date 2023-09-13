@@ -1,82 +1,92 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Launch client_example",
-            "type": "cppdbg",
-            "request": "launch",
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/examples/client_example",
-            "environment": [],
-            "program": "${workspaceFolder}/examples/client_example/bin/x64-Linux-debug/client_example",
-            "args": ["~/Downloads/OS1_captures/OS1-16A.json"],
-            "osx": {
-                "MIMode": "lldb",
-                "targetArchitecture": "arm64",
-                "externalConsole": false,
-            },
-            "linux": {
-                "externalConsole": false,
-            }
-        },
-        {
-            "name": "Launch opencv_example",
-            "type": "cppdbg",
-            "request": "launch",
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/examples/opencv_example",
-            "environment": [],
-            "program": "${workspaceFolder}/examples/opencv_example/bin/x64-Linux-debug/opencv_example",
-            "args": ["~/Downloads/OS1_captures/OS1-16A.json"],
-            "osx": {
-                "MIMode": "lldb",
-                "targetArchitecture": "arm64",
-                "externalConsole": false,
-            },
-            "linux": {
-                "externalConsole": false,
-            }
-        },
-        {
-            "name": "Launch draw_cloud",
-            "type": "cppdbg",
-            "request": "launch",
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/examples/draw_cloud",
-            "environment": [
-                {"name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/bin/x64-Linux-debug:${workspaceFolder}/../flecs/bin/x64-Linux-debug"},
-            ],
-            "program": "${workspaceFolder}/examples/draw_cloud/bin/x64-Linux-debug/draw_cloud",
-            "args": ["~/Downloads/OS1_captures/OS1-16A.json"],
-            "osx": {
-                "MIMode": "lldb",
-                "targetArchitecture": "arm64",
-                "externalConsole": false,
-            },
-            "linux": {
-                "externalConsole": false,
-            }
-        },
-        {
-            "name": "Launch ouster_monitor",
-            "type": "cppdbg",
-            "request": "launch",
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/tools/ouster_monitor",
-            "environment": [],
-            "program": "${workspaceFolder}/tools/ouster_monitor/bin/x64-Linux-debug/ouster_monitor",
-            "args": ["~/Downloads/OS1_captures/OS1-16A.json", "loss"],
-            "osx": {
-                "MIMode": "lldb",
-                "targetArchitecture": "arm64",
-                "externalConsole": false,
-            },
-            "linux": {
-                "externalConsole": false,
-            }
-        },
-    ]
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Launch client_example",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/examples/client_example",
+			"environment": [],
+			"program": "${workspaceFolder}/examples/client_example/bin/x64-Linux-debug/client_example",
+			"args": [
+				"~/Downloads/OS1_captures/OS1-16A.json"
+			],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
+		{
+			"name": "Launch opencv_example",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/examples/opencv_example",
+			"environment": [],
+			"program": "${workspaceFolder}/examples/opencv_example/bin/x64-Linux-debug/opencv_example",
+			"args": [
+				"~/Downloads/OS1_captures/OS1-16A.json"
+			],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
+		{
+			"name": "Launch draw_cloud",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/examples/draw_cloud",
+			"environment": [
+				{
+					"name": "LD_LIBRARY_PATH",
+					"value": "${workspaceFolder}/bin/x64-Linux-debug:/home/johan/Downloads/flecs/bin/x64-Linux-debug/"
+				},
+			],
+			"program": "${workspaceFolder}/examples/draw_cloud/bin/x64-Linux-debug/draw_cloud",
+			"args": [],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
+		{
+			"name": "Launch ouster_monitor",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/tools/ouster_monitor",
+			"environment": [],
+			"program": "${workspaceFolder}/tools/ouster_monitor/bin/x64-Linux-debug/ouster_monitor",
+			"args": [
+				"~/Downloads/OS1_captures/OS1-16A.json",
+				"loss"
+			],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
+	]
 }

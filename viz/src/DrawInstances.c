@@ -67,6 +67,7 @@ typedef struct
 	sg_bindings bind;
 } DrawInstancesState;
 
+ECS_COMPONENT_DECLARE(DrawInstancesDesc);
 ECS_COMPONENT_DECLARE(DrawInstancesState);
 
 static sg_shader create_shader(char *path_fs, char *path_vs)
@@ -95,51 +96,20 @@ static sg_shader create_shader(char *path_fs, char *path_vs)
 	return shd;
 }
 
-void RenderPointcloud_Setup(ecs_iter_t *it)
+void DrawInstancesState_Add(ecs_iter_t *it)
 {
-	DrawInstancesState *rend = ecs_field(it, DrawInstancesState, 1);
-	ShapeBufferImpl *sbuf = ecs_field(it, ShapeBufferImpl, 2);
+	DrawInstancesDesc *desc = ecs_field(it, DrawInstancesDesc, 1); // Self
+	ShapeBufferImpl *sbuf = ecs_field(it, ShapeBufferImpl, 2);	   // Up
 
-	for (int i = 0; i < it->count; ++i, ++rend)
+	for (int i = 0; i < it->count; ++i, ++desc)
 	{
-		/*
-		rend->pass_action = (sg_pass_action) {
-			.colors[0] = {
-				.load_action = SG_LOADACTION_CLEAR,
-				.clear_value = { 0.0f, 0.0f, 0.0f, 0.0f }
-			}
-		};
-		*/
+		DrawInstancesState *rend = ecs_get_mut(it->world, it->entities[i], DrawInstancesState);
+		rend->cap = desc->cap;
 
 		rend->pass_action = (sg_pass_action){
 			.colors[0].load_action = SG_LOADACTION_DONTCARE,
 			.depth.load_action = SG_LOADACTION_DONTCARE,
 			.stencil.load_action = SG_LOADACTION_DONTCARE};
-		/*
-		sshape_vertex_t vertices[6 * 1024];
-		uint16_t indices[16 * 1024];
-		sshape_buffer_t buf = {
-			.vertices.buffer = SSHAPE_RANGE(vertices),
-			.indices.buffer  = SSHAPE_RANGE(indices),
-		};
-
-		buf = sshape_build_sphere(&buf, &(sshape_sphere_t) {
-			.radius = 0.010f,
-			.slices = 5,
-			.stacks = 3,
-			.random_colors = true,
-		});
-		*/
-
-		/*
-		buf = sshape_build_box(&buf, &(sshape_box_t){
-			.width  = 1.0f,
-			.height = 1.0f,
-			.depth  = 1.0f,
-			.tiles  = 10,
-			.random_colors = true,
-		});
-		*/
 
 		assert(sbuf->buf.valid);
 		const sg_buffer_desc vbuf_desc = sshape_vertex_buffer_desc(&sbuf->buf);
@@ -170,9 +140,6 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
 				.write_enabled = true,
 			},
 			.label = "instancing-pipeline"});
-
-		ecs_remove_id(it->world, it->entities[i], Setup);
-		ecs_add_id(it->world, it->entities[i], Valid);
 	}
 }
 
@@ -221,20 +188,18 @@ void DrawInstancesImport(ecs_world_t *world)
 	ECS_IMPORT(world, Pointclouds);
 	ECS_IMPORT(world, GraphicsShapes);
 
+	ECS_COMPONENT_DEFINE(world, DrawInstancesDesc);
 	ECS_COMPONENT_DEFINE(world, DrawInstancesState);
 
 	ecs_system_init(world, &(ecs_system_desc_t){
 							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = RenderPointcloud_Setup,
+							   .callback = DrawInstancesState_Add,
 							   .query.filter.terms =
 								   {
-									   {.id = ecs_id(DrawInstancesState)},
-									   {.id = ecs_id(ShapeBufferImpl)},
+									   {.id = ecs_id(DrawInstancesDesc), .src.flags = EcsSelf},
+									   {.id = ecs_id(ShapeBufferImpl), .src.trav = EcsIsA, .src.flags = EcsUp},
 									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
-									   {.id = Setup},
-
-									   //{ .id = ecs_id(DrawInstancesState), .src.trav = EcsIsA, .src.flags = EcsUp },
-									   //{ .id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp },
+									   {.id = ecs_id(DrawInstancesState), .oper = EcsNot}, // Adds this
 								   }});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
@@ -248,16 +213,10 @@ void DrawInstancesImport(ecs_world_t *world)
 									   {.id = ecs_id(ShapeIndex), .src.trav = EcsIsA, .src.flags = EcsUp},
 									   {.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
 									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
-									   {.id = Valid},
-									   //{ .id = ecs_id(DrawInstancesState), .src.trav = EcsIsA, .src.flags = EcsUp },
-									   //{ .id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp },
 								   }});
 
 	ecs_struct(world, {.entity = ecs_id(DrawInstancesState),
 					   .members = {
 						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
 					   }});
-
-	// ECS_SYSTEM(world, Pointcloud_OnSet, EcsOnUpdate, Pointcloud, !DrawInstancesState(parent));
-	// ECS_SYSTEM(world, Pointcloud_Draw, EcsOnUpdate, Pointcloud, DrawInstancesState(parent));
 }

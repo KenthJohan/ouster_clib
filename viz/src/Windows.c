@@ -4,11 +4,6 @@
 
 ECS_COMPONENT_DECLARE(Window);
 ECS_COMPONENT_DECLARE(RenderingsContext);
-ECS_COMPONENT_DECLARE(Draw);
-ECS_TAG_DECLARE(Update);
-ECS_TAG_DECLARE(Invalid);
-ECS_TAG_DECLARE(Valid);
-ECS_TAG_DECLARE(Setup);
 
 void it_update(ecs_iter_t *it)
 {
@@ -41,13 +36,9 @@ void WindowsImport(ecs_world_t *world)
 
 	ECS_COMPONENT_DEFINE(world, Window);
 	ECS_COMPONENT_DEFINE(world, RenderingsContext);
-	ECS_COMPONENT_DEFINE(world, Draw);
-	ECS_TAG_DEFINE(world, Update);
-	ECS_TAG_DEFINE(world, Invalid);
-	ECS_TAG_DEFINE(world, Valid);
-	ECS_TAG_DEFINE(world, Setup);
 
-	ECS_OBSERVER(world, it_set, EcsOnSet, Window, Valid);
+	// TODO: Why is this never invoked?
+	ECS_OBSERVER(world, it_set, EcsOnSet, Window, RenderingsContext($));
 
 	ecs_system_init(world, &(ecs_system_desc_t){
 							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
@@ -55,7 +46,8 @@ void WindowsImport(ecs_world_t *world)
 							   .query.filter.terms =
 								   {
 									   {.id = ecs_id(Window)},
-									   {.id = Valid}}});
+									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
+								   }});
 
 	ecs_struct(world, {.entity = ecs_id(Window),
 					   .members = {

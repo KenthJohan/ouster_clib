@@ -28,8 +28,7 @@ shape2 : vbuf1 {
 }
 
 render1 : vbuf1 {
-    - draw.instances.DrawInstancesState{cap: 1000*1000}
-    - windows.Setup
+    - draw.instances.DrawInstancesDesc{cap: 1000*1000}
 }
 
 

@@ -38,13 +38,12 @@ typedef enum
 
 typedef struct
 {
-	int w;
-	int h;
-	double *image_points;
-
-	ecs_os_thread_t thread;
+	ecs_os_thread_t thread; // Receives UDP packages from LiDAR sensor
+	ecs_os_mutex_t lock;	// Used for thread safe pointcloud copy from socket thread to main thread
+	int image_size;
+	double *image_points;  // Thread producer, uses (lock)
+	double *image_points2; // Thread consumer, uses (lock)
 	ouster_lut_t lut;
-	ecs_os_mutex_t lock;
 	ouster_meta_t meta;
 } OusterSensor;
 
@@ -84,23 +83,13 @@ void *thread_receiver(void *arg)
 			{
 				continue;
 			}
-			// printf("n %ji\n", (intmax_t)n);
-			ecs_os_mutex_lock(sensor->lock);
 			ouster_lidar_get_fields(&lidar, &sensor->meta, buf, fields, FIELD_COUNT);
 			if (lidar.last_mid == sensor->meta.mid1)
 			{
+				ecs_os_mutex_lock(sensor->lock);
 				ouster_lut_cartesian(&sensor->lut, fields[FIELD_RANGE].data, sensor->image_points);
+				ecs_os_mutex_unlock(sensor->lock);
 			}
-			ecs_os_mutex_unlock(sensor->lock);
-
-			// printf("mat = %i of %i\n", sensor->fields[0].num_valid_pixels, sensor->fields[0].mat.dim[1] * sensor->fields[0].mat.dim[2]);
-			// ouster_field_zero(sensor->fields, FIELD_COUNT);
-			// printf("New frame %ji\n", (intmax_t)lidar.frame_id);
-
-			/*
-			cloud->count = ECS_MIN(cap, lut.w * lut.h);
-
-			*/
 		}
 
 		if (a & (1 << SOCK_INDEX_IMU))
@@ -112,42 +101,42 @@ void *thread_receiver(void *arg)
 	}
 }
 
-void SysUpdateColor(ecs_iter_t *it)
+void Pointcloud_copy(Pointcloud *cloud, double const *src, int n, double filter_radius)
+{
+	int k = 0;
+	float *dst = cloud->pos;
+	for (int j = 0; j < n; ++j, src += 3)
+	{
+		float d = sqrt(src[0] * src[0] + src[1] * src[1] + src[2] * src[2]);
+		if (d < filter_radius)
+		{
+			continue;
+		}
+		dst[0] = src[0] * 0.01;
+		dst[1] = src[1] * 0.01;
+		dst[2] = src[2] * 0.01;
+		dst += 3;
+		k++;
+		// printf("xyz %f %f %f\n", dst[0], dst[1], dst[2]);
+	}
+	cloud->count = k;
+}
+
+void Pointcloud_Fill(ecs_iter_t *it)
 {
 	Pointcloud *cloud = ecs_field(it, Pointcloud, 1);
 	OusterSensor *sensor = ecs_field(it, OusterSensor, 2);
 	OusterSensorDesc *desc = ecs_field(it, OusterSensorDesc, 3);
-	// ecs_os_sleep(1,0);
 	for (int i = 0; i < it->count; ++i, ++cloud, ++sensor)
 	{
 		ecs_os_mutex_lock(sensor->lock);
-		int w = sensor->lut.w;
-		int h = sensor->lut.h;
-		float *dst = cloud->pos;
-		int k = 0;
-
-		for (int j = 0; j < (w * h); ++j)
-		{
-			double *src = sensor->image_points + j * 3;
-			float d = sqrt(src[0] * src[0] + src[1] * src[1] + src[2] * src[2]);
-			if (d < desc->radius_filter)
-			{
-				// printf("%+f %+f\n", d);
-				continue;
-			}
-			dst[0] = src[0] * 0.01;
-			dst[1] = src[1] * 0.01;
-			dst[2] = src[2] * 0.01;
-			dst += 3;
-			k++;
-			// printf("xyz %f %f %f\n", dst[0], dst[1], dst[2]);
-		}
-		cloud->count = k;
+		ecs_os_memcpy(sensor->image_points2, sensor->image_points, sensor->image_size);
 		ecs_os_mutex_unlock(sensor->lock);
+		Pointcloud_copy(cloud, sensor->image_points2, sensor->lut.w * sensor->lut.h, desc->radius_filter);
 	}
 }
 
-static void Observer_LidarUDP_OnAdd(ecs_iter_t *it)
+static void OusterSensor_Add(ecs_iter_t *it)
 {
 	OusterSensorDesc *desc = ecs_field(it, OusterSensorDesc, 1);
 	for (int i = 0; i < it->count; ++i, ++desc)
@@ -159,11 +148,11 @@ static void Observer_LidarUDP_OnAdd(ecs_iter_t *it)
 		free(content);
 		ouster_lut_init(&sensor->lut, &sensor->meta);
 		printf("Column window: %i %i\n", sensor->meta.mid0, sensor->meta.mid1);
-
 		int cap = sensor->lut.w * sensor->lut.h;
-		sensor->image_points = calloc(1, cap * sizeof(double) * 3);
+		sensor->image_size = cap * sizeof(double) * 3;
+		sensor->image_points = ecs_os_calloc(sensor->image_size);
+		sensor->image_points2 = ecs_os_calloc(sensor->image_size);
 		ecs_set(it->world, it->entities[i], Pointcloud, {.cap = cap, .count = cap});
-
 		sensor->thread = ecs_os_thread_new(thread_receiver, sensor);
 	}
 }
@@ -185,7 +174,7 @@ void SensorsImport(ecs_world_t *world)
 
 	ecs_system_init(world, &(ecs_system_desc_t){
 							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = Observer_LidarUDP_OnAdd,
+							   .callback = OusterSensor_Add,
 							   .query.filter.terms =
 								   {
 									   {.id = ecs_id(OusterSensorDesc), .src.flags = EcsSelf},
@@ -194,7 +183,7 @@ void SensorsImport(ecs_world_t *world)
 
 	ecs_system_init(world, &(ecs_system_desc_t){
 							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = SysUpdateColor,
+							   .callback = Pointcloud_Fill,
 							   .query.filter.terms =
 								   {
 									   {.id = ecs_id(Pointcloud), .src.flags = EcsSelf},

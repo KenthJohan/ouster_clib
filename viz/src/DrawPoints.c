@@ -15,25 +15,9 @@
 
 typedef struct
 {
-	float x, y;
+	float x, y, z;
 	uint32_t color;
 } vertex_t;
-
-static struct
-{
-	sg_pass_action pass_action;
-	sg_buffer vbuf;
-	// per-primitive-type data
-
-	sg_buffer ibuf;
-	sg_pipeline pip;
-	int num_elements;
-
-	float rx, ry;
-	float point_size;
-
-	vertex_t vertices[NUM_VERTS];
-} state;
 
 #if !defined(SOKOL_SHDC_ALIGN)
 #if defined(_MSC_VER)
@@ -55,6 +39,25 @@ typedef struct vs_params_t
 } vs_params_t;
 #pragma pack(pop)
 
+typedef struct
+{
+	ecs_i32_t cap;
+	vs_params_t vs_params;
+	sg_pass_action pass_action;
+	// per-primitive-type data
+
+	sg_buffer ibuf;
+	sg_pipeline pip;
+	sg_bindings bind;
+
+	float rx, ry;
+	float point_size;
+	vertex_t *vertices;
+} DrawPointsState;
+
+ECS_COMPONENT_DECLARE(DrawPointsDesc);
+ECS_COMPONENT_DECLARE(DrawPointsState);
+
 // helper function to compute vertex shader params
 vs_params_t compute_vsparams(float disp_w, float disp_h, float rx, float ry, float point_size)
 {
@@ -71,7 +74,8 @@ vs_params_t compute_vsparams(float disp_w, float disp_h, float rx, float ry, flo
 }
 
 // helper function to fill index data
-void setup_vertex_and_index_data(void)
+/*
+void setup_vertex_and_index_data(DrawPointsState *state)
 {
 	// vertices
 	{
@@ -96,6 +100,7 @@ void setup_vertex_and_index_data(void)
 		assert(i == NUM_VERTS);
 	}
 }
+*/
 
 static sg_shader create_shader(char *path_fs, char *path_vs)
 {
@@ -119,6 +124,7 @@ static sg_shader create_shader(char *path_fs, char *path_vs)
 	return shd;
 }
 
+/*
 void DrawPoints_init(void)
 {
 	state.point_size = 4.0f;
@@ -153,43 +159,114 @@ void DrawPoints_init(void)
 		.depth.load_action = SG_LOADACTION_DONTCARE,
 		.stencil.load_action = SG_LOADACTION_DONTCARE};
 }
+*/
 
-void DrawPoints_frame(ecs_world_t *world)
+void DrawPointsState_Add(ecs_iter_t *it)
 {
-	const float t = (float)(sapp_frame_duration() * 60.0);
-	state.rx += 0.3f * t;
-	state.ry += 0.2f * t;
-	const float w = sapp_widthf();
-	const float h = sapp_heightf();
-	const vs_params_t vs_params = compute_vsparams(w, h, state.rx, state.ry, state.point_size);
+	DrawPointsDesc *desc = ecs_field(it, DrawPointsDesc, 1); // Self
 
-	sg_begin_default_passf(&state.pass_action, w, h);
-	sg_apply_pipeline(state.pip);
-	sg_apply_bindings(&(sg_bindings){.vertex_buffers[0] = state.vbuf});
-	sg_apply_uniforms(SG_SHADERSTAGE_VS, 0, &SG_RANGE(vs_params));
-	sg_draw(0, state.num_elements, 1);
-	sg_end_pass();
-	sg_commit();
-}
-
-static void incr_point_size(void)
-{
-	state.point_size += 1.0f;
-}
-
-static void decr_point_size(void)
-{
-	state.point_size -= 1.0f;
-	if (state.point_size < 1.0f)
+	for (int i = 0; i < it->count; ++i, ++desc)
 	{
-		state.point_size = 1.0f;
+		DrawPointsState *s = ecs_get_mut(it->world, it->entities[i], DrawPointsState);
+		s->cap = desc->cap;
+		s->bind.vertex_buffers[0] = sg_make_buffer(&(sg_buffer_desc){
+			.size = s->cap * sizeof(vertex_t),
+			.usage = SG_USAGE_STREAM,
+		});
+		s->bind.index_buffer.id = SG_INVALID_ID;
+		sg_pipeline_desc pip_desc = {
+			.layout = {
+				.attrs[ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT3,
+				.attrs[ATTR_vs_color0].format = SG_VERTEXFORMAT_UBYTE4N,
+			},
+			.shader = create_shader("../../viz/src/points.fs.glsl", "../../viz/src/points.vs.glsl"),
+			.depth = {.write_enabled = true, .compare = SG_COMPAREFUNC_LESS_EQUAL},
+			.index_type = SG_INDEXTYPE_NONE,
+			.primitive_type = SG_PRIMITIVETYPE_POINTS,
+		};
+		s->pip = sg_make_pipeline(&pip_desc);
+		s->pass_action = (sg_pass_action){
+			.colors[0].load_action = SG_LOADACTION_DONTCARE,
+			.depth.load_action = SG_LOADACTION_DONTCARE,
+			.stencil.load_action = SG_LOADACTION_DONTCARE};
+		s->vertices = ecs_os_calloc_n(vertex_t, s->cap);
+	}
+}
+
+void DrawPointsState_Draw(ecs_iter_t *it)
+{
+	Pointcloud *cloud = ecs_field(it, Pointcloud, 1);		// self
+	DrawPointsState *s = ecs_field(it, DrawPointsState, 2); // up
+	Camera *cam = ecs_field(it, Camera, 3);					// up
+	Window *window = ecs_field(it, Window, 4);				// up
+
+	for (int i = 0; i < it->count; ++i, ++cloud)
+	{
+		if (cloud->count <= 0)
+		{
+			continue;
+		}
+		const uint32_t colors[3] = {0xFF0000DD, 0xFF00DD00, 0xFF00DDDD};
+		int n = ECS_MIN(cloud->count, s->cap);
+		for (int j = 0; j < n; ++j)
+		{
+			vertex_t v;
+
+			v.x = cloud->pos[j * 3 + 0];
+			v.y = cloud->pos[j * 3 + 1];
+			v.z = cloud->pos[j * 3 + 2];
+			v.color = colors[j % 3];
+			s->vertices[j] = v;
+		}
+		sg_range range = {.ptr = s->vertices, .size = (size_t)n * sizeof(vertex_t)};
+		sg_update_buffer(s->bind.vertex_buffers[0], &range);
+		sg_begin_default_passf(&s->pass_action, window->w, window->h);
+		sg_apply_pipeline(s->pip);
+		sg_apply_bindings(&s->bind);
+		s->vs_params.point_size = 4.0f;
+		ecs_os_memcpy_t(&s->vs_params.mvp, cam->mvp, hmm_mat4);
+		sg_range a = {&s->vs_params, sizeof(vs_params_t)};
+		sg_apply_uniforms(SG_SHADERSTAGE_VS, 0, &a);
+		sg_draw(0, n, 1);
+		sg_end_pass();
+		sg_commit();
 	}
 }
 
 void DrawPointsImport(ecs_world_t *world)
 {
-	ECS_MODULE(world, DrawInstances);
+	ECS_MODULE(world, DrawPoints);
 	ECS_IMPORT(world, Cameras);
 	ECS_IMPORT(world, Windows);
 	ECS_IMPORT(world, Pointclouds);
+
+	ECS_COMPONENT_DEFINE(world, DrawPointsDesc);
+	ECS_COMPONENT_DEFINE(world, DrawPointsState);
+
+	ecs_struct(world, {.entity = ecs_id(DrawPointsDesc),
+					   .members = {
+						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
+					   }});
+
+	ecs_system_init(world, &(ecs_system_desc_t){
+							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+							   .callback = DrawPointsState_Add,
+							   .query.filter.terms =
+								   {
+									   {.id = ecs_id(DrawPointsDesc), .src.flags = EcsSelf},
+									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
+									   {.id = ecs_id(DrawPointsState), .oper = EcsNot}, // Adds this
+								   }});
+
+	ecs_system_init(world, &(ecs_system_desc_t){
+							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+							   .callback = DrawPointsState_Draw,
+							   .query.filter.terms =
+								   {
+									   {.id = ecs_id(Pointcloud), .src.flags = EcsSelf},
+									   {.id = ecs_id(DrawPointsState), .src.trav = EcsIsA, .src.flags = EcsUp},
+									   {.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
+									   {.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
+									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
+								   }});
 }

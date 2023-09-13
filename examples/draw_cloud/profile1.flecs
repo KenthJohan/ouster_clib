@@ -1,0 +1,58 @@
+// To see what the result of parsing this file looks like, copy the code and
+// paste it into the editor at https://flecs.dev/explorer
+//
+// To load this file yourself, call ecs_plecs_from_file("expressions.flecs");
+using flecs.meta
+
+window1 {
+    - windows.Window{"Hello cool title!"}
+}
+
+camera1 {
+    - cameras.Camera
+    - geometries.Position3
+}
+/*
+vbuf1 {
+    - geometries.ShapeBuffer{cap_vertices:6*1024, cap_indices:16 * 1024}
+}
+
+shape1 : vbuf1 {
+    - geometries.Sphere{r:0.07,slices:7,stacks:3}
+    //- Index
+}
+
+shape2 : vbuf1 {
+    - geometries.Sphere{r:0.07,slices:6,stacks:4}
+    //- Index
+}
+
+render1 : vbuf1 {
+    - draw.instances.DrawInstancesDesc{cap: 1000*1000}
+}
+
+
+sensor1 : camera1, render1, window1, shape2 {
+    - sensors.SensorsDesc{metafile:"/home/johan/Downloads/OS1_test1/a.json", radius_filter:100.0}
+}
+
+
+draw1 {
+    //- pointclouds.Pointcloud{cap: 1024*128}
+}
+
+*/
+
+
+render_points 
+{
+	- DrawPointsDesc{cap:1000*1000}
+}
+
+
+
+text1 {
+    - draw.text.Text{""}
+    - geometries.Position2{0,0}
+}
+

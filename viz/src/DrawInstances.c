@@ -191,6 +191,11 @@ void DrawInstancesImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, DrawInstancesDesc);
 	ECS_COMPONENT_DEFINE(world, DrawInstancesState);
 
+	ecs_struct(world, {.entity = ecs_id(DrawInstancesState),
+					   .members = {
+						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
+					   }});
+
 	ecs_system_init(world, &(ecs_system_desc_t){
 							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
 							   .callback = DrawInstancesState_Add,
@@ -214,9 +219,4 @@ void DrawInstancesImport(ecs_world_t *world)
 									   {.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
 									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
 								   }});
-
-	ecs_struct(world, {.entity = ecs_id(DrawInstancesState),
-					   .members = {
-						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
-					   }});
 }

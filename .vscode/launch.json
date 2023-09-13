@@ -53,7 +53,7 @@
 			"environment": [
 				{
 					"name": "LD_LIBRARY_PATH",
-					"value": "${workspaceFolder}/bin/x64-Linux-debug:/home/johan/Downloads/flecs/bin/x64-Linux-debug/"
+					"value": "${workspaceFolder}/bin/x64-Linux-debug:${env:HOME}/bake/x64-Linux/debug/lib/"
 				},
 			],
 			"program": "${workspaceFolder}/examples/draw_cloud/bin/x64-Linux-debug/draw_cloud",

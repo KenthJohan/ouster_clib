@@ -2,6 +2,40 @@
 
 
 
+
+
+
+
+## Check your ip
+```bash
+$ ip route
+default via 192.168.1.1 dev eno1 proto dhcp src 192.168.1.113 metric 100 
+169.254.0.0/16 dev eno1 scope link metric 1000 
+192.168.0.0/23 dev eno1 proto kernel scope link src 192.168.1.113 metric 100
+```
+
+
+## Rewrite net data
+Change pcap ip dest to your ip address (default via 192.168.1.1)
+```bash
+tcpprep --port --pcap=./a.pcap --cachefile=a.cache
+sudo tcprewrite --endpoints=192.168.1.113:169.254.189.244 --enet-smac=00:00:00:00:00:00 --enet-dmac=00:00:00:00:00:00 --cachefile=a.cache  --infile=a.pcap --outfile=b.pcap
+```
+## Replay net data
+```bash
+sudo tcpreplay -v -o -i lo ./b.pcap
+```
+
+
+
+
+
+
+
+
+
+
+
 ## Capture and replay
 * Dont filter by port. <br>
 Filtering by port and then replay will not replay any UDP packets. Port information is not in every packet.
@@ -15,13 +49,6 @@ sudo tcpreplay-edit -v -o -i lo --enet-smac=00:00:00:00:00:00 --enet-dmac=00:00:
 
 ```
 
-## Rewrite
-```bash
-tcpprep --port --pcap=./a.pcap --cachefile=a.cache
-sudo tcprewrite --endpoints=69.254.189.246:127.0.0.1 --cachefile=a.cache  --infile=a.pcap --outfile=b.pcap
-sudo tcprewrite --endpoints=127.0.0.1:169.254.189.244 --enet-smac=00:00:00:00:00:00 --enet-dmac=00:00:00:00:00:00 --cachefile=a.cache  --infile=a.pcap --outfile=b.pcap
-
-```
 
 
 ### References

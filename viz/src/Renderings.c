@@ -197,9 +197,8 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 		}
 
 		// update instance data
-		sg_update_buffer(rend->bind.vertex_buffers[1], &(sg_range){
-														   .ptr = cloud->pos,
-														   .size = (size_t)cloud->count * sizeof(hmm_vec3)});
+		sg_range range = {.ptr = cloud->pos, .size = (size_t)cloud->count * sizeof(hmm_vec3)};
+		sg_update_buffer(rend->bind.vertex_buffers[1], &range);
 
 		sg_begin_default_pass(&rend->pass_action, window->w, window->h);
 		sg_apply_pipeline(rend->pip);

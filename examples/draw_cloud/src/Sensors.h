@@ -4,6 +4,7 @@
 typedef struct
 {
 	const ecs_string_t metafile;
+	double radius_filter;
 } OusterSensorDesc;
 
 extern ECS_COMPONENT_DECLARE(OusterSensorDesc);

@@ -109,6 +109,8 @@ XYZLut make_xyz_lut(size_t w, size_t h, double range_unit,
 
 #define V3_ARGS(x) (x)[0], (x)[1], (x)[2]
 #define V3_FORMAT "%f %f %f\n"
+#define V3_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
+
 void print_m4(double const *a)
 {
 	printf(M4_FORMAT, M4_ARGS_1(a));
@@ -254,9 +256,9 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 
 	for (int i = 0; i < w * h; ++i)
 	{
-		double *d = direction + i * 3;
-		double *o = offset + i * 3;
-		printf("%+f %+f %+f %+f %+f %+f, %+f\n", o[0], o[1], o[2], d[0], d[1], d[2], sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
+		// double *d = direction + i * 3;
+		// double *o = offset + i * 3;
+		//  printf("%+f %+f %+f %+f %+f %+f, %+f\n", o[0], o[1], o[2], d[0], d[1], d[2], sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
 	}
 }
 
@@ -270,5 +272,6 @@ void ouster_lut_cartesian(ouster_lut_t const *lut, uint32_t const *range, double
 		out_xyz[0] = mag * d[0] + o[0];
 		out_xyz[1] = mag * d[1] + o[1];
 		out_xyz[2] = mag * d[2] + o[2];
+		// printf("%+f %+f\n", mag, sqrt(V3_DOT(out_xyz, out_xyz)));
 	}
 }

@@ -15,6 +15,8 @@
 #include <viz/Geometries.h>
 #include <viz/Pointclouds.h>
 
+#include <easymath/lin_f32.h>
+
 #include <flecs.h>
 
 #include <stdlib.h>
@@ -38,12 +40,12 @@ typedef struct
 {
 	int w;
 	int h;
-	double *cloudimage;
+	double *image_points;
+
 	ecs_os_thread_t thread;
 	ouster_lut_t lut;
 	ecs_os_mutex_t lock;
 	ouster_meta_t meta;
-	ouster_field_t fields[FIELD_COUNT];
 } OusterSensor;
 
 ECS_COMPONENT_DECLARE(OusterSensor);
@@ -58,6 +60,10 @@ void *thread_receiver(void *arg)
 	int socks[SOCK_INDEX_COUNT] = {0};
 	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
 	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_lidar("7503");
+
+	ouster_field_t fields[FIELD_COUNT];
+	fields[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
+	ouster_field_init(fields, FIELD_COUNT, &sensor->meta);
 
 	while (1)
 	{
@@ -80,10 +86,10 @@ void *thread_receiver(void *arg)
 			}
 			// printf("n %ji\n", (intmax_t)n);
 			ecs_os_mutex_lock(sensor->lock);
-			ouster_lidar_get_fields(&lidar, &sensor->meta, buf, sensor->fields, FIELD_COUNT);
+			ouster_lidar_get_fields(&lidar, &sensor->meta, buf, fields, FIELD_COUNT);
 			if (lidar.last_mid == sensor->meta.mid1)
 			{
-				ouster_lut_cartesian(&sensor->lut, sensor->fields[FIELD_RANGE].data, sensor->cloudimage);
+				ouster_lut_cartesian(&sensor->lut, fields[FIELD_RANGE].data, sensor->image_points);
 			}
 			ecs_os_mutex_unlock(sensor->lock);
 
@@ -110,43 +116,34 @@ void SysUpdateColor(ecs_iter_t *it)
 {
 	Pointcloud *cloud = ecs_field(it, Pointcloud, 1);
 	OusterSensor *sensor = ecs_field(it, OusterSensor, 2);
+	OusterSensorDesc *desc = ecs_field(it, OusterSensorDesc, 3);
 	// ecs_os_sleep(1,0);
 	for (int i = 0; i < it->count; ++i, ++cloud, ++sensor)
 	{
 		ecs_os_mutex_lock(sensor->lock);
 		int w = sensor->lut.w;
 		int h = sensor->lut.h;
-		uint32_t *range = sensor->fields[FIELD_RANGE].data;
 		float *dst = cloud->pos;
 		int k = 0;
-		for (int c = 0; c < w; ++c)
+
+		for (int j = 0; j < (w * h); ++j)
 		{
-			for (int r = 0; r < h; ++r)
+			double *src = sensor->image_points + j * 3;
+			float d = sqrt(src[0] * src[0] + src[1] * src[1] + src[2] * src[2]);
+			if (d < desc->radius_filter)
 			{
-				int j = r * w + c;
-				uint32_t d = range[j];
-				double *src = sensor->cloudimage + j * 3;
-
-				float d2 = sqrt(src[0] * src[0] + src[1] * src[1] + src[2] * src[2]);
-				if (d2 < 100)
-				{
-					continue;
-				}
-				if (d < 100)
-				{
-					// continue;
-				}
-
-				dst[0] = src[0] * 0.01;
-				dst[1] = src[1] * 0.01;
-				dst[2] = src[2] * 0.01;
-				dst += 3;
-				k++;
-				// printf("xyz %f %f %f\n", dst[0], dst[1], dst[2]);
+				// printf("%+f %+f\n", d);
+				continue;
 			}
-			ecs_os_mutex_unlock(sensor->lock);
+			dst[0] = src[0] * 0.01;
+			dst[1] = src[1] * 0.01;
+			dst[2] = src[2] * 0.01;
+			dst += 3;
+			k++;
+			// printf("xyz %f %f %f\n", dst[0], dst[1], dst[2]);
 		}
 		cloud->count = k;
+		ecs_os_mutex_unlock(sensor->lock);
 	}
 }
 
@@ -163,11 +160,8 @@ static void Observer_LidarUDP_OnAdd(ecs_iter_t *it)
 		ouster_lut_init(&sensor->lut, &sensor->meta);
 		printf("Column window: %i %i\n", sensor->meta.mid0, sensor->meta.mid1);
 
-		sensor->fields[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
-		ouster_field_init(sensor->fields, FIELD_COUNT, &sensor->meta);
-
 		int cap = sensor->lut.w * sensor->lut.h;
-		sensor->cloudimage = calloc(1, cap * sizeof(double) * 3);
+		sensor->image_points = calloc(1, cap * sizeof(double) * 3);
 		ecs_set(it->world, it->entities[i], Pointcloud, {.cap = cap, .count = cap});
 
 		sensor->thread = ecs_os_thread_new(thread_receiver, sensor);
@@ -186,6 +180,7 @@ void SensorsImport(ecs_world_t *world)
 	ecs_struct(world, {.entity = ecs_id(OusterSensorDesc),
 					   .members = {
 						   {.name = "metafile", .type = ecs_id(ecs_string_t)},
+						   {.name = "radius_filter", .type = ecs_id(ecs_f64_t)},
 					   }});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
@@ -204,6 +199,7 @@ void SensorsImport(ecs_world_t *world)
 								   {
 									   {.id = ecs_id(Pointcloud), .src.flags = EcsSelf},
 									   {.id = ecs_id(OusterSensor), .src.flags = EcsSelf},
+									   {.id = ecs_id(OusterSensorDesc), .src.flags = EcsSelf},
 									   //{ .id = ecs_id(OusterSensor), .src.trav = EcsIsA, .src.flags = EcsUp},
 								   }});
 }

@@ -14,15 +14,19 @@ camera1 {
 }
 
 
-render_points 
-{
+render_points {
 	- draw.points.DrawPointsDesc{cap:1000*1000}
 }
 
-draw1 : window1, camera1, render_points
-{
-	- pointclouds.Pointcloud{cap: 1024*128}
+sensor1 {
+    - sensors.SensorsDesc{metafile:"/home/johan/Downloads/OS1_test1/a.json", radius_filter:100.0}
 }
+
+draw1 : window1, camera1, render_points, sensor1 {
+	//- pointclouds.Pointcloud{cap: 1024*128}
+}
+
+
 
 
 text1 {

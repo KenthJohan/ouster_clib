@@ -195,12 +195,14 @@ void DrawPointsState_Add(ecs_iter_t *it)
 
 void DrawPointsState_Draw(ecs_iter_t *it)
 {
-	Pointcloud *cloud = ecs_field(it, Pointcloud, 1);		// self
+	Pointcloud *cloud = ecs_field(it, Pointcloud, 1);		// self or up
 	DrawPointsState *s = ecs_field(it, DrawPointsState, 2); // up
 	Camera *cam = ecs_field(it, Camera, 3);					// up
 	Window *window = ecs_field(it, Window, 4);				// up
 
-	for (int i = 0; i < it->count; ++i, ++cloud)
+	int self1 = ecs_field_is_self(it, 1);
+
+	for (int i = 0; i < it->count; ++i, cloud += self1)
 	{
 		if (cloud->count <= 0)
 		{
@@ -263,7 +265,7 @@ void DrawPointsImport(ecs_world_t *world)
 							   .callback = DrawPointsState_Draw,
 							   .query.filter.terms =
 								   {
-									   {.id = ecs_id(Pointcloud), .src.flags = EcsSelf},
+									   {.id = ecs_id(Pointcloud)},
 									   {.id = ecs_id(DrawPointsState), .src.trav = EcsIsA, .src.flags = EcsUp},
 									   {.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
 									   {.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},

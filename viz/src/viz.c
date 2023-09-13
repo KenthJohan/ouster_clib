@@ -1,7 +1,8 @@
 #include "viz/viz.h"
-#include "viz/Renderings.h"
-#include "viz/Userinputs.h"
+#include "viz/DrawInstances.h"
 #include "viz/DrawShapes.h"
+#include "viz/DrawPoints.h"
+#include "viz/Userinputs.h"
 #include "viz/Windows.h"
 
 #include "vendor/sokol_app.h"
@@ -32,6 +33,7 @@ static void init(viz_state_t *state)
 	//__dbgui_setup(sapp_sample_count());
 
 	draw_shapes_init();
+	DrawPoints_init();
 
 	ecs_singleton_add(world, RenderingsContext);
 	ecs_singleton_set(world, RenderingsContext, {0});
@@ -51,6 +53,7 @@ static void frame(viz_state_t *state)
 	ecs_progress(world, 0);
 
 	draw_shapes_frame(world);
+	DrawPoints_frame(world);
 
 	sg_commit();
 }

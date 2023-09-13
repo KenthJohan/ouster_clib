@@ -1,4 +1,4 @@
-#include "viz/Renderings.h"
+#include "viz/DrawInstances.h"
 #include "viz/Geometries.h"
 #include "viz/Cameras.h"
 #include "viz/Windows.h"
@@ -65,9 +65,9 @@ typedef struct
 	sg_pass_action pass_action;
 	sg_pipeline pip;
 	sg_bindings bind;
-} RenderPointcloud;
+} DrawInstancesState;
 
-ECS_COMPONENT_DECLARE(RenderPointcloud);
+ECS_COMPONENT_DECLARE(DrawInstancesState);
 
 static sg_shader create_shader(char *path_fs, char *path_vs)
 {
@@ -97,7 +97,7 @@ static sg_shader create_shader(char *path_fs, char *path_vs)
 
 void RenderPointcloud_Setup(ecs_iter_t *it)
 {
-	RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 1);
+	DrawInstancesState *rend = ecs_field(it, DrawInstancesState, 1);
 	ShapeBufferImpl *sbuf = ecs_field(it, ShapeBufferImpl, 2);
 
 	for (int i = 0; i < it->count; ++i, ++rend)
@@ -179,7 +179,7 @@ void RenderPointcloud_Setup(ecs_iter_t *it)
 void RenderPointcloud_Draw(ecs_iter_t *it)
 {
 	Pointcloud *cloud = ecs_field(it, Pointcloud, 1);
-	RenderPointcloud *rend = ecs_field(it, RenderPointcloud, 2);
+	DrawInstancesState *rend = ecs_field(it, DrawInstancesState, 2);
 	Camera *cam = ecs_field(it, Camera, 3);
 	ShapeIndex *shape = ecs_field(it, ShapeIndex, 4);
 	Window *window = ecs_field(it, Window, 5); // up
@@ -212,28 +212,28 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 	}
 }
 
-void RenderingsImport(ecs_world_t *world)
+void DrawInstancesImport(ecs_world_t *world)
 {
-	ECS_MODULE(world, Renderings);
+	ECS_MODULE(world, DrawInstances);
 	ECS_IMPORT(world, Cameras);
 	ECS_IMPORT(world, Geometries);
 	ECS_IMPORT(world, Windows);
 	ECS_IMPORT(world, Pointclouds);
 	ECS_IMPORT(world, GraphicsShapes);
 
-	ECS_COMPONENT_DEFINE(world, RenderPointcloud);
+	ECS_COMPONENT_DEFINE(world, DrawInstancesState);
 
 	ecs_system_init(world, &(ecs_system_desc_t){
 							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
 							   .callback = RenderPointcloud_Setup,
 							   .query.filter.terms =
 								   {
-									   {.id = ecs_id(RenderPointcloud)},
+									   {.id = ecs_id(DrawInstancesState)},
 									   {.id = ecs_id(ShapeBufferImpl)},
 									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
 									   {.id = Setup},
 
-									   //{ .id = ecs_id(RenderPointcloud), .src.trav = EcsIsA, .src.flags = EcsUp },
+									   //{ .id = ecs_id(DrawInstancesState), .src.trav = EcsIsA, .src.flags = EcsUp },
 									   //{ .id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp },
 								   }});
 
@@ -243,21 +243,21 @@ void RenderingsImport(ecs_world_t *world)
 							   .query.filter.terms =
 								   {
 									   {.id = ecs_id(Pointcloud)},
-									   {.id = ecs_id(RenderPointcloud), .src.trav = EcsIsA, .src.flags = EcsUp},
+									   {.id = ecs_id(DrawInstancesState), .src.trav = EcsIsA, .src.flags = EcsUp},
 									   {.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
 									   {.id = ecs_id(ShapeIndex), .src.trav = EcsIsA, .src.flags = EcsUp},
 									   {.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
 									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
 									   {.id = Valid},
-									   //{ .id = ecs_id(RenderPointcloud), .src.trav = EcsIsA, .src.flags = EcsUp },
+									   //{ .id = ecs_id(DrawInstancesState), .src.trav = EcsIsA, .src.flags = EcsUp },
 									   //{ .id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp },
 								   }});
 
-	ecs_struct(world, {.entity = ecs_id(RenderPointcloud),
+	ecs_struct(world, {.entity = ecs_id(DrawInstancesState),
 					   .members = {
 						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
 					   }});
 
-	// ECS_SYSTEM(world, Pointcloud_OnSet, EcsOnUpdate, Pointcloud, !RenderPointcloud(parent));
-	// ECS_SYSTEM(world, Pointcloud_Draw, EcsOnUpdate, Pointcloud, RenderPointcloud(parent));
+	// ECS_SYSTEM(world, Pointcloud_OnSet, EcsOnUpdate, Pointcloud, !DrawInstancesState(parent));
+	// ECS_SYSTEM(world, Pointcloud_Draw, EcsOnUpdate, Pointcloud, DrawInstancesState(parent));
 }

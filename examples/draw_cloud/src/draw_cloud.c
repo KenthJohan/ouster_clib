@@ -1,6 +1,6 @@
 #include <viz/viz.h>
 #include <viz/Geometries.h>
-#include <viz/Renderings.h>
+#include <viz/DrawInstances.h>
 #include <viz/Cameras.h>
 #include <viz/DrawText.h>
 #include <viz/Windows.h>
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	ECS_IMPORT(world, Geometries);
 	ECS_IMPORT(world, Pointclouds);
 	ECS_IMPORT(world, Cameras);
-	ECS_IMPORT(world, Renderings);
+	ECS_IMPORT(world, DrawInstances);
 	ECS_IMPORT(world, DrawText);
 	ECS_IMPORT(world, Windows);
 	ECS_IMPORT(world, Sensors);

@@ -45,14 +45,14 @@ typedef struct
 	double *image_points2; // Thread consumer, uses (lock)
 	ouster_lut_t lut;
 	ouster_meta_t meta;
-} OusterSensor;
+} SensorsState;
 
-ECS_COMPONENT_DECLARE(OusterSensor);
-ECS_COMPONENT_DECLARE(OusterSensorDesc);
+ECS_COMPONENT_DECLARE(SensorsState);
+ECS_COMPONENT_DECLARE(SensorsDesc);
 
 void *thread_receiver(void *arg)
 {
-	OusterSensor *sensor = arg;
+	SensorsState *sensor = arg;
 
 	ouster_lidar_t lidar = {0};
 
@@ -126,8 +126,8 @@ void Pointcloud_copy(Pointcloud *cloud, double const *src, int n, double filter_
 void Pointcloud_Fill(ecs_iter_t *it)
 {
 	Pointcloud *cloud = ecs_field(it, Pointcloud, 1);
-	OusterSensor *sensor = ecs_field(it, OusterSensor, 2);
-	OusterSensorDesc *desc = ecs_field(it, OusterSensorDesc, 3);
+	SensorsState *sensor = ecs_field(it, SensorsState, 2);
+	SensorsDesc *desc = ecs_field(it, SensorsDesc, 3);
 	for (int i = 0; i < it->count; ++i, ++cloud, ++sensor)
 	{
 		ecs_os_mutex_lock(sensor->lock);
@@ -137,12 +137,12 @@ void Pointcloud_Fill(ecs_iter_t *it)
 	}
 }
 
-static void OusterSensor_Add(ecs_iter_t *it)
+static void Sensor_Add(ecs_iter_t *it)
 {
-	OusterSensorDesc *desc = ecs_field(it, OusterSensorDesc, 1);
+	SensorsDesc *desc = ecs_field(it, SensorsDesc, 1);
 	for (int i = 0; i < it->count; ++i, ++desc)
 	{
-		OusterSensor *sensor = ecs_get_mut(it->world, it->entities[i], OusterSensor);
+		SensorsState *sensor = ecs_get_mut(it->world, it->entities[i], SensorsState);
 		sensor->lock = ecs_os_mutex_new();
 		char *content = fs_readfile(desc->metafile);
 		ouster_meta_parse(content, &sensor->meta);
@@ -164,10 +164,10 @@ void SensorsImport(ecs_world_t *world)
 	ECS_IMPORT(world, Geometries);
 	ECS_IMPORT(world, Pointclouds);
 
-	ECS_COMPONENT_DEFINE(world, OusterSensor);
-	ECS_COMPONENT_DEFINE(world, OusterSensorDesc);
+	ECS_COMPONENT_DEFINE(world, SensorsState);
+	ECS_COMPONENT_DEFINE(world, SensorsDesc);
 
-	ecs_struct(world, {.entity = ecs_id(OusterSensorDesc),
+	ecs_struct(world, {.entity = ecs_id(SensorsDesc),
 					   .members = {
 						   {.name = "metafile", .type = ecs_id(ecs_string_t)},
 						   {.name = "radius_filter", .type = ecs_id(ecs_f64_t)},
@@ -175,11 +175,11 @@ void SensorsImport(ecs_world_t *world)
 
 	ecs_system_init(world, &(ecs_system_desc_t){
 							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = OusterSensor_Add,
+							   .callback = Sensor_Add,
 							   .query.filter.terms =
 								   {
-									   {.id = ecs_id(OusterSensorDesc), .src.flags = EcsSelf},
-									   {.id = ecs_id(OusterSensor), .oper = EcsNot}, // Adds this
+									   {.id = ecs_id(SensorsDesc), .src.flags = EcsSelf},
+									   {.id = ecs_id(SensorsState), .oper = EcsNot}, // Adds this
 								   }});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
@@ -188,8 +188,8 @@ void SensorsImport(ecs_world_t *world)
 							   .query.filter.terms =
 								   {
 									   {.id = ecs_id(Pointcloud), .src.flags = EcsSelf},
-									   {.id = ecs_id(OusterSensor), .src.flags = EcsSelf},
-									   {.id = ecs_id(OusterSensorDesc), .src.flags = EcsSelf},
+									   {.id = ecs_id(SensorsState), .src.flags = EcsSelf},
+									   {.id = ecs_id(SensorsDesc), .src.flags = EcsSelf},
 									   //{ .id = ecs_id(OusterSensor), .src.trav = EcsIsA, .src.flags = EcsUp},
 								   }});
 }

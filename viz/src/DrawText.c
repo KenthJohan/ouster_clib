@@ -14,6 +14,7 @@ static void RenderText(ecs_iter_t *it)
 	Position2 *pos = ecs_field(it, Position2, 2);
 	for (int i = 0; i < it->count; ++i, ++text, ++pos)
 	{
+		// sdtx_origin(1.0f, 2.0f);
 		sdtx_pos(pos->x, pos->y);
 		sdtx_puts(text->content);
 		// Temorary:

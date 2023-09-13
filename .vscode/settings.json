@@ -86,7 +86,9 @@
 		"graphicsshapes.h": "c",
 		"numbers": "c",
 		"algorithm": "c",
-		"transform.h": "c"
+		"transform.h": "c",
+		"drawinstances.h": "c",
+		"drawpoints.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

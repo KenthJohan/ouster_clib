@@ -28,13 +28,13 @@ shape2 : vbuf1 {
 }
 
 render1 : vbuf1 {
-    - renderings.RenderPointcloud{cap: 1000*1000}
+    - draw.instances.DrawInstancesState{cap: 1000*1000}
     - windows.Setup
 }
 
 
 sensor1 : camera1, render1, window1, shape2 {
-    - sensors.OusterSensorDesc{metafile:"/home/johan/Downloads/OS1_test1/a.json", radius_filter:100.0}
+    - sensors.SensorsDesc{metafile:"/home/johan/Downloads/OS1_test1/a.json", radius_filter:100.0}
 }
 
 

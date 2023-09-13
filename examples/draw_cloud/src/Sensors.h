@@ -5,8 +5,8 @@ typedef struct
 {
 	const ecs_string_t metafile;
 	double radius_filter;
-} OusterSensorDesc;
+} SensorsDesc;
 
-extern ECS_COMPONENT_DECLARE(OusterSensorDesc);
+extern ECS_COMPONENT_DECLARE(SensorsDesc);
 
 void SensorsImport(ecs_world_t *world);

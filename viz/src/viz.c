@@ -122,7 +122,7 @@ void viz_run(viz_state_t *state)
 		.width = 800,
 		.height = 600,
 		.sample_count = 4,
-		.window_title = "Noentry (sokol-app)",
+		.window_title = "Default window title",
 		.icon.sokol_default = true,
 		.logger.func = slog_func,
 	});

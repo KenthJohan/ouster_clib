@@ -66,6 +66,7 @@ void *thread_receiver(void *arg)
 
 	while (1)
 	{
+		char buf[NET_UDP_MAX_SIZE];
 		int timeout_sec = 1;
 		int timeout_usec = 0;
 		uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
@@ -77,14 +78,14 @@ void *thread_receiver(void *arg)
 
 		if (a & (1 << SOCK_INDEX_LIDAR))
 		{
-			char buf[NET_UDP_MAX_SIZE];
 			int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-			platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
+			platform_log("%-10s %5ji:  \n", "SOCK_LIDAR", (intmax_t)n);
 			if (n <= 0)
 			{
 				continue;
 			}
 			ouster_lidar_get_fields(&lidar, &sensor->meta, buf, fields, FIELD_COUNT);
+			// printf("%i %i\n", lidar.last_mid, sensor->meta.mid1);
 			if (lidar.last_mid == sensor->meta.mid1)
 			{
 				ecs_os_mutex_lock(sensor->lock);
@@ -95,7 +96,6 @@ void *thread_receiver(void *arg)
 
 		if (a & (1 << SOCK_INDEX_IMU))
 		{
-			char buf[1024 * 256];
 			int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
 			platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
 		}

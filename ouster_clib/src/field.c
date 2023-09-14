@@ -96,6 +96,31 @@ void ouster_field_init1(ouster_field_t *f, int profile)
 		f->offset = 8;
 		f->depth = 2;
 		break;
+		/*
+	{ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
+	{ChanField::FLAGS, {UINT8, 1, 0b10000000, 7}},
+	{ChanField::REFLECTIVITY, {UINT8, 2, 0, 0}},
+	{ChanField::NEAR_IR, {UINT8, 3, 0, -4}},
+	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+	*/
+	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_RANGE):
+		f->mask = UINT32_C(0x7fff);
+		f->offset = 0;
+		f->depth = 2;
+		break;
+	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_REFLECTIVITY):
+		f->mask = UINT32_C(0xFFFFFFFF);
+		f->offset = 2;
+		f->depth = 1;
+		break;
+	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_SIGNAL):
+		assert(0);
+		break;
+	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_NEAR_IR):
+		f->mask = UINT32_C(0xFFFFFFFF);
+		f->offset = 3;
+		f->depth = 1;
+		break;
 	default:
 		break;
 	}

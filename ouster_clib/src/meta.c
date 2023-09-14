@@ -78,7 +78,7 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 		out->profile = OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16;
 		out->channel_data_size = 12;
 	}
-	else if (strcmp(buf, "NG15_RFL8_NIR8") == 0)
+	else if (strcmp(buf, "RNG15_RFL8_NIR8") == 0)
 	{
 		out->profile = OUSTER_PROFILE_RNG15_RFL8_NIR8;
 		out->channel_data_size = 4;
@@ -87,6 +87,10 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	{
 		out->profile = OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL;
 		out->channel_data_size = 20;
+	}
+	else
+	{
+		assert(0);
 	}
 
 	/*
@@ -108,4 +112,5 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 
 	assert(out->mid0 < out->mid1);
 	assert(out->midw > 0);
+	assert(out->channel_data_size > 0);
 }

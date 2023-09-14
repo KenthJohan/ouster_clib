@@ -217,7 +217,8 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 			v.x = cloud->pos[j * 3 + 0];
 			v.y = cloud->pos[j * 3 + 1];
 			v.z = cloud->pos[j * 3 + 2];
-			v.color = colors[j % 3];
+			// v.color = colors[j % 3];
+			v.color = cloud->col[j];
 			s->vertices[j] = v;
 		}
 		sg_range range = {.ptr = s->vertices, .size = (size_t)n * sizeof(vertex_t)};

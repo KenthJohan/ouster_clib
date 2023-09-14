@@ -64,7 +64,7 @@ static void Camera_Update(ecs_iter_t *it)
 
 		v3f32 dir;
 		v3f32_m4_mul(&dir, &mr, move); // Multiply rotation matrix (mr) with move vector (move) to velocity vector (v)
-		v3f32_mul(&dir, &dir, it->delta_time * 1.5f);
+		v3f32_mul(&dir, &dir, it->delta_time * camera->speed);
 		v3f32_add((v3f32 *)pos, (v3f32 *)pos, &dir);
 		// printf("%f %f %f => %f %f %f => %f %f %f\n", move->x, move->y, move->z, dir.x, dir.y, dir.z, pos->x, pos->y, pos->z);
 
@@ -139,12 +139,13 @@ void CamerasImport(ecs_world_t *world)
 									 .ctor = ecs_ctor(Camera),
 								 });
 
-	/*
-	ecs_struct(world, {
-	.entity = ecs_id(Camera),
-	.members = {
-	{ .name = "mvp", .type = ecs_id(ecs_f32_t), .count = 16 },
-	}
-	});
-	*/
+	ecs_struct(world, {.entity = ecs_id(Camera),
+					   .members = {
+						   {.name = "speed", .type = ecs_id(ecs_f32_t)},
+						   {.name = "mvp", .type = ecs_id(ecs_f32_t), .count = 16},
+						   {.name = "proj", .type = ecs_id(ecs_f32_t), .count = 16},
+						   {.name = "q", .type = ecs_id(ecs_f32_t), .count = 4},
+						   {.name = "move", .type = ecs_id(ecs_f32_t), .count = 3},
+						   {.name = "look", .type = ecs_id(ecs_f32_t), .count = 3},
+					   }});
 }

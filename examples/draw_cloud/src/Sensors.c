@@ -105,21 +105,24 @@ void *thread_receiver(void *arg)
 	}
 }
 
-void Pointcloud_copy(Pointcloud *cloud, double const *src, int n, double filter_radius)
+void Pointcloud_copy(Pointcloud *cloud, double const *src_pos, uint16_t const *src_ir, int n, double filter_radius)
 {
 	int k = 0;
-	float *dst = cloud->pos;
-	for (int j = 0; j < n; ++j, src += 3)
+	float *dst_pos = cloud->pos;
+	uint32_t *dst_col = cloud->col;
+	for (int j = 0; j < n; ++j, src_pos += 3, src_ir += 1)
 	{
-		float d = sqrt(src[0] * src[0] + src[1] * src[1] + src[2] * src[2]);
+		float d = sqrt(src_pos[0] * src_pos[0] + src_pos[1] * src_pos[1] + src_pos[2] * src_pos[2]);
 		if (d < filter_radius)
 		{
 			continue;
 		}
-		dst[0] = src[0] * 0.01;
-		dst[1] = src[1] * 0.01;
-		dst[2] = src[2] * 0.01;
-		dst += 3;
+		dst_pos[0] = src_pos[0] * 0.01;
+		dst_pos[1] = src_pos[1] * 0.01;
+		dst_pos[2] = src_pos[2] * 0.01;
+		dst_col[0] = src_ir[0];
+		dst_pos += 3;
+		dst_col += 1;
 		k++;
 		// printf("xyz %f %f %f\n", dst[0], dst[1], dst[2]);
 	}
@@ -138,7 +141,7 @@ void Pointcloud_Fill(ecs_iter_t *it)
 		ecs_os_mutex_unlock(sensor->lock);
 
 		ouster_lut_cartesian(&sensor->lut, sensor->fields2[FIELD_RANGE].data, sensor->image_points_data);
-		Pointcloud_copy(cloud, sensor->image_points_data, sensor->lut.w * sensor->lut.h, desc->radius_filter);
+		Pointcloud_copy(cloud, sensor->image_points_data, sensor->fields2[FIELD_IR].data, sensor->lut.w * sensor->lut.h, desc->radius_filter);
 	}
 }
 

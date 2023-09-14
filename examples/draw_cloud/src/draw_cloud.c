@@ -22,12 +22,12 @@ int main(int argc, char *argv[])
 	ecs_world_t *world = ecs_init();
 
 	// Must import before loading flecs file
+	ECS_IMPORT(world, DrawInstances);
+	ECS_IMPORT(world, DrawPoints);
+	ECS_IMPORT(world, DrawText);
 	ECS_IMPORT(world, Geometries);
 	ECS_IMPORT(world, Pointclouds);
 	ECS_IMPORT(world, Cameras);
-	ECS_IMPORT(world, DrawInstances);
-	ECS_IMPORT(world, DrawText);
-	ECS_IMPORT(world, DrawPoints);
 	ECS_IMPORT(world, Windows);
 	ECS_IMPORT(world, Sensors);
 
@@ -41,9 +41,7 @@ int main(int argc, char *argv[])
 		ecs_progress(world, 0);
 	}
 
-	viz_state_t state =
-		{
-			.world = world};
+	viz_state_t state = {.world = world};
 	viz_init(&state);
 	viz_run(&state);
 

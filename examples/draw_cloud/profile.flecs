@@ -19,7 +19,7 @@ render_points {
 }
 
 sensor1 {
-    - sensors.SensorsDesc{metafile:"/home/johan/Downloads/test/a.json", radius_filter:100.0}
+    - sensors.SensorsDesc{metafile:"/home/johan/Downloads/OS1_Captures_128/a.json", radius_filter:100.0}
 }
 
 draw1 : window1, camera1, render_points, sensor1 {

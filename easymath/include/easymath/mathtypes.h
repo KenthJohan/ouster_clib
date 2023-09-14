@@ -8,6 +8,15 @@
 #define ASSERT_NEQP(a, b)
 #endif
 
+#define V1_DOT(a, b) ((a)[0] * (b)[0])
+#define V2_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1])
+#define V3_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
+#define V4_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2] + (a)[3] * (b)[3])
+
+#define V1_NORM2(a) V1_DOT(a,a)
+#define V2_NORM2(a) V2_DOT(a,a)
+#define V3_NORM2(a) V3_DOT(a,a)
+#define V4_NORM2(a) V4_DOT(a,a)
 
 #define V2F32_ZERO {0.0f, 0.0f}
 #define V2F32_REPEAT(x) {(x), (x)}

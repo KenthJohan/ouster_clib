@@ -8,24 +8,25 @@ extern "C"
 {
 #endif
 
-typedef struct
-{
-	ouster_quantity_t quantity;
-	uint32_t mask;
-	int offset;
-	int num_valid_pixels;
-	int column0;
-	int depth;
-	int rows;
-	int cols;
-	int rowsize;
-	void *data;
-} ouster_field_t;
+	typedef struct
+	{
+		ouster_quantity_t quantity;
+		uint32_t mask;
+		int offset;
+		int num_valid_pixels;
+		int column0;
+		int depth;
+		int rows;
+		int cols;
+		int rowsize;
+		void *data;
+	} ouster_field_t;
 
-void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta);
-void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *meta);
-void ouster_field_apply_mask_u32(ouster_field_t *field);
-void ouster_field_zero(ouster_field_t fields[], int count);
+	void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta);
+	void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *meta);
+	void ouster_field_apply_mask_u32(ouster_field_t *field);
+	void ouster_field_zero(ouster_field_t fields[], int count);
+	void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count);
 
 #ifdef __cplusplus
 }

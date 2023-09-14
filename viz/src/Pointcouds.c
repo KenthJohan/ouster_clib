@@ -82,7 +82,7 @@ void Observer(ecs_iter_t *it)
 		assert(p->cap < MAX_PARTICLES);
 		p->pos = ecs_os_calloc(p->cap * sizeof(float) * 3);
 		p->vel = ecs_os_calloc(p->cap * sizeof(float) * 3);
-		p->col = ecs_os_calloc(p->cap * sizeof(float) * 4);
+		p->col = ecs_os_calloc(p->cap * sizeof(uint32_t));
 		assert(p->pos);
 		assert(p->vel);
 		assert(p->col);

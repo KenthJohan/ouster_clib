@@ -26,6 +26,7 @@
 typedef enum
 {
 	FIELD_RANGE,
+	FIELD_IR,
 	FIELD_COUNT
 } field_t;
 
@@ -38,11 +39,12 @@ typedef enum
 
 typedef struct
 {
-	ecs_os_thread_t thread; // Receives UDP packages from LiDAR sensor
-	ecs_os_mutex_t lock;	// Used for thread safe pointcloud copy from socket thread to main thread
-	int image_size;
-	double *image_points;  // Thread producer, uses (lock)
-	double *image_points2; // Thread consumer, uses (lock)
+	ecs_os_thread_t thread;				 // Receives UDP packages from LiDAR sensor
+	ecs_os_mutex_t lock;				 // Used for thread safe pointcloud copy from socket thread to main thread
+	ouster_field_t fields1[FIELD_COUNT]; // Thread producer, uses (lock)
+	ouster_field_t fields2[FIELD_COUNT]; // Thread consumer, uses (lock)
+	int image_points_size;
+	double *image_points_data;
 	ouster_lut_t lut;
 	ouster_meta_t meta;
 } SensorsState;
@@ -62,6 +64,7 @@ void *thread_receiver(void *arg)
 
 	ouster_field_t fields[FIELD_COUNT];
 	fields[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
+	fields[FIELD_IR].quantity = OUSTER_QUANTITY_NEAR_IR;
 	ouster_field_init(fields, FIELD_COUNT, &sensor->meta);
 
 	while (1)
@@ -89,7 +92,7 @@ void *thread_receiver(void *arg)
 			if (lidar.last_mid == sensor->meta.mid1)
 			{
 				ecs_os_mutex_lock(sensor->lock);
-				ouster_lut_cartesian(&sensor->lut, fields[FIELD_RANGE].data, sensor->image_points);
+				ouster_field_cpy(sensor->fields1, fields, FIELD_COUNT);
 				ecs_os_mutex_unlock(sensor->lock);
 			}
 		}
@@ -131,9 +134,11 @@ void Pointcloud_Fill(ecs_iter_t *it)
 	for (int i = 0; i < it->count; ++i, ++cloud, ++sensor)
 	{
 		ecs_os_mutex_lock(sensor->lock);
-		ecs_os_memcpy(sensor->image_points2, sensor->image_points, sensor->image_size);
+		ouster_field_cpy(sensor->fields2, sensor->fields1, FIELD_COUNT);
 		ecs_os_mutex_unlock(sensor->lock);
-		Pointcloud_copy(cloud, sensor->image_points2, sensor->lut.w * sensor->lut.h, desc->radius_filter);
+
+		ouster_lut_cartesian(&sensor->lut, sensor->fields2[FIELD_RANGE].data, sensor->image_points_data);
+		Pointcloud_copy(cloud, sensor->image_points_data, sensor->lut.w * sensor->lut.h, desc->radius_filter);
 	}
 }
 
@@ -148,11 +153,16 @@ static void Sensor_Add(ecs_iter_t *it)
 		ouster_meta_parse(content, &sensor->meta);
 		free(content);
 		ouster_lut_init(&sensor->lut, &sensor->meta);
-		printf("Column window: %i %i\n", sensor->meta.mid0, sensor->meta.mid1);
+		platform_log("Column window: %i %i\n", sensor->meta.mid0, sensor->meta.mid1);
+		sensor->fields1[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
+		sensor->fields1[FIELD_IR].quantity = OUSTER_QUANTITY_NEAR_IR;
+		sensor->fields2[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
+		sensor->fields2[FIELD_IR].quantity = OUSTER_QUANTITY_NEAR_IR;
+		ouster_field_init(sensor->fields1, FIELD_COUNT, &sensor->meta);
+		ouster_field_init(sensor->fields2, FIELD_COUNT, &sensor->meta);
 		int cap = sensor->lut.w * sensor->lut.h;
-		sensor->image_size = cap * sizeof(double) * 3;
-		sensor->image_points = ecs_os_calloc(sensor->image_size);
-		sensor->image_points2 = ecs_os_calloc(sensor->image_size);
+		sensor->image_points_size = cap * sizeof(double) * 3;
+		sensor->image_points_data = ecs_os_calloc(sensor->image_points_size);
 		ecs_set(it->world, it->entities[i], Pointcloud, {.cap = cap, .count = cap});
 		sensor->thread = ecs_os_thread_new(thread_receiver, sensor);
 	}

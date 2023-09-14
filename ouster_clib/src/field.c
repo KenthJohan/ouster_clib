@@ -144,6 +144,15 @@ void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
 	}
 }
 
+void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count)
+{
+	// memcpy(dst, src, sizeof(ouster_field_t) * count);
+	for (int i = 0; i < count; ++i, ++dst, ++src)
+	{
+		memcpy(dst->data, src->data, src->rowsize * src->rows);
+	}
+}
+
 /*
 template <typename T>
 inline img_t<T> destagger(const Eigen::Ref<const img_t<T>>& img,

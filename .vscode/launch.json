@@ -76,8 +76,8 @@
 			"environment": [],
 			"program": "${workspaceFolder}/tools/ouster_monitor/bin/x64-Linux-debug/ouster_monitor",
 			"args": [
-				"~/Downloads/OS1_captures/OS1-16A.json",
-				"loss"
+				"~/Downloads/test/a.json",
+				"column"
 			],
 			"osx": {
 				"MIMode": "lldb",

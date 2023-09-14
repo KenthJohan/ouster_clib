@@ -34,8 +34,7 @@ SOKOL_SHDC_ALIGN(16)
 typedef struct vs_params_t
 {
 	hmm_mat4 mvp;
-	float point_size;
-	uint8_t _pad_68[12];
+	hmm_vec4 viewport;
 } vs_params_t;
 #pragma pack(pop)
 
@@ -59,6 +58,7 @@ ECS_COMPONENT_DECLARE(DrawPointsDesc);
 ECS_COMPONENT_DECLARE(DrawPointsState);
 
 // helper function to compute vertex shader params
+/*
 vs_params_t compute_vsparams(float disp_w, float disp_h, float rx, float ry, float point_size)
 {
 	hmm_mat4 proj = HMM_Perspective(60.0f, disp_w / disp_h, 0.01f, 10.0f);
@@ -72,6 +72,7 @@ vs_params_t compute_vsparams(float disp_w, float disp_h, float rx, float ry, flo
 		.point_size = point_size,
 	};
 }
+*/
 
 // helper function to fill index data
 /*
@@ -226,7 +227,8 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 		sg_begin_default_passf(&s->pass_action, window->w, window->h);
 		sg_apply_pipeline(s->pip);
 		sg_apply_bindings(&s->bind);
-		s->vs_params.point_size = 4.0f;
+		s->vs_params.viewport.X = window->w;
+		s->vs_params.viewport.Y = window->h;
 		ecs_os_memcpy_t(&s->vs_params.mvp, cam->mvp, hmm_mat4);
 		sg_range a = {&s->vs_params, sizeof(vs_params_t)};
 		sg_apply_uniforms(SG_SHADERSTAGE_VS, 0, &a);

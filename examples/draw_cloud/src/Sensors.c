@@ -120,7 +120,12 @@ void Pointcloud_copy(Pointcloud *cloud, double const *src_pos, uint16_t const *s
 		dst_pos[0] = src_pos[0] * 0.01;
 		dst_pos[1] = src_pos[1] * 0.01;
 		dst_pos[2] = src_pos[2] * 0.01;
-		dst_col[0] = src_ir[0];
+		// AABBGGRR
+		dst_col[0] =
+			0xFF000000 |
+			((src_ir[0] & 0xFF) << 0) |
+			((src_ir[0] & 0xFF) << 8) |
+			((src_ir[0] & 0xFF) << 16);
 		dst_pos += 3;
 		dst_col += 1;
 		k++;

@@ -129,18 +129,15 @@ void ouster_field_init1(ouster_field_t *f, int profile)
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
 {
 	ouster_field_t *f = fields;
-	int cols = meta->mid1 - meta->mid0 + 1;
-	// meta->xxx_column_offset = meta->column_window[0];
-
 	for (int i = 0; i < count; ++i, f++)
 	{
+		int rows = meta->pixels_per_column;
+		int cols = meta->midw;
 		f->num_valid_pixels = 0;
 		ouster_field_init1(f, meta->profile);
-		f->cols = cols;
-		f->rows = meta->pixels_per_column;
-		f->column0 = meta->mid0;
-		f->rowsize = f->cols * f->depth;
-		f->data = calloc(f->rowsize * f->rows, 1);
+		f->rowsize = cols * f->depth;
+		f->data_size = f->rowsize * rows;
+		f->data = calloc(f->data_size, 1);
 	}
 }
 
@@ -149,7 +146,7 @@ void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count)
 	// memcpy(dst, src, sizeof(ouster_field_t) * count);
 	for (int i = 0; i < count; ++i, ++dst, ++src)
 	{
-		memcpy(dst->data, src->data, src->rowsize * src->rows);
+		memcpy(dst->data, src->data, src->data_size);
 	}
 }
 
@@ -196,11 +193,13 @@ void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *m
 {
 	for (int i = 0; i < count; ++i, ++fields)
 	{
-		destagger(fields->data, fields->cols, fields->rows, fields->depth, fields->rowsize, meta->pixel_shift_by_row);
+		int rows = meta->pixels_per_column;
+		int cols = meta->midw;
+		destagger(fields->data, cols, rows, fields->depth, fields->rowsize, meta->pixel_shift_by_row);
 	}
 }
 
-void ouster_field_apply_mask_u32(ouster_field_t *field)
+void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta)
 {
 	if (field->mask == 0xFFFFFFFF)
 	{
@@ -211,7 +210,9 @@ void ouster_field_apply_mask_u32(ouster_field_t *field)
 		return;
 	}
 	uint32_t *data32 = (uint32_t *)field->data;
-	for (int i = 0; i < field->rows * field->cols; ++i)
+	int rows = meta->pixels_per_column;
+	int cols = meta->midw;
+	for (int i = 0; i < rows * cols; ++i)
 	{
 		data32[i] &= field->mask;
 	}
@@ -221,6 +222,6 @@ void ouster_field_zero(ouster_field_t fields[], int count)
 {
 	for (int i = 0; i < count; ++i, ++fields)
 	{
-		memset(fields->data, 0, fields->rowsize * fields->rows);
+		memset(fields->data, 0, fields->data_size);
 	}
 }

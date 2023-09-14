@@ -35,11 +35,11 @@ static void AddSphere(ecs_iter_t *it)
 	for (int i = 0; i < it->count; ++i, ++sphere)
 	{
 		shape->buf = sshape_build_sphere(&shape->buf, &(sshape_sphere_t){
-														  .radius = sphere->r,
-														  .slices = sphere->slices,
-														  .stacks = sphere->stacks,
-														  .random_colors = true,
-													  });
+			.radius = sphere->r,
+			.slices = sphere->slices,
+			.stacks = sphere->stacks,
+			.random_colors = true,
+			});
 		sshape_element_range_t element = sshape_element_range(&shape->buf);
 		ecs_set(it->world, it->entities[i], ShapeIndex, {element});
 	}
@@ -54,27 +54,27 @@ void GraphicsShapesImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, ShapeIndex);
 
 	ecs_struct(world, {.entity = ecs_id(ShapeIndex),
-					   .members = {
-						   {.name = "base_element", .type = ecs_id(ecs_i32_t)},
-						   {.name = "num_elements", .type = ecs_id(ecs_i32_t)},
-					   }});
+		.members = {
+			{.name = "base_element", .type = ecs_id(ecs_i32_t)},
+			{.name = "num_elements", .type = ecs_id(ecs_i32_t)},
+		}});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = Setup,
-							   .query.filter.terms =
-								   {
-									   {.id = ecs_id(ShapeBuffer), .src.flags = EcsSelf},
-									   {.id = ecs_id(ShapeBufferImpl), .oper = EcsNot}, // Adds this
-								   }});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = Setup,
+		.query.filter.terms =
+		{
+			{.id = ecs_id(ShapeBuffer), .src.flags = EcsSelf},
+			{.id = ecs_id(ShapeBufferImpl), .oper = EcsNot}, // Adds this
+		}});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = AddSphere,
-							   .query.filter.terms =
-								   {
-									   {.id = ecs_id(Sphere), .src.flags = EcsSelf},
-									   {.id = ecs_id(ShapeBufferImpl), .src.trav = EcsIsA, .src.flags = EcsUp},
-									   {.id = ecs_id(ShapeIndex), .oper = EcsNot}, // Adds this
-								   }});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = AddSphere,
+		.query.filter.terms =
+		{
+			{.id = ecs_id(Sphere), .src.flags = EcsSelf},
+			{.id = ecs_id(ShapeBufferImpl), .src.trav = EcsIsA, .src.flags = EcsUp},
+			{.id = ecs_id(ShapeIndex), .oper = EcsNot}, // Adds this
+		}});
 }

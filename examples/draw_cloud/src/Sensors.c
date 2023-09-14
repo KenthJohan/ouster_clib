@@ -112,7 +112,7 @@ void Pointcloud_copy(Pointcloud *cloud, double const *src_pos, uint16_t const *s
 	uint32_t *dst_col = cloud->col;
 	for (int j = 0; j < n; ++j, src_pos += 3, src_ir += 1)
 	{
-		float d = sqrt(src_pos[0] * src_pos[0] + src_pos[1] * src_pos[1] + src_pos[2] * src_pos[2]);
+		float d = sqrt(V3_NORM2(src_pos));
 		if (d < filter_radius)
 		{
 			continue;
@@ -186,28 +186,28 @@ void SensorsImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, SensorsDesc);
 
 	ecs_struct(world, {.entity = ecs_id(SensorsDesc),
-					   .members = {
-						   {.name = "metafile", .type = ecs_id(ecs_string_t)},
-						   {.name = "radius_filter", .type = ecs_id(ecs_f64_t)},
-					   }});
+		.members = {
+		{.name = "metafile", .type = ecs_id(ecs_string_t)},
+		{.name = "radius_filter", .type = ecs_id(ecs_f64_t)},
+		}});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = Sensor_Add,
-							   .query.filter.terms =
-								   {
-									   {.id = ecs_id(SensorsDesc), .src.flags = EcsSelf},
-									   {.id = ecs_id(SensorsState), .oper = EcsNot}, // Adds this
-								   }});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = Sensor_Add,
+		.query.filter.terms =
+		{
+		{.id = ecs_id(SensorsDesc), .src.flags = EcsSelf},
+		{.id = ecs_id(SensorsState), .oper = EcsNot}, // Adds this
+		}});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = Pointcloud_Fill,
-							   .query.filter.terms =
-								   {
-									   {.id = ecs_id(Pointcloud), .src.flags = EcsSelf},
-									   {.id = ecs_id(SensorsState), .src.flags = EcsSelf},
-									   {.id = ecs_id(SensorsDesc), .src.flags = EcsSelf},
-									   //{ .id = ecs_id(OusterSensor), .src.trav = EcsIsA, .src.flags = EcsUp},
-								   }});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = Pointcloud_Fill,
+		.query.filter.terms =
+		{
+		{.id = ecs_id(Pointcloud), .src.flags = EcsSelf},
+		{.id = ecs_id(SensorsState), .src.flags = EcsSelf},
+		{.id = ecs_id(SensorsDesc), .src.flags = EcsSelf},
+		//{ .id = ecs_id(OusterSensor), .src.trav = EcsIsA, .src.flags = EcsUp},
+		}});
 }

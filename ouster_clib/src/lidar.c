@@ -27,7 +27,7 @@ void field_copy(ouster_field_t *field, ouster_meta_t *meta, int mid, char const 
 		field->rowsize,
 		pxbuf + field->offset,
 		meta->channel_data_size,
-		field->rows,
+		meta->pixels_per_column,
 		field->depth);
 }
 
@@ -36,7 +36,6 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 	assert(lidar);
 	assert(buf);
 	assert(fields);
-	assert(meta->pixels_per_column == fields[0].rows);
 
 	char const *colbuf = buf + OUSTER_PACKET_HEADER_SIZE;
 	ouster_lidar_header_t header = {0};
@@ -86,6 +85,6 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 	for (int j = 0; j < fcount; ++j)
 	{
 		// TODO: Refactor this mask procedure
-		ouster_field_apply_mask_u32(fields + j);
+		ouster_field_apply_mask_u32(fields + j, meta);
 	}
 }

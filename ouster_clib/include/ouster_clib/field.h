@@ -37,7 +37,6 @@ typedef struct
 	ouster_quantity_t quantity;
 	uint32_t mask;
 	int offset;
-	int num_valid_pixels;
 	int depth;
 	int rowsize;
 	int data_size;

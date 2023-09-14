@@ -133,7 +133,6 @@ void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
 	{
 		int rows = meta->pixels_per_column;
 		int cols = meta->midw;
-		f->num_valid_pixels = 0;
 		ouster_field_init1(f, meta->profile);
 		f->rowsize = cols * f->depth;
 		f->data_size = f->rowsize * rows;

@@ -51,10 +51,7 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 		// lidar->last_mid = 0;
 		lidar->last_mid = column.mid - 1;
 		lidar->mid_loss = 0;
-		for (int j = 0; j < fcount; ++j)
-		{
-			fields[j].num_valid_pixels = 0;
-		}
+		lidar->num_valid_pixels = 0;
 	}
 
 	int mid_delta = column.mid - lidar->last_mid;
@@ -77,7 +74,7 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 		{
 			// TODO: Copy rest of the fields also
 			field_copy(fields + j, meta, column.mid, pxbuf);
-			fields[j].num_valid_pixels += meta->pixels_per_column;
+			lidar->num_valid_pixels += meta->pixels_per_column;
 		}
 		lidar->last_mid = column.mid;
 	}

@@ -21,14 +21,12 @@ void field_copy(ouster_field_t *field, ouster_meta_t *meta, int mid, char const 
 {
 	// Row major - each row is continuous memory
 	char *data = field->data;
-	char *dst = data + (mid - meta->mid0) * field->depth;
-	pxcpy(
-		dst,
-		field->rowsize,
-		pxbuf + field->offset,
-		meta->channel_data_size,
-		meta->pixels_per_column,
-		field->depth);
+	ouster_extract_t * extract = meta->extract + field->quantity;
+	int depth = extract->depth;
+	int offset = extract->offset;
+	int rows = meta->pixels_per_column;
+	char *dst = data + (mid - meta->mid0) * depth;
+	pxcpy(dst, field->rowsize, pxbuf + offset, meta->channel_data_size, rows, depth);
 }
 
 void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char const *buf, ouster_field_t *fields, int fcount)

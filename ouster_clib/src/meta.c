@@ -30,6 +30,143 @@ char *jsmn_strerror(int r)
 
 #define STRING_BUF_SIZE 128
 
+
+
+
+
+
+
+/*
+
+static const Table<ChanField, FieldInfo, 8> legacy_field_info{{
+	{ChanField::RANGE, {UINT32, 0, 0x000fffff, 0}},
+	{ChanField::FLAGS, {UINT8, 3, 0, 4}},
+	{ChanField::REFLECTIVITY, {UINT16, 4, 0, 0}},
+	{ChanField::SIGNAL, {UINT16, 6, 0, 0}},
+	{ChanField::NEAR_IR, {UINT16, 8, 0, 0}},
+	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+	{ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+	{ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+}};
+
+static const Table<ChanField, FieldInfo, 5> lb_field_info{{
+	{ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
+	{ChanField::FLAGS, {UINT8, 1, 0b10000000, 7}},
+	{ChanField::REFLECTIVITY, {UINT8, 2, 0, 0}},
+	{ChanField::NEAR_IR, {UINT8, 3, 0, -4}},
+	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+}};
+
+static const Table<ChanField, FieldInfo, 13> dual_field_info{{
+	{ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
+	{ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
+	{ChanField::REFLECTIVITY, {UINT8, 3, 0, 0}},
+	{ChanField::RANGE2, {UINT32, 4, 0x0007ffff, 0}},
+	{ChanField::FLAGS2, {UINT8, 6, 0b11111000, 3}},
+	{ChanField::REFLECTIVITY2, {UINT8, 7, 0, 0}},
+	{ChanField::SIGNAL, {UINT16, 8, 0, 0}},
+	{ChanField::SIGNAL2, {UINT16, 10, 0, 0}},
+	{ChanField::NEAR_IR, {UINT16, 12, 0, 0}},
+	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+	{ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+	{ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+	{ChanField::RAW32_WORD4, {UINT32, 12, 0, 0}},
+}};
+
+static const Table<ChanField, FieldInfo, 8> single_field_info{{
+	{ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
+	{ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
+	{ChanField::REFLECTIVITY, {UINT8, 4, 0, 0}},
+	{ChanField::SIGNAL, {UINT16, 6, 0, 0}},
+	{ChanField::NEAR_IR, {UINT16, 8, 0, 0}},
+	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+	{ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+	{ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+}};
+
+static const Table<ChanField, FieldInfo, 14> five_word_pixel_info{{
+	{ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
+	{ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
+	{ChanField::REFLECTIVITY, {UINT8, 3, 0, 0}},
+	{ChanField::RANGE2, {UINT32, 4, 0x0007ffff, 0}},
+	{ChanField::FLAGS2, {UINT8, 6, 0b11111000, 3}},
+	{ChanField::REFLECTIVITY2, {UINT8, 7, 0, 0}},
+	{ChanField::SIGNAL, {UINT16, 8, 0, 0}},
+	{ChanField::SIGNAL2, {UINT16, 10, 0, 0}},
+	{ChanField::NEAR_IR, {UINT16, 12, 0, 0}},
+	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+	{ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+	{ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+	{ChanField::RAW32_WORD4, {UINT32, 12, 0, 0}},
+	{ChanField::RAW32_WORD5, {UINT32, 16, 0, 0}},
+}};
+
+*/
+
+#define COMBINE(p, q) (((p) << 0) | ((q) << 8))
+
+
+
+
+void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_quantity_t quantity)
+{
+	switch (COMBINE(profile, quantity))
+	{
+	case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_RANGE):
+		f->mask = UINT32_C(0x0007ffff);
+		f->offset = 0;
+		f->depth = 4;
+		break;
+	case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_REFLECTIVITY):
+		f->mask = UINT32_C(0xFFFFFFFF);
+		f->offset = 4;
+		f->depth = 1;
+		break;
+	case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_SIGNAL):
+		f->mask = UINT32_C(0xFFFFFFFF);
+		f->offset = 6;
+		f->depth = 2;
+		break;
+	case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_NEAR_IR):
+		f->mask = UINT32_C(0xFFFFFFFF);
+		f->offset = 8;
+		f->depth = 2;
+		break;
+		/*
+	{ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
+	{ChanField::FLAGS, {UINT8, 1, 0b10000000, 7}},
+	{ChanField::REFLECTIVITY, {UINT8, 2, 0, 0}},
+	{ChanField::NEAR_IR, {UINT8, 3, 0, -4}},
+	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+	*/
+	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_RANGE):
+		f->mask = UINT32_C(0x7fff);
+		f->offset = 0;
+		f->depth = 2;
+		break;
+	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_REFLECTIVITY):
+		f->mask = UINT32_C(0xFFFFFFFF);
+		f->offset = 2;
+		f->depth = 1;
+		break;
+	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_SIGNAL):
+		assert(0);
+		break;
+	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_NEAR_IR):
+		f->mask = UINT32_C(0xFFFFFFFF);
+		f->offset = 3;
+		f->depth = 1;
+		break;
+	default:
+		break;
+	}
+}
+
+
+
+
+
+
 void ouster_meta_parse(char const *json, ouster_meta_t *out)
 {
 	assert(json);
@@ -109,6 +246,15 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	out->mid0 = MIN(column_window[0], column_window[1]);
 	out->mid1 = MAX(column_window[0], column_window[1]);
 	out->midw = abs(column_window[0] - column_window[1]) + 1;
+
+
+	for(ouster_quantity_t quantity = 0; quantity < OUSTER_QUANTITY_CHAN_FIELD_MAX; ++quantity)
+	{
+		ouster_extract_t * e = out->extract + quantity;
+		ouster_extract_init(e, out->profile, quantity);
+	}
+
+
 
 	assert(out->mid0 < out->mid1);
 	assert(out->midw > 0);

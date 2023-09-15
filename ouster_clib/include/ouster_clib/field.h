@@ -35,13 +35,17 @@ typedef struct
 typedef struct
 {
 	ouster_quantity_t quantity;
-	uint32_t mask;
-	int offset;
-	int depth;
 	int rowsize;
 	int data_size;
 	void *data;
 } ouster_field_t;
+
+typedef struct
+{
+	ouster_quantity_t q[OUSTER_QUANTITY_CHAN_FIELD_MAX];
+} ouster_field_desc_t;
+
+
 
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta);
 void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *meta);

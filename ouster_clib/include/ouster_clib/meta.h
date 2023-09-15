@@ -10,6 +10,13 @@ extern "C"
 
 typedef struct
 {
+	uint32_t mask;
+	int offset;
+	int depth;
+} ouster_extract_t;
+
+typedef struct
+{
 
 	int columns_per_frame;
 	int columns_per_packet;
@@ -31,6 +38,7 @@ typedef struct
 	int mid1;
 	int midw;
 
+	ouster_extract_t extract[OUSTER_QUANTITY_CHAN_FIELD_MAX];
 } ouster_meta_t;
 
 void ouster_meta_parse(char const *jsonstr, ouster_meta_t *out_meta);

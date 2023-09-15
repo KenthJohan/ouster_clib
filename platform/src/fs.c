@@ -1,12 +1,13 @@
 #include "platform/fs.h"
 #include "platform/log.h"
+#include "platform/assert.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <errno.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 
 void fs_pwd()
 {
@@ -23,6 +24,7 @@ void fs_pwd()
 
 char * fs_readfile(char const * path)
 {
+	platform_assert_notnull(path);
     char* content = NULL;
 
     FILE* file = fopen(path, "r");
@@ -51,7 +53,7 @@ char * fs_readfile(char const * path)
         platform_log("%s: could not read wholef file %d bytes\n", path, size);
         goto error;
     }
-    assert(content[size] == '\0');
+    platform_assert(content[size] == '\0', "Expected null terminator");
     fclose(file);
     return content;
 error:

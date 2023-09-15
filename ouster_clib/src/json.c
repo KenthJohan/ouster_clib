@@ -1,6 +1,6 @@
 #include "json.h"
+#include <platform/assert.h>
 #include <string.h>
-#include <assert.h>
 #include <stdlib.h>
 
 int value_get_size(json_type_t type)
@@ -18,10 +18,10 @@ int value_get_size(json_type_t type)
 
 void parse_value(char const *json, jsmntok_t *t, void *out, json_type_t type)
 {
-	assert(json);
-	assert(t);
-	assert(out);
-	assert(t->type == JSMN_PRIMITIVE);
+	platform_assert_notnull(json);
+	platform_assert_notnull(t);
+	platform_assert_notnull(out);
+	platform_assert(t->type == JSMN_PRIMITIVE, "Expected JSMN_PRIMITIVE");
 	char buf[128] = {0};
 	char *ptr;
 	memcpy(buf, json + t->start, t->end - t->start);
@@ -46,11 +46,11 @@ void parse_value(char const *json, jsmntok_t *t, void *out, json_type_t type)
 
 jsmntok_t *parse_vector(char const *json, jsmntok_t *t, char *out, int n, json_type_t type)
 {
-	assert(json);
-	assert(t);
-	assert(out);
-	assert(t->type == JSMN_ARRAY);
-	assert(t->size == n);
+	platform_assert_notnull(json);
+	platform_assert_notnull(t);
+	platform_assert_notnull(out);
+	platform_assert(t->type == JSMN_ARRAY, "Expected JSMN_ARRAY");
+	platform_assert(t->size == n, "");
 	int esize = value_get_size(type);
 	t++;
 	for (int i = 0; i < n; ++i, out += esize)
@@ -63,19 +63,19 @@ jsmntok_t *parse_vector(char const *json, jsmntok_t *t, char *out, int n, json_t
 
 void parse_string(char const *json, jsmntok_t *t, char buf[], int n)
 {
-	assert(json);
-	assert(t);
-	assert(buf);
-	assert(t->type == JSMN_STRING);
+	platform_assert_notnull(json);
+	platform_assert_notnull(t);
+	platform_assert_notnull(buf);
+	platform_assert(t->type == JSMN_STRING, "Expected JSMN_STRING");
 	memcpy(buf, json + t->start, t->end - t->start);
 	buf[t->end - t->start] = '\0';
 }
 
 int jsoneq(const char *json, jsmntok_t *t, const char *s)
 {
-	assert(json);
-	assert(t);
-	assert(s);
+	platform_assert_notnull(json);
+	platform_assert_notnull(t);
+	platform_assert_notnull(s);
 	if (
 		(t->type == JSMN_STRING) &&
 		((int)strlen(s) == t->end - t->start) &&
@@ -88,9 +88,9 @@ int jsoneq(const char *json, jsmntok_t *t, const char *s)
 
 jsmntok_t *search(const char *json, jsmntok_t *t, const char *s)
 {
-	assert(json);
-	assert(t);
-	assert(s);
+	platform_assert_notnull(json);
+	platform_assert_notnull(t);
+	platform_assert_notnull(s);
 	while (1)
 	{
 		if (t->type == JSMN_UNDEFINED)
@@ -108,9 +108,9 @@ jsmntok_t *search(const char *json, jsmntok_t *t, const char *s)
 
 jsmntok_t *search1(const char *json, jsmntok_t *t, char const *path[])
 {
-	assert(json);
-	assert(t);
-	assert(path);
+	platform_assert_notnull(json);
+	platform_assert_notnull(t);
+	platform_assert_notnull(path);
 	while (1)
 	{
 		if (t->type == JSMN_UNDEFINED)
@@ -133,10 +133,10 @@ jsmntok_t *search1(const char *json, jsmntok_t *t, char const *path[])
 
 jsmntok_t *json_parse_vector(char const *json, jsmntok_t *t, char const *path[], void *out, int n, json_type_t type)
 {
-	assert(json);
-	assert(t);
-	assert(path);
-	assert(out);
+	platform_assert_notnull(json);
+	platform_assert_notnull(t);
+	platform_assert_notnull(path);
+	platform_assert_notnull(out);
 	t = search1(json, t, path);
 	if (t == NULL)
 	{
@@ -148,10 +148,10 @@ jsmntok_t *json_parse_vector(char const *json, jsmntok_t *t, char const *path[],
 
 jsmntok_t *json_parse_value(char const *json, jsmntok_t *t, char const *path[], void *out, json_type_t type)
 {
-	assert(json);
-	assert(t);
-	assert(path);
-	assert(out);
+	platform_assert_notnull(json);
+	platform_assert_notnull(t);
+	platform_assert_notnull(path);
+	platform_assert_notnull(out);
 	t = search1(json, t, path);
 	if (t == NULL)
 	{
@@ -163,10 +163,10 @@ jsmntok_t *json_parse_value(char const *json, jsmntok_t *t, char const *path[], 
 
 jsmntok_t *json_parse_string(char const *json, jsmntok_t *t, char const *path[], char *out, int n)
 {
-	assert(json);
-	assert(t);
-	assert(path);
-	assert(out);
+	platform_assert_notnull(json);
+	platform_assert_notnull(t);
+	platform_assert_notnull(path);
+	platform_assert_notnull(out);
 	t = search1(json, t, path);
 	if (t == NULL)
 	{

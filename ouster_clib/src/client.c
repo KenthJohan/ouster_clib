@@ -1,6 +1,7 @@
 #include "ouster_clib/client.h"
 
 #include <platform/log.h>
+#include <platform/assert.h>
 
 #include <curl/curl.h>
 #include <stdlib.h>
@@ -9,6 +10,7 @@
 
 void ouster_buffer_init(ouster_buffer_t *b, int cap)
 {
+	platform_assert_notnull(b);
 	b->size = 0;
 	b->cap = cap;
 	b->data = calloc(1, b->cap);
@@ -16,6 +18,7 @@ void ouster_buffer_init(ouster_buffer_t *b, int cap)
 
 void ouster_buffer_fini(ouster_buffer_t *b)
 {
+	platform_assert_notnull(b);
 	free(b->data);
 	b->size = 0;
 	b->cap = 0;
@@ -24,6 +27,9 @@ void ouster_buffer_fini(ouster_buffer_t *b)
 
 size_t write_memory_callback(void *contents, size_t element_size, size_t elements_count, void *user_pointer)
 {
+	platform_assert_notnull(contents);
+	platform_assert_notnull(user_pointer);
+
 	size_t size_increment = element_size * elements_count;
 	ouster_buffer_t *b = user_pointer;
 	int new_size = b->size + size_increment;
@@ -49,6 +55,8 @@ size_t write_memory_callback(void *contents, size_t element_size, size_t element
 // http://192.168.1.137/api/v1/sensor/cmd/set_udp_dest_auto
 void req_get(ouster_client_t *client, char const *ip)
 {
+	platform_assert_notnull(client);
+	platform_assert_notnull(ip);
 
 	{
 		char url[1024];
@@ -94,7 +102,7 @@ void req_get(ouster_client_t *client, char const *ip)
 
 void ouster_client_init(ouster_client_t *client)
 {
-	assert(client);
+	platform_assert_notnull(client);
 	assert(client->host);
 	curl_global_init(CURL_GLOBAL_ALL);
 	client->curl = curl_easy_init();
@@ -104,6 +112,7 @@ void ouster_client_init(ouster_client_t *client)
 
 void ouster_client_fini(ouster_client_t *client)
 {
+	platform_assert_notnull(client);
 	curl_easy_cleanup(client->curl);
 	client->curl = NULL;
 	ouster_buffer_fini(&client->buf);
@@ -111,6 +120,8 @@ void ouster_client_fini(ouster_client_t *client)
 
 void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
 {
+	platform_assert_notnull(client);
+	platform_assert_notnull(path);
 	platform_log("Downloading meta to %s\n", path);
 	req_get(client, URLAPI_METADATA);
 	FILE *f = fopen(path, "w+");

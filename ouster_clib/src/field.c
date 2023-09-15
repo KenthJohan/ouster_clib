@@ -1,12 +1,14 @@
 #include "ouster_clib/field.h"
+#include <platform/assert.h>
 #include <string.h>
-#include <assert.h>
 #include <stdlib.h>
 
 
 
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
 {
+	platform_assert_notnull(fields);
+	platform_assert_notnull(meta);
 	ouster_field_t *f = fields;
 	for (int i = 0; i < count; ++i, f++)
 	{
@@ -17,6 +19,9 @@ void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
 
 void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count, ouster_meta_t *meta)
 {
+	platform_assert_notnull(dst);
+	platform_assert_notnull(src);
+	platform_assert_notnull(meta);
 	// memcpy(dst, src, sizeof(ouster_field_t) * count);
 	for (int i = 0; i < count; ++i, ++dst, ++src)
 	{
@@ -55,6 +60,8 @@ https://static.ouster.dev/sdk-docs/reference/lidar-scan.html#staggering-and-dest
 */
 void destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[])
 {
+	platform_assert_notnull(data);
+	platform_assert_notnull(pixel_shift_by_row);
 	char *row = data;
 	for (int irow = 0; irow < rows; ++irow, row += rowsize)
 	{
@@ -66,6 +73,8 @@ void destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel
 
 void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *meta)
 {
+	platform_assert_notnull(fields);
+	platform_assert_notnull(meta);
 	for (int i = 0; i < count; ++i, ++fields)
 	{
 		int rows = meta->pixels_per_column;
@@ -78,6 +87,8 @@ void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *m
 
 void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta)
 {
+	platform_assert_notnull(field);
+	platform_assert_notnull(meta);
 	ouster_extract_t * extract = meta->extract + field->quantity;
 	uint32_t mask = extract->mask;
 	int depth = extract->depth;
@@ -100,6 +111,8 @@ void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta)
 
 void ouster_field_zero(ouster_field_t fields[], int count, ouster_meta_t *meta)
 {
+	platform_assert_notnull(fields);
+	platform_assert_notnull(meta);
 	for (int i = 0; i < count; ++i, ++fields)
 	{
 		ouster_extract_t * extract = meta->extract + fields->quantity;

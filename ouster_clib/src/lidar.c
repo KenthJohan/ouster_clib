@@ -2,13 +2,13 @@
 #include "ouster_clib/lidar_header.h"
 #include "ouster_clib/lidar_column.h"
 #include <platform/log.h>
-#include <assert.h>
+#include <platform/assert.h>
 #include <string.h>
 
 void pxcpy(char *dst, int dst_inc, char const *src, int src_inc, int n, int esize)
 {
-	assert(dst);
-	assert(src);
+	platform_assert_notnull(dst);
+	platform_assert_notnull(src);
 	char *d = dst;
 	char const *s = src;
 	for (int i = 0; i < n; i++, d += dst_inc, s += src_inc)
@@ -19,6 +19,9 @@ void pxcpy(char *dst, int dst_inc, char const *src, int src_inc, int n, int esiz
 
 void field_copy(ouster_field_t *field, ouster_meta_t *meta, int mid, char const *pxbuf)
 {
+	platform_assert_notnull(field);
+	platform_assert_notnull(meta);
+	platform_assert_notnull(pxbuf);
 	// Row major - each row is continuous memory
 	char *data = field->data;
 	ouster_extract_t * extract = meta->extract + field->quantity;
@@ -32,9 +35,9 @@ void field_copy(ouster_field_t *field, ouster_meta_t *meta, int mid, char const 
 
 void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char const *buf, ouster_field_t *fields, int fcount)
 {
-	assert(lidar);
-	assert(buf);
-	assert(fields);
+	platform_assert_notnull(lidar);
+	platform_assert_notnull(buf);
+	platform_assert_notnull(fields);
 
 	char const *colbuf = buf + OUSTER_PACKET_HEADER_SIZE;
 	ouster_lidar_header_t header = {0};

@@ -3,12 +3,12 @@
 
 #include <platform/log.h>
 #include <platform/basics.h>
+#include <platform/assert.h>
 
 #define JSMN_HEADER
 #include "jsmn.h"
 #include "json.h"
 #include <string.h>
-#include <assert.h>
 #include <stdlib.h>
 
 #define TOK_COUNT 1024
@@ -110,6 +110,8 @@ static const Table<ChanField, FieldInfo, 14> five_word_pixel_info{{
 
 void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_quantity_t quantity)
 {
+	platform_assert_notnull(f);
+	
 	switch (COMBINE(profile, quantity))
 	{
 	case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_RANGE):
@@ -150,7 +152,7 @@ void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_q
 		f->depth = 1;
 		break;
 	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_SIGNAL):
-		assert(0);
+		platform_assert(0, "");
 		break;
 	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_NEAR_IR):
 		f->mask = UINT32_C(0xFFFFFFFF);
@@ -169,7 +171,9 @@ void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_q
 
 void ouster_meta_parse(char const *json, ouster_meta_t *out)
 {
-	assert(json);
+	platform_assert_notnull(json);
+	platform_assert_notnull(out);
+
 	jsmn_parser p;
 	jsmn_init(&p);
 	jsmntok_t tokens[TOK_COUNT];
@@ -179,15 +183,15 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 		platform_log("jsmn error: %s\n", jsmn_strerror(r));
 		return;
 	}
-	assert(tokens[0].type == JSMN_OBJECT);
+	platform_assert(tokens[0].type == JSMN_OBJECT, "Expected JSMN_OBJECT");
 
 	int column_window[2];
 	json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "columns_per_frame", NULL}, &out->columns_per_frame, JSON_TYPE_INT);
 	json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "columns_per_packet", NULL}, &out->columns_per_packet, JSON_TYPE_INT);
 	json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "pixels_per_column", NULL}, &out->pixels_per_column, JSON_TYPE_INT);
 	json_parse_vector(json, tokens, (char const *[]){"lidar_data_format", "column_window", NULL}, column_window, 2, JSON_TYPE_INT);
-	assert(out->pixels_per_column > 0);
-	assert(out->pixels_per_column <= 128);
+	platform_assert(out->pixels_per_column > 0, "Not in range pixels_per_column");
+	platform_assert(out->pixels_per_column <= 128, "Not in range pixels_per_column");
 	json_parse_vector(json, tokens, (char const *[]){"lidar_data_format", "pixel_shift_by_row", NULL}, out->pixel_shift_by_row, out->pixels_per_column, JSON_TYPE_INT);
 
 	json_parse_value(json, tokens, (char const *[]){"beam_intrinsics", "lidar_origin_to_beam_origin_mm", NULL}, &out->lidar_origin_to_beam_origin_mm, JSON_TYPE_F64);
@@ -227,7 +231,7 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	}
 	else
 	{
-		assert(0);
+		platform_assert(0, "Profile not found");
 	}
 
 	/*
@@ -256,14 +260,13 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 		int cols = out->midw;
 		e->rowsize = cols * e->depth;
 		e->data_size = rows * e->rowsize;
-		assert(rows >= 0);
-		assert(cols >= 0);
+		platform_assert(rows >= 0, "");
+		platform_assert(cols >= 0, "");
 		e->_canary = quantity * 10;
 	}
 
 
-
-	assert(out->mid0 < out->mid1);
-	assert(out->midw > 0);
-	assert(out->channel_data_size > 0);
+	platform_assert(out->mid0 < out->mid1, "");
+	platform_assert(out->midw > 0, "");
+	platform_assert(out->channel_data_size > 0, "");
 }

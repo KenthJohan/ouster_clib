@@ -89,7 +89,10 @@
 		"drawinstances.h": "c",
 		"drawpoints.h": "c",
 		"ouster_app.h": "c",
-		"mutex": "c"
+		"mutex": "c",
+		"curl.h": "c",
+		"unistd.h": "c",
+		"basics.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

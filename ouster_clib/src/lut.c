@@ -274,3 +274,12 @@ void ouster_lut_cartesian(ouster_lut_t const *lut, uint32_t const *range, double
 		// printf("%+f %+f\n", mag, sqrt(V3_DOT(out_xyz, out_xyz)));
 	}
 }
+
+
+double * ouster_lut_alloc(ouster_lut_t const *lut)
+{
+	int n = lut->w * lut->h;
+	int size = n * sizeof(double) * 3;
+	void * memory = calloc(1, size);
+	return memory;
+}

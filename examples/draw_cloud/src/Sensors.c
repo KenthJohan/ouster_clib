@@ -96,7 +96,12 @@ static void Sensor_Add(ecs_iter_t *it)
 	for (int i = 0; i < it->count; ++i, ++desc)
 	{
 		SensorsState *sensor = ecs_get_mut(it->world, it->entities[i], SensorsState);
-		sensor->app = ouster_app_init(&(ouster_app_desc_t){.metafile = desc->metafile});
+		sensor->app = ouster_app_init(&(ouster_app_desc_t){
+			.metafile = desc->metafile,
+			.hint_imu = NULL,
+			.hint_lidar = NULL,
+			.fields = {.q = {OUSTER_QUANTITY_RANGE, OUSTER_QUANTITY_NEAR_IR}}
+			});
 		int count = sensor->app->lut.w * sensor->app->lut.h;
 		ecs_set(it->world, it->entities[i], Pointcloud, {.cap = count, .count = count});
 	}

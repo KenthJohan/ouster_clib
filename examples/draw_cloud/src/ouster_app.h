@@ -40,6 +40,9 @@ typedef enum
 typedef struct
 {
 	char const * metafile;
+	char const * hint_lidar;
+	char const * hint_imu;
+	ouster_field_desc_t fields;
 } ouster_app_desc_t;
 
 typedef struct
@@ -47,6 +50,7 @@ typedef struct
 	int socks[SOCK_INDEX_COUNT];
 	ecs_os_thread_t thread;				 // Receives UDP packages from LiDAR sensor
 	ecs_os_mutex_t lock;				 // Used for thread safe pointcloud copy from socket thread to main thread
+	ouster_field_t fields0[FIELD_COUNT]; // Thread producer
 	ouster_field_t fields1[FIELD_COUNT]; // Thread producer, uses (lock)
 	ouster_field_t fields2[FIELD_COUNT]; // Thread consumer, uses (lock)
 	int image_points_size;

@@ -10,13 +10,6 @@ void *thread_receiver(void *arg)
 
 	ouster_lidar_t lidar = {0};
 
-
-
-	ouster_field_t fields[FIELD_COUNT];
-	fields[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
-	fields[FIELD_IR].quantity = OUSTER_QUANTITY_NEAR_IR;
-	ouster_field_init(fields, FIELD_COUNT, &app->meta);
-
 	while (1)
 	{
 		char buf[NET_UDP_MAX_SIZE];
@@ -37,12 +30,12 @@ void *thread_receiver(void *arg)
 			{
 				continue;
 			}
-			ouster_lidar_get_fields(&lidar, &app->meta, buf, fields, FIELD_COUNT);
+			ouster_lidar_get_fields(&lidar, &app->meta, buf, app->fields0, FIELD_COUNT);
 			// printf("%i %i\n", lidar.last_mid, sensor->meta.mid1);
 			if (lidar.last_mid == app->meta.mid1)
 			{
 				ecs_os_mutex_lock(app->lock);
-				ouster_field_cpy(app->fields1, fields, FIELD_COUNT, &app->meta);
+				ouster_field_cpy(app->fields1, app->fields0, FIELD_COUNT, &app->meta);
 				ecs_os_mutex_unlock(app->lock);
 			}
 		}
@@ -61,8 +54,8 @@ void *thread_receiver(void *arg)
 ouster_app_t * ouster_app_init(ouster_app_desc_t * desc)
 {
 	ouster_app_t * app = ecs_os_calloc_t(ouster_app_t);
-	app->socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
-	app->socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_lidar("7503");
+	app->socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(desc->hint_lidar ? desc->hint_lidar : "7502");
+	app->socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_lidar(desc->hint_imu ? desc->hint_imu : "7503");
 
 	app->lock = ecs_os_mutex_new();
 
@@ -73,10 +66,13 @@ ouster_app_t * ouster_app_init(ouster_app_desc_t * desc)
 	ouster_lut_init(&app->lut, &app->meta);
 	platform_log("Column window: %i %i\n", app->meta.mid0, app->meta.mid1);
 
+	app->fields0[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
+	app->fields0[FIELD_IR].quantity = OUSTER_QUANTITY_NEAR_IR;
 	app->fields1[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
 	app->fields1[FIELD_IR].quantity = OUSTER_QUANTITY_NEAR_IR;
 	app->fields2[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
 	app->fields2[FIELD_IR].quantity = OUSTER_QUANTITY_NEAR_IR;
+	ouster_field_init(app->fields0, FIELD_COUNT, &app->meta);
 	ouster_field_init(app->fields1, FIELD_COUNT, &app->meta);
 	ouster_field_init(app->fields2, FIELD_COUNT, &app->meta);
 	

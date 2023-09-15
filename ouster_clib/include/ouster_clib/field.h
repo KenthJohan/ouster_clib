@@ -35,8 +35,6 @@ typedef struct
 typedef struct
 {
 	ouster_quantity_t quantity;
-	int rowsize;
-	int data_size;
 	void *data;
 } ouster_field_t;
 
@@ -50,8 +48,8 @@ typedef struct
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta);
 void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *meta);
 void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta);
-void ouster_field_zero(ouster_field_t fields[], int count);
-void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count);
+void ouster_field_zero(ouster_field_t fields[], int count, ouster_meta_t *meta);
+void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count, ouster_meta_t *meta);
 
 #ifdef __cplusplus
 }

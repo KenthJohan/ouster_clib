@@ -10,22 +10,18 @@ void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
 	ouster_field_t *f = fields;
 	for (int i = 0; i < count; ++i, f++)
 	{
-		int rows = meta->pixels_per_column;
-		int cols = meta->midw;
 		ouster_extract_t * extract = meta->extract + f->quantity;
-		int depth = extract->depth;
-		f->rowsize = cols * depth;
-		f->data_size = f->rowsize * rows;
-		f->data = calloc(f->data_size, 1);
+		f->data = calloc(extract->data_size, 1);
 	}
 }
 
-void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count)
+void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count, ouster_meta_t *meta)
 {
 	// memcpy(dst, src, sizeof(ouster_field_t) * count);
 	for (int i = 0; i < count; ++i, ++dst, ++src)
 	{
-		memcpy(dst->data, src->data, src->data_size);
+		ouster_extract_t * extract = meta->extract + src->quantity;
+		memcpy(dst->data, src->data, extract->data_size);
 	}
 }
 
@@ -76,7 +72,7 @@ void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *m
 		int cols = meta->midw;
 		ouster_extract_t * extract = meta->extract + fields->quantity;
 		int depth = extract->depth;
-		destagger(fields->data, cols, rows, depth, fields->rowsize, meta->pixel_shift_by_row);
+		destagger(fields->data, cols, rows, depth, extract->rowsize, meta->pixel_shift_by_row);
 	}
 }
 
@@ -102,10 +98,11 @@ void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta)
 	}
 }
 
-void ouster_field_zero(ouster_field_t fields[], int count)
+void ouster_field_zero(ouster_field_t fields[], int count, ouster_meta_t *meta)
 {
 	for (int i = 0; i < count; ++i, ++fields)
 	{
-		memset(fields->data, 0, fields->data_size);
+		ouster_extract_t * extract = meta->extract + fields->quantity;
+		memset(fields->data, 0, extract->data_size);
 	}
 }

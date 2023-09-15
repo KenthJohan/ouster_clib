@@ -13,6 +13,9 @@ typedef struct
 	uint32_t mask;
 	int offset;
 	int depth;
+	int rowsize;
+	int data_size;
+	int _canary;
 } ouster_extract_t;
 
 typedef struct

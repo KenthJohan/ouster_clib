@@ -252,6 +252,13 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	{
 		ouster_extract_t * e = out->extract + quantity;
 		ouster_extract_init(e, out->profile, quantity);
+		int rows = out->pixels_per_column;
+		int cols = out->midw;
+		e->rowsize = cols * e->depth;
+		e->data_size = rows * e->rowsize;
+		assert(rows >= 0);
+		assert(cols >= 0);
+		e->_canary = quantity * 10;
 	}
 
 

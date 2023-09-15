@@ -87,7 +87,9 @@
 		"algorithm": "c",
 		"transform.h": "c",
 		"drawinstances.h": "c",
-		"drawpoints.h": "c"
+		"drawpoints.h": "c",
+		"ouster_app.h": "c",
+		"mutex": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

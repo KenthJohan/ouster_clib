@@ -53,11 +53,7 @@ void req_get(ouster_client_t *client, char const *ip)
 	{
 		char url[1024];
 		snprintf(url, 1024, "http://%s/%s", client->host, ip);
-		platform_log("\033[4;34m"
-					 "GET"
-					 "\033[0m"
-					 " %s\n",
-					 url);
+		platform_log("\033[4;34m""GET""\033[0m"" %s\n",url);
 		curl_easy_setopt(client->curl, CURLOPT_URL, url);
 	}
 

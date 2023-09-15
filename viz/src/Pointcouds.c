@@ -101,23 +101,24 @@ void PointcloudsImport(ecs_world_t *world)
 	ecs_enable(world, Bouncer, false);
 
 	ecs_set_hooks(world, Pointcloud, {
-										 .ctor = ecs_ctor(Pointcloud),
-										 .move = ecs_move(Pointcloud),
-										 .dtor = ecs_dtor(Pointcloud),
-									 });
+		.ctor = ecs_ctor(Pointcloud),
+		.move = ecs_move(Pointcloud),
+		.dtor = ecs_dtor(Pointcloud),
+	});
 
 	ecs_struct(world, {.entity = ecs_id(Pointcloud),
-					   .members = {
-						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
-						   {.name = "count", .type = ecs_id(ecs_i32_t)},
-						   {.name = "pos", .type = ecs_id(ecs_uptr_t)},
-						   {.name = "vel", .type = ecs_id(ecs_uptr_t)},
-						   {.name = "col", .type = ecs_id(ecs_uptr_t)},
-					   }});
+		.members = {
+		{.name = "cap", .type = ecs_id(ecs_i32_t)},
+		{.name = "count", .type = ecs_id(ecs_i32_t)},
+		{.name = "point_size", .type = ecs_id(ecs_f32_t)},
+		{.name = "pos", .type = ecs_id(ecs_uptr_t)},
+		{.name = "vel", .type = ecs_id(ecs_uptr_t)},
+		{.name = "col", .type = ecs_id(ecs_uptr_t)},
+	}});
 
 	ecs_set_hooks(world, Pointcloud, {
-										 .ctor = ecs_ctor(Pointcloud),
-										 .move = ecs_move(Pointcloud),
-										 .dtor = ecs_dtor(Pointcloud),
-									 });
+		.ctor = ecs_ctor(Pointcloud),
+		.move = ecs_move(Pointcloud),
+		.dtor = ecs_dtor(Pointcloud),
+	});
 }

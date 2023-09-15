@@ -16,7 +16,7 @@ default via 192.168.1.1 dev eno1 proto dhcp src 192.168.1.113 metric 100
 
 
 ## Rewrite net data
-Change pcap ip dest to your ip address (default via 192.168.1.1)
+Change pcap ip dest to your ip address (192.168.1.113)
 ```bash
 tcpprep --port --pcap=./a.pcap --cachefile=a.cache
 sudo tcprewrite --endpoints=192.168.1.1:169.254.189.244 --enet-smac=00:00:00:00:00:00 --enet-dmac=00:00:00:00:00:00 --cachefile=a.cache  --infile=a.pcap --outfile=b.pcap

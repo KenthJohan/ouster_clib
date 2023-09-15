@@ -15,7 +15,10 @@
 
 typedef struct
 {
-	float x, y, z;
+	float x;
+	float y;
+	float z;
+	float w;
 	uint32_t color;
 } vertex_t;
 
@@ -57,51 +60,7 @@ typedef struct
 ECS_COMPONENT_DECLARE(DrawPointsDesc);
 ECS_COMPONENT_DECLARE(DrawPointsState);
 
-// helper function to compute vertex shader params
-/*
-vs_params_t compute_vsparams(float disp_w, float disp_h, float rx, float ry, float point_size)
-{
-	hmm_mat4 proj = HMM_Perspective(60.0f, disp_w / disp_h, 0.01f, 10.0f);
-	hmm_mat4 view = HMM_LookAt(HMM_Vec3(0.0f, 0.0f, 1.5f), HMM_Vec3(0.0f, 0.0f, 0.0f), HMM_Vec3(0.0f, 1.0f, 0.0f));
-	hmm_mat4 view_proj = HMM_MultiplyMat4(proj, view);
-	hmm_mat4 rxm = HMM_Rotate(rx, HMM_Vec3(1.0f, 0.0f, 0.0f));
-	hmm_mat4 rym = HMM_Rotate(ry, HMM_Vec3(0.0f, 1.0f, 0.0f));
-	hmm_mat4 model = HMM_MultiplyMat4(rxm, rym);
-	return (vs_params_t){
-		.mvp = HMM_MultiplyMat4(view_proj, model),
-		.point_size = point_size,
-	};
-}
-*/
 
-// helper function to fill index data
-/*
-void setup_vertex_and_index_data(DrawPointsState *state)
-{
-	// vertices
-	{
-		const float dx = 1.0f / NUM_X;
-		const float dy = 1.0f / NUM_Y;
-		const float offset_x = -dx * (NUM_X / 2);
-		const float offset_y = -dy * (NUM_Y / 2);
-		// red      green       yellow
-		const uint32_t colors[3] = {0xFF0000DD, 0xFF00DD00, 0xFF00DDDD};
-		int i = 0;
-		for (int y = 0; y < NUM_Y; y++)
-		{
-			for (int x = 0; x < NUM_X; x++, i++)
-			{
-				assert(i < NUM_VERTS);
-				vertex_t *vtx = &state.vertices[i];
-				vtx->x = x * dx + offset_x;
-				vtx->y = y * dy + offset_y;
-				vtx->color = colors[i % 3];
-			}
-		}
-		assert(i == NUM_VERTS);
-	}
-}
-*/
 
 static sg_shader create_shader(char *path_fs, char *path_vs)
 {
@@ -125,42 +84,6 @@ static sg_shader create_shader(char *path_fs, char *path_vs)
 	return shd;
 }
 
-/*
-void DrawPoints_init(void)
-{
-	state.point_size = 4.0f;
-
-	// vertex- and index-buffers
-	setup_vertex_and_index_data();
-	state.vbuf = sg_make_buffer(&(sg_buffer_desc){
-		.data = SG_RANGE(state.vertices),
-	});
-
-	// create pipeline state objects for each primitive type
-	sg_pipeline_desc pip_desc = {
-		.layout = {
-			.attrs[ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT2,
-			.attrs[ATTR_vs_color0].format = SG_VERTEXFORMAT_UBYTE4N,
-		},
-		.shader = create_shader("../../viz/src/points.fs.glsl", "../../viz/src/points.vs.glsl"),
-		.depth = {.write_enabled = true, .compare = SG_COMPAREFUNC_LESS_EQUAL},
-		.index_type = SG_INDEXTYPE_NONE,
-		.primitive_type = SG_PRIMITIVETYPE_POINTS,
-	};
-	state.pip = sg_make_pipeline(&pip_desc);
-
-	// the number of elements (vertices or indices) to render
-	state.num_elements = NUM_VERTS;
-
-	// pass action for clearing the framebuffer
-	// state.pass_action = (sg_pass_action){.colors[0] = {.load_action = SG_LOADACTION_CLEAR, .clear_value = {0.0f, 0.2f, 0.4f, 1.0f}}};
-
-	state.pass_action = (sg_pass_action){
-		.colors[0].load_action = SG_LOADACTION_DONTCARE,
-		.depth.load_action = SG_LOADACTION_DONTCARE,
-		.stencil.load_action = SG_LOADACTION_DONTCARE};
-}
-*/
 
 void DrawPointsState_Add(ecs_iter_t *it)
 {
@@ -177,7 +100,7 @@ void DrawPointsState_Add(ecs_iter_t *it)
 		s->bind.index_buffer.id = SG_INVALID_ID;
 		sg_pipeline_desc pip_desc = {
 			.layout = {
-				.attrs[ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT3,
+				.attrs[ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT4,
 				.attrs[ATTR_vs_color0].format = SG_VERTEXFORMAT_UBYTE4N,
 			},
 			.shader = create_shader("../../viz/src/points.fs.glsl", "../../viz/src/points.vs.glsl"),
@@ -218,6 +141,7 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 			v.x = cloud->pos[j * 3 + 0];
 			v.y = cloud->pos[j * 3 + 1];
 			v.z = cloud->pos[j * 3 + 2];
+			v.w = cloud->point_size;
 			// v.color = colors[j % 3];
 			v.color = cloud->col[j];
 			s->vertices[j] = v;
@@ -249,29 +173,29 @@ void DrawPointsImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, DrawPointsState);
 
 	ecs_struct(world, {.entity = ecs_id(DrawPointsDesc),
-					   .members = {
-						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
-					   }});
+		.members = {
+			{.name = "cap", .type = ecs_id(ecs_i32_t)},
+		}});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = DrawPointsState_Add,
-							   .query.filter.terms =
-								   {
-									   {.id = ecs_id(DrawPointsDesc), .src.flags = EcsSelf},
-									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
-									   {.id = ecs_id(DrawPointsState), .oper = EcsNot}, // Adds this
-								   }});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = DrawPointsState_Add,
+		.query.filter.terms =
+			{
+				{.id = ecs_id(DrawPointsDesc), .src.flags = EcsSelf},
+				{.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
+				{.id = ecs_id(DrawPointsState), .oper = EcsNot}, // Adds this
+			}});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = DrawPointsState_Draw,
-							   .query.filter.terms =
-								   {
-									   {.id = ecs_id(Pointcloud)},
-									   {.id = ecs_id(DrawPointsState), .src.trav = EcsIsA, .src.flags = EcsUp},
-									   {.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
-									   {.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
-									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
-								   }});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = DrawPointsState_Draw,
+		.query.filter.terms =
+			{
+				{.id = ecs_id(Pointcloud)},
+				{.id = ecs_id(DrawPointsState), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
+			}});
 }

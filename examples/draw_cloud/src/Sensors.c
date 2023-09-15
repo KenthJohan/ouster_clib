@@ -103,7 +103,7 @@ static void Sensor_Add(ecs_iter_t *it)
 			.fields = {.q = {OUSTER_QUANTITY_RANGE, OUSTER_QUANTITY_NEAR_IR}}
 			});
 		int count = sensor->app->lut.w * sensor->app->lut.h;
-		ecs_set(it->world, it->entities[i], Pointcloud, {.cap = count, .count = count});
+		ecs_set(it->world, it->entities[i], Pointcloud, {.cap = count, .count = count, .point_size = 1.0f});
 	}
 }
 

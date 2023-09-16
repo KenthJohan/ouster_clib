@@ -93,7 +93,9 @@
 		"curl.h": "c",
 		"unistd.h": "c",
 		"basics.h": "c",
-		"sg.h": "c"
+		"sg.h": "c",
+		"typeinfo": "c",
+		"variant": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

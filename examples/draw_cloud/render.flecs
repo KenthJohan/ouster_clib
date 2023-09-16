@@ -5,33 +5,41 @@
 
 using flecs.meta
 
-shader {
-	- sg.shaders.FromFile//("../../viz/src/shapes.fs.glsl", "../../viz/src/shapes.vs.glsl")
-	- sg.shaders.Entry//{"main"}
-	ub0 {
-		- sg.UniformBlock//{40}
-		uniforms {
-			vs_params {
-				- sg.Uniform//{5}
-				- sg.Float4
-			}
+
+attributes0 {
+	- sg.Attributes
+	position {
+		- sg.Attribute{0}
+		- (sg.VertexFormat, sg.Float4)
+	}
+	color0 {
+		- sg.Attribute{1}
+		- (sg.VertexFormat, sg.Ubyte4n)
+	}
+}
+
+ub0 {
+	- sg.UniformBlock//{40}
+	uniforms {
+		vs_params {
+			- sg.Uniform//{5}
+			- sg.Float4
 		}
 	}
 }
 
 
-pip : shader {
+shader : attributes0 {
+	- sg.ShaderCreate{"../../viz/src/shapes.fs.glsl", "../../viz/src/shapes.vs.glsl"}
+	- sg.shaders.Entry//{"main"}
+}
+
+
+pip : shader, attributes0 {
 	- sg.PipelineCreate
-	- (sg.Primitive, sg.Points)
+	- (sg.PrimitiveType, sg.Points)
 	- (sg.Cullmode, sg.None)
-	attributes {
-		position {
-			- (sg.Format, sg.Float4)
-		}
-		color0 {
-			- (sg.Format, sg.Ubyte4n)
-		}
-	}
+	- (sg.IndexType, sg.None)
 }
 
 

@@ -145,26 +145,22 @@ void DrawInstancesState_Add(ecs_iter_t *it)
 
 void RenderPointcloud_Draw(ecs_iter_t *it)
 {
-	Pointcloud *cloud = ecs_field(it, Pointcloud, 1);
+	Position3 *pos = ecs_field(it, Position3, 1);
 	DrawInstancesState *rend = ecs_field(it, DrawInstancesState, 2);
 	Camera *cam = ecs_field(it, Camera, 3);
 	ShapeIndex *shape = ecs_field(it, ShapeIndex, 4);
 	Window *window = ecs_field(it, Window, 5); // up
 
-	for (int i = 0; i < it->count; ++i, ++cloud)
+	for (int i = 0; i < it->count; ++i, ++pos)
 	{
 		// printf("%s\n", ecs_get_name(it->world, it->entities[i]));
 		if (rend->cap <= 0)
 		{
 			continue;
 		}
-		if (cloud->count <= 0)
-		{
-			continue;
-		}
 
 		// update instance data
-		sg_range range = {.ptr = cloud->pos, .size = (size_t)cloud->count * sizeof(hmm_vec3)};
+		sg_range range = {.ptr = pos, .size = (size_t)1 * sizeof(hmm_vec3)};
 		sg_update_buffer(rend->bind.vertex_buffers[1], &range);
 
 		sg_begin_default_pass(&rend->pass_action, window->w, window->h);
@@ -174,7 +170,7 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 		ecs_os_memcpy_t(&rend->vs_params.mvp, cam->mvp, hmm_mat4);
 		sg_range a = {&rend->vs_params, sizeof(vs_params_t)};
 		sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &a);
-		sg_draw(shape->element.base_element, shape->element.num_elements, cloud->count);
+		sg_draw(shape->element.base_element, shape->element.num_elements, 1);
 		sg_end_pass();
 	}
 }
@@ -191,32 +187,38 @@ void DrawInstancesImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, DrawInstancesDesc);
 	ECS_COMPONENT_DEFINE(world, DrawInstancesState);
 
+	ecs_struct(world, {.entity = ecs_id(DrawInstancesDesc),
+					   .members = {
+						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
+					   }});
+
 	ecs_struct(world, {.entity = ecs_id(DrawInstancesState),
 					   .members = {
 						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
 					   }});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = DrawInstancesState_Add,
-							   .query.filter.terms =
-								   {
-									   {.id = ecs_id(DrawInstancesDesc), .src.flags = EcsSelf},
-									   {.id = ecs_id(ShapeBufferImpl), .src.trav = EcsIsA, .src.flags = EcsUp},
-									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
-									   {.id = ecs_id(DrawInstancesState), .oper = EcsNot}, // Adds this
-								   }});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = DrawInstancesState_Add,
+		.query.filter.terms =
+			{
+				{.id = ecs_id(DrawInstancesDesc), .src.flags = EcsSelf},
+				{.id = ecs_id(ShapeBufferImpl), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
+				{.id = ecs_id(DrawInstancesState), .oper = EcsNot}, // Adds this
+			}});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = RenderPointcloud_Draw,
-							   .query.filter.terms =
-								   {
-									   {.id = ecs_id(Pointcloud)},
-									   {.id = ecs_id(DrawInstancesState), .src.trav = EcsIsA, .src.flags = EcsUp},
-									   {.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
-									   {.id = ecs_id(ShapeIndex), .src.trav = EcsIsA, .src.flags = EcsUp},
-									   {.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
-									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
-								   }});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = RenderPointcloud_Draw,
+		.query.filter.terms =
+			{
+				{.id = ecs_id(Position3)},
+				{.id = ecs_id(DrawInstancesState), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(ShapeIndex), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
+			}});
+			
 }

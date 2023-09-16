@@ -34,3 +34,31 @@ text1 {
     - geometries.Position2{0,0}
 }
 
+
+
+
+
+
+
+
+vbuf1 {
+    - geometries.ShapeBuffer{cap_vertices:6*1024, cap_indices:16 * 1024}
+}
+
+shape1 : vbuf1 {
+    - geometries.Sphere{r:5,slices:7,stacks:3}
+    //- Index
+}
+
+shape2 : vbuf1 {
+    - geometries.Sphere{r:10,slices:6,stacks:4}
+    //- Index
+}
+
+render_instances : vbuf1 {
+    - draw.instances.DrawInstancesDesc{cap: 1000*1000}
+}
+
+draw : camera1, render_instances, window1, shape2 {
+    - geometries.Position3{10,10,10}
+}

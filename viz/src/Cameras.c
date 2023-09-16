@@ -132,8 +132,8 @@ void CamerasImport(ecs_world_t *world)
 	ECS_IMPORT(world, Geometries);
 	ECS_COMPONENT_DEFINE(world, Camera);
 
-	ECS_SYSTEM(world, Camera_Controller, EcsOnUpdate, Camera, UserinputsKeys($));
-	ECS_SYSTEM(world, Camera_Update, EcsOnUpdate, Camera, Position3);
+	ECS_SYSTEM(world, Camera_Controller, EcsOnUpdate, Camera(self), UserinputsKeys($));
+	ECS_SYSTEM(world, Camera_Update, EcsOnUpdate, Camera(self), Position3(self));
 
 	ecs_set_hooks(world, Camera, {
 									 .ctor = ecs_ctor(Camera),

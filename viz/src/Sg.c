@@ -11,10 +11,14 @@ ECS_COMPONENT_DECLARE(SgShaderCreate);
 ECS_COMPONENT_DECLARE(SgShader);
 ECS_COMPONENT_DECLARE(SgAttribute);
 ECS_COMPONENT_DECLARE(SgAttributes);
+ECS_COMPONENT_DECLARE(SgUniformBlocks);
 ECS_COMPONENT_DECLARE(SgVertexFormat);
+ECS_COMPONENT_DECLARE(SgUniformType);
 ECS_COMPONENT_DECLARE(SgIndexType);
 ECS_COMPONENT_DECLARE(SgPrimitiveType);
 ECS_COMPONENT_DECLARE(SgCullMode);
+ECS_COMPONENT_DECLARE(SgUniformBlock);
+ECS_COMPONENT_DECLARE(SgUniform);
 
 ECS_TAG_DECLARE(SgNone);
 ECS_TAG_DECLARE(SgPoints);
@@ -78,6 +82,49 @@ void iterate_shader_attrs(ecs_world_t * world, ecs_entity_t parent, sg_shader_at
 }
 
 
+void iterate_shader_uniforms(ecs_world_t * world, ecs_entity_t parent, sg_shader_uniform_desc * descs)
+{
+	ecs_iter_t it = ecs_children(world, parent);
+	while (ecs_children_next(&it))
+	{
+		for (int i = 0; i < it.count; i ++)
+		{
+			ecs_entity_t e = it.entities[i];
+			ecs_doc_set_color(world, e, ENTITY_COLOR);
+			print_entity(world, e);
+			char const * name = ecs_get_name(world, e);
+			SgUniform const * uniform = ecs_get(world, e, SgUniform);
+			SgUniformType const * type = ecsx_get_target_data(world, e, ecs_id(SgUniformType));
+			platform_assert_notnull(uniform);
+			platform_assert_notnull(type);
+			descs[uniform->index].name = name;
+			descs[uniform->index].array_count = uniform->array_count;
+			descs[uniform->index].type = type->value;
+		}
+	}
+}
+
+
+void iterate_shader_blocks(ecs_world_t * world, ecs_entity_t parent, sg_shader_uniform_block_desc * descs)
+{
+	ecs_iter_t it = ecs_children(world, parent);
+	while (ecs_children_next(&it))
+	{
+		for (int i = 0; i < it.count; i ++)
+		{
+			ecs_entity_t e = it.entities[i];
+			ecs_doc_set_color(world, e, ENTITY_COLOR);
+			print_entity(world, e);
+			//char const * name = ecs_get_name(world, e);
+			ecs_i32_t index = ecs_get(world, e, SgUniformBlock)->index;
+			ecs_i32_t size = ecs_get(world, e, SgUniformBlock)->size;
+			descs[index].size = size;
+			descs[index].layout = SG_UNIFORMLAYOUT_STD140;
+			iterate_shader_uniforms(world, e, descs[index].uniforms);
+		}
+	}
+}
+
 
 void iterate_vertex_attrs(ecs_world_t * world, ecs_entity_t parent, sg_vertex_attr_state * descs)
 {
@@ -132,6 +179,8 @@ void Pip_Create(ecs_iter_t *it)
 			.cull_mode = cull_mode->value,
 		};
 		iterate_vertex_attrs(world, entity_attrs, desc.layout.attrs);
+
+		pip->id = sg_make_pipeline(&desc);
 	}
 }
 
@@ -168,10 +217,12 @@ static sg_shader create_shader(char *path_fs, char *path_vs)
 void Shader_Create(ecs_iter_t *it)
 {
 	ecs_world_t * world = it->world;
-	SgShaderCreate * desc = ecs_field(it, SgShaderCreate, 1);
-	SgAttributes * attrs = ecs_field(it, SgAttributes, 2);
-	int self1 = ecs_field_is_self(it, 1);
+	SgShaderCreate * create = ecs_field(it, SgShaderCreate, 1);
+	//SgAttributes * attrs = ecs_field(it, SgAttributes, 2);
+	//SgUniformBlocks * blocks = ecs_field(it, SgUniformBlocks, 3);
+	//int self1 = ecs_field_is_self(it, 1);
 	ecs_entity_t entity_attrs = ecs_field_src(it, 2);
+	ecs_entity_t entity_blocks = ecs_field_src(it, 3);
 	ecs_doc_set_color(world, entity_attrs, ENTITY_COLOR);
 
 	for (int i = 0; i < it->count; ++i)
@@ -180,8 +231,17 @@ void Shader_Create(ecs_iter_t *it)
 		ecs_doc_set_color(world, e, "#003366");
 		SgShader *shader = ecs_get_mut(world, it->entities[i], SgShader);
 		sg_shader_desc desc = {0};
+		desc.vs.source = fs_readfile(create->filename_vs);
+		desc.fs.source = fs_readfile(create->filename_fs);
+		desc.vs.entry = "main";
+		desc.fs.entry = "main";
+		platform_assert_notnull(desc.vs.source);
+		platform_assert_notnull(desc.fs.source);
 		//shader->id = create_shader(desc->filename_fs, desc->filename_vs);
 		iterate_shader_attrs(world, entity_attrs, desc.attrs);
+		iterate_shader_blocks(world, entity_blocks, desc.vs.uniform_blocks);
+		sg_shader shd = sg_make_shader(&desc);
+		shader->id = shd;
 		platform_log("");
 	}
 }
@@ -199,10 +259,15 @@ void SgImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, SgShader);
 	ECS_COMPONENT_DEFINE(world, SgAttribute);
 	ECS_COMPONENT_DEFINE(world, SgAttributes);
+	ECS_COMPONENT_DEFINE(world, SgUniformBlocks);
 	ECS_COMPONENT_DEFINE(world, SgVertexFormat);
+	ECS_COMPONENT_DEFINE(world, SgUniformType);
 	ECS_COMPONENT_DEFINE(world, SgIndexType);
 	ECS_COMPONENT_DEFINE(world, SgPrimitiveType);
 	ECS_COMPONENT_DEFINE(world, SgCullMode);
+	ECS_COMPONENT_DEFINE(world, SgUniformBlock);
+	ECS_COMPONENT_DEFINE(world, SgUniform);
+
 
 	ecs_add_id(world, ecs_id(SgVertexFormat), EcsUnion);
 	ecs_add_id(world, ecs_id(SgIndexType), EcsUnion);
@@ -228,6 +293,9 @@ void SgImport(ecs_world_t *world)
 
 	ecs_set(world, SgFloat4, SgVertexFormat, {SG_VERTEXFORMAT_FLOAT4});
 	ecs_set(world, SgUbyte4n, SgVertexFormat, {SG_VERTEXFORMAT_UBYTE4N});
+
+	ecs_set(world, SgFloat4, SgUniformType, {SG_UNIFORMTYPE_FLOAT4});
+
 
 	ecs_set(world, SgNone, SgIndexType, {SG_INDEXTYPE_NONE});
 	ecs_set(world, SgU16, SgIndexType, {SG_INDEXTYPE_UINT16});
@@ -265,6 +333,18 @@ void SgImport(ecs_world_t *world)
 			{.name = "value", .type = ecs_id(ecs_i32_t)},
 		}});
 
+	ecs_struct(world, {.entity = ecs_id(SgUniformBlock),
+		.members = {
+			{.name = "index", .type = ecs_id(ecs_i32_t)},
+			{.name = "size", .type = ecs_id(ecs_i32_t)},
+		}});
+
+	ecs_struct(world, {.entity = ecs_id(SgUniform),
+		.members = {
+			{.name = "index", .type = ecs_id(ecs_i32_t)},
+			{.name = "array_count", .type = ecs_id(ecs_i32_t)},
+		}});
+
 	ecs_system_init(world, &(ecs_system_desc_t){
 		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
 		.callback = Pip_Create,
@@ -283,6 +363,7 @@ void SgImport(ecs_world_t *world)
 			{
 				{.id = ecs_id(SgShaderCreate), .src.flags = EcsSelf},
 				{.id = ecs_id(SgAttributes), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(SgUniformBlocks), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(SgShader), .oper = EcsNot}, // Adds this
 			}});
 

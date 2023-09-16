@@ -13,7 +13,7 @@ typedef struct
 
 typedef struct
 {
-	sg_pipeline pip;
+	sg_pipeline id;
 } SgPipeline;
 
 typedef struct
@@ -39,8 +39,18 @@ typedef struct
 
 typedef struct
 {
+	ecs_i32_t dummy;
+} SgUniformBlocks;
+
+typedef struct
+{
 	sg_vertex_format value;
 } SgVertexFormat;
+
+typedef struct
+{
+	sg_uniform_type value;
+} SgUniformType;
 
 typedef struct
 {
@@ -57,16 +67,32 @@ typedef struct
 	sg_cull_mode value;
 } SgCullMode;
 
+typedef struct
+{
+	ecs_i32_t index;
+	ecs_i32_t size;
+} SgUniformBlock;
+
+typedef struct
+{
+	ecs_i32_t index;
+	ecs_i32_t array_count;
+} SgUniform;
+
 extern ECS_COMPONENT_DECLARE(SgPipelineCreate);
 extern ECS_COMPONENT_DECLARE(SgPipeline);
 extern ECS_COMPONENT_DECLARE(SgShaderCreate);
 extern ECS_COMPONENT_DECLARE(SgShader);
 extern ECS_COMPONENT_DECLARE(SgAttribute);
 extern ECS_COMPONENT_DECLARE(SgAttributes);
+extern ECS_COMPONENT_DECLARE(SgUniformBlocks);
 extern ECS_COMPONENT_DECLARE(SgVertexFormat);
+extern ECS_COMPONENT_DECLARE(SgUniformType);
 extern ECS_COMPONENT_DECLARE(SgIndexType);
 extern ECS_COMPONENT_DECLARE(SgPrimitiveType);
 extern ECS_COMPONENT_DECLARE(SgCullMode);
+extern ECS_COMPONENT_DECLARE(SgUniformBlock);
+extern ECS_COMPONENT_DECLARE(SgUniform);
 
 
 

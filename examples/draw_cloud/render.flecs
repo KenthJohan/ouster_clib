@@ -22,19 +22,19 @@ attributes0 {
 	}
 }
 
-ub0 {
-	- sg.UniformBlock//{40}
-	uniforms {
+uniblocks {
+	- sg.UniformBlocks
+	ub0 {
+		- sg.UniformBlock{index:0, size:80}
 		vs_params {
-			- sg.Uniform//{5}
-			- sg.Float4
+			- sg.Uniform{index:0, array_count:5}
+			- (sg.UniformType, sg.Float4)
 		}
 	}
 }
 
-
-shader : attributes0 {
-	- sg.ShaderCreate{"../../viz/src/shapes.fs.glsl", "../../viz/src/shapes.vs.glsl"}
+shader : attributes0, uniblocks {
+	- sg.ShaderCreate{filename_fs:"../../viz/src/shapes.fs.glsl", filename_vs:"../../viz/src/shapes.vs.glsl"}
 	- sg.shaders.Entry//{"main"}
 }
 

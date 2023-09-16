@@ -224,12 +224,13 @@ void Shader_Create(ecs_iter_t *it)
 	ecs_entity_t entity_attrs = ecs_field_src(it, 2);
 	ecs_entity_t entity_blocks = ecs_field_src(it, 3);
 	ecs_doc_set_color(world, entity_attrs, ENTITY_COLOR);
+	ecs_doc_set_color(world, entity_blocks, ENTITY_COLOR);
 
 	for (int i = 0; i < it->count; ++i)
 	{
 		ecs_entity_t e = it->entities[i];
 		ecs_doc_set_color(world, e, "#003366");
-		SgShader *shader = ecs_get_mut(world, it->entities[i], SgShader);
+		SgShader *shader = ecs_get_mut(world, e, SgShader);
 		sg_shader_desc desc = {0};
 		desc.vs.source = fs_readfile(create->filename_vs);
 		desc.fs.source = fs_readfile(create->filename_fs);
@@ -319,6 +320,11 @@ void SgImport(ecs_world_t *world)
 		}});
 
 	ecs_struct(world, {.entity = ecs_id(SgShader),
+		.members = {
+			{.name = "id", .type = ecs_id(ecs_i32_t)},
+		}});
+
+	ecs_struct(world, {.entity = ecs_id(SgPipeline),
 		.members = {
 			{.name = "id", .type = ecs_id(ecs_i32_t)},
 		}});

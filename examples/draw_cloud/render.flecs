@@ -5,10 +5,8 @@
 
 using flecs.meta
 
-drawing
+renderings
 {
-
-
 
 attributes0 {
 	- sg.Attributes
@@ -33,23 +31,18 @@ uniblocks {
 	}
 }
 
-shader : attributes0, uniblocks {
-	- sg.ShaderCreate{filename_fs:"../../viz/src/shapes.fs.glsl", filename_vs:"../../viz/src/shapes.vs.glsl"}
+shader_points : attributes0, uniblocks {
+	- sg.ShaderCreate{filename_fs:"../../viz/src/points.fs.glsl", filename_vs:"../../viz/src/points.vs.glsl"}
 	- sg.shaders.Entry//{"main"}
 }
 
 
-pip : shader, attributes0 {
+pip_points : shader_points, attributes0 {
 	- sg.PipelineCreate
 	- (sg.PrimitiveType, sg.Points)
 	- (sg.CullMode, sg.None)
 	- (sg.IndexType, sg.None)
 }
-
-
-
-
-
 
 
 

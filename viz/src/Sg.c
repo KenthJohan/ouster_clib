@@ -27,6 +27,7 @@ ECS_TAG_DECLARE(SgU32);
 ECS_TAG_DECLARE(SgFront);
 ECS_TAG_DECLARE(SgBack);
 
+#define ENTITY_COLOR "#003366"
 
 void print_entity(ecs_world_t * world, ecs_entity_t e)
 {
@@ -68,6 +69,7 @@ void iterate_shader_attrs(ecs_world_t * world, ecs_entity_t parent, sg_shader_at
 		for (int i = 0; i < it.count; i ++)
 		{
 			ecs_entity_t e = it.entities[i];
+			ecs_doc_set_color(world, e, ENTITY_COLOR);
 			char const * name = ecs_get_name(world, e);
 			ecs_i32_t index = ecs_get(world, e, SgAttribute)->index;
 			descs[index].name = name;
@@ -85,13 +87,12 @@ void iterate_vertex_attrs(ecs_world_t * world, ecs_entity_t parent, sg_vertex_at
 		for (int i = 0; i < it.count; i ++)
 		{
 			ecs_entity_t e = it.entities[i];
+			ecs_doc_set_color(world, e, ENTITY_COLOR);
 			ecs_i32_t index = ecs_get(world, e, SgAttribute)->index;
-			ecs_entity_t t = ecs_get_target(world, e, ecs_id(SgVertexFormat), 0);
-			sg_vertex_format format = ecs_get(world, t, SgVertexFormat)->value;
-			//platform_log("%s\n", ecs_get_name(world, t));
+			SgVertexFormat const * format = ecsx_get_target_data(world, e, ecs_id(SgVertexFormat));
 			descs[index].buffer_index = 0;
 			descs[index].offset = 0;
-			descs[index].format = format;
+			descs[index].format = format->value;
 		}
 	}
 }
@@ -105,10 +106,12 @@ void Pip_Create(ecs_iter_t *it)
 	//SgAttributes * attrs = ecs_field(it, SgAttributes, 2); // up
 	ecs_entity_t entity_attrs = ecs_field_src(it, 2);
 	SgShader *shader = ecs_field(it, SgShader, 3); // up
+	ecs_doc_set_color(world, entity_attrs, ENTITY_COLOR);
 
 	for (int i = 0; i < it->count; ++i)
 	{
 		ecs_entity_t e = it->entities[i];
+		ecs_doc_set_color(world, e, ENTITY_COLOR);
 		//print_entity(world, e);
 
 		SgPipeline *pip = ecs_get_mut(world, e, SgPipeline);
@@ -169,9 +172,12 @@ void Shader_Create(ecs_iter_t *it)
 	SgAttributes * attrs = ecs_field(it, SgAttributes, 2);
 	int self1 = ecs_field_is_self(it, 1);
 	ecs_entity_t entity_attrs = ecs_field_src(it, 2);
+	ecs_doc_set_color(world, entity_attrs, ENTITY_COLOR);
 
 	for (int i = 0; i < it->count; ++i)
 	{
+		ecs_entity_t e = it->entities[i];
+		ecs_doc_set_color(world, e, "#003366");
 		SgShader *shader = ecs_get_mut(world, it->entities[i], SgShader);
 		sg_shader_desc desc = {0};
 		//shader->id = create_shader(desc->filename_fs, desc->filename_vs);
@@ -187,7 +193,6 @@ void SgImport(ecs_world_t *world)
 	ECS_MODULE(world, Sg);
 	ECS_IMPORT(world, Windows);
 	ecs_set_name_prefix(world, "Sg");
-
 	ECS_COMPONENT_DEFINE(world, SgPipelineCreate);
 	ECS_COMPONENT_DEFINE(world, SgPipeline);
 	ECS_COMPONENT_DEFINE(world, SgShaderCreate);
@@ -214,6 +219,8 @@ void SgImport(ecs_world_t *world)
 	ECS_TAG_DEFINE(world, SgU32);
 	ECS_TAG_DEFINE(world, SgFront);
 	ECS_TAG_DEFINE(world, SgBack);
+
+
 
 	ecs_set(world, SgPoints, SgPrimitiveType, {SG_PRIMITIVETYPE_POINTS});
 	ecs_set(world, SgLines, SgPrimitiveType, {SG_PRIMITIVETYPE_LINES});

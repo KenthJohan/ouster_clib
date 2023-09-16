@@ -5,6 +5,10 @@
 
 using flecs.meta
 
+drawing
+{
+
+
 
 attributes0 {
 	- sg.Attributes
@@ -38,9 +42,19 @@ shader : attributes0 {
 pip : shader, attributes0 {
 	- sg.PipelineCreate
 	- (sg.PrimitiveType, sg.Points)
-	- (sg.Cullmode, sg.None)
+	- (sg.CullMode, sg.None)
 	- (sg.IndexType, sg.None)
 }
+
+
+
+
+
+
+
+
+}
+
 
 
 

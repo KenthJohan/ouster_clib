@@ -2,6 +2,7 @@
 #include "viz/Cameras.h"
 #include "viz/Windows.h"
 #include "viz/Pointclouds.h"
+#include "viz/Sg.h"
 #include <sokol/sokol_gfx.h>
 #include <sokol/sokol_debugtext.h>
 #include <sokol/sokol_app.h>
@@ -49,7 +50,6 @@ typedef struct
 	// per-primitive-type data
 
 	sg_buffer ibuf;
-	sg_pipeline pip;
 	sg_bindings bind;
 
 	float rx, ry;
@@ -60,29 +60,6 @@ typedef struct
 ECS_COMPONENT_DECLARE(DrawPointsDesc);
 ECS_COMPONENT_DECLARE(DrawPointsState);
 
-
-
-static sg_shader create_shader(char *path_fs, char *path_vs)
-{
-	platform_log("Creating shaders from files %s %s in ", path_fs, path_vs);
-	fs_pwd();
-	platform_log("\n");
-	sg_shader_desc desc = {0};
-	desc.attrs[0].name = "position";
-	desc.attrs[1].name = "color0";
-	desc.vs.source = fs_readfile(path_vs);
-	desc.vs.entry = "main";
-	desc.vs.uniform_blocks[0].size = 80;
-	desc.vs.uniform_blocks[0].layout = SG_UNIFORMLAYOUT_STD140;
-	desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params";
-	desc.vs.uniform_blocks[0].uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
-	desc.vs.uniform_blocks[0].uniforms[0].array_count = 5;
-	desc.fs.source = fs_readfile(path_fs);
-	desc.fs.entry = "main";
-	desc.label = "primtypes_shader";
-	sg_shader shd = sg_make_shader(&desc);
-	return shd;
-}
 
 
 void DrawPointsState_Add(ecs_iter_t *it)
@@ -98,17 +75,6 @@ void DrawPointsState_Add(ecs_iter_t *it)
 			.usage = SG_USAGE_STREAM,
 		});
 		s->bind.index_buffer.id = SG_INVALID_ID;
-		sg_pipeline_desc pip_desc = {
-			.layout = {
-				.attrs[ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT4,
-				.attrs[ATTR_vs_color0].format = SG_VERTEXFORMAT_UBYTE4N,
-			},
-			.shader = create_shader("../../viz/src/points.fs.glsl", "../../viz/src/points.vs.glsl"),
-			.depth = {.write_enabled = true, .compare = SG_COMPAREFUNC_LESS_EQUAL},
-			.index_type = SG_INDEXTYPE_NONE,
-			.primitive_type = SG_PRIMITIVETYPE_POINTS,
-		};
-		s->pip = sg_make_pipeline(&pip_desc);
 		s->pass_action = (sg_pass_action){
 			.colors[0].load_action = SG_LOADACTION_DONTCARE,
 			.depth.load_action = SG_LOADACTION_DONTCARE,
@@ -120,9 +86,10 @@ void DrawPointsState_Add(ecs_iter_t *it)
 void DrawPointsState_Draw(ecs_iter_t *it)
 {
 	Pointcloud *cloud = ecs_field(it, Pointcloud, 1);		// self or up
-	DrawPointsState *s = ecs_field(it, DrawPointsState, 2); // up
-	Camera *cam = ecs_field(it, Camera, 3);					// up
-	Window *window = ecs_field(it, Window, 4);				// up
+	SgPipeline *pip = ecs_field(it, SgPipeline, 2);		    // up
+	DrawPointsState *s = ecs_field(it, DrawPointsState, 3); // up
+	Camera *cam = ecs_field(it, Camera, 4);					// up
+	Window *window = ecs_field(it, Window, 5);				// up
 
 	int self1 = ecs_field_is_self(it, 1);
 
@@ -149,7 +116,7 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 		sg_range range = {.ptr = s->vertices, .size = (size_t)n * sizeof(vertex_t)};
 		sg_update_buffer(s->bind.vertex_buffers[0], &range);
 		sg_begin_default_passf(&s->pass_action, window->w, window->h);
-		sg_apply_pipeline(s->pip);
+		sg_apply_pipeline(pip->id);
 		sg_apply_bindings(&s->bind);
 		s->vs_params.viewport.X = window->w;
 		s->vs_params.viewport.Y = window->h;
@@ -193,6 +160,7 @@ void DrawPointsImport(ecs_world_t *world)
 		.query.filter.terms =
 			{
 				{.id = ecs_id(Pointcloud)},
+				{.id = ecs_id(SgPipeline), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(DrawPointsState), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},

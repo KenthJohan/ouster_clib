@@ -24,6 +24,8 @@ ECS_TAG_DECLARE(SgNone);
 ECS_TAG_DECLARE(SgPoints);
 ECS_TAG_DECLARE(SgLines);
 ECS_TAG_DECLARE(SgTriangles);
+ECS_TAG_DECLARE(SgFloat2);
+ECS_TAG_DECLARE(SgFloat3);
 ECS_TAG_DECLARE(SgFloat4);
 ECS_TAG_DECLARE(SgUbyte4n);
 ECS_TAG_DECLARE(SgU16);
@@ -279,6 +281,8 @@ void SgImport(ecs_world_t *world)
 	ECS_TAG_DEFINE(world, SgPoints);
 	ECS_TAG_DEFINE(world, SgLines);
 	ECS_TAG_DEFINE(world, SgTriangles);
+	ECS_TAG_DEFINE(world, SgFloat2);
+	ECS_TAG_DEFINE(world, SgFloat3);
 	ECS_TAG_DEFINE(world, SgFloat4);
 	ECS_TAG_DEFINE(world, SgUbyte4n);
 	ECS_TAG_DEFINE(world, SgU16);
@@ -292,6 +296,8 @@ void SgImport(ecs_world_t *world)
 	ecs_set(world, SgLines, SgPrimitiveType, {SG_PRIMITIVETYPE_LINES});
 	ecs_set(world, SgTriangles, SgPrimitiveType, {SG_PRIMITIVETYPE_TRIANGLES});
 
+	ecs_set(world, SgFloat2, SgVertexFormat, {SG_VERTEXFORMAT_FLOAT2});
+	ecs_set(world, SgFloat3, SgVertexFormat, {SG_VERTEXFORMAT_FLOAT3});
 	ecs_set(world, SgFloat4, SgVertexFormat, {SG_VERTEXFORMAT_FLOAT4});
 	ecs_set(world, SgUbyte4n, SgVertexFormat, {SG_VERTEXFORMAT_UBYTE4N});
 

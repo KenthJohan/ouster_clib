@@ -8,7 +8,7 @@ using flecs.meta
 renderings
 {
 
-attributes0 {
+vattrs {
 	- sg.Attributes
 	position {
 		- sg.Attribute{0}
@@ -31,18 +31,55 @@ uniblocks {
 	}
 }
 
-shader_points : attributes0, uniblocks {
+shader_points : vattrs, uniblocks {
 	- sg.ShaderCreate{filename_fs:"../../viz/src/points.fs.glsl", filename_vs:"../../viz/src/points.vs.glsl"}
 	- sg.shaders.Entry//{"main"}
 }
 
 
-pip_points : shader_points, attributes0 {
+pip_points : shader_points, vattrs {
 	- sg.PipelineCreate
 	- (sg.PrimitiveType, sg.Points)
 	- (sg.CullMode, sg.None)
 	- (sg.IndexType, sg.None)
 }
+
+
+
+
+
+
+
+
+shader_image : vattrs, uniblocks {
+	- sg.ShaderCreate{filename_fs:"../../viz/src/points.fs.glsl", filename_vs:"../../viz/src/points.vs.glsl"}
+	- sg.shaders.Entry//{"main"}
+}
+
+
+vattrs {
+	- sg.Attributes
+	position {
+		- sg.Attribute{0}
+		- (sg.VertexFormat, sg.Float3)
+	}
+	texcoord0 {
+		- sg.Attribute{1}
+		- (sg.VertexFormat, sg.Float2)
+	}
+}
+
+
+pip_points : shader_points, vattrs {
+	- sg.PipelineCreate
+	- (sg.PrimitiveType, sg.Points)
+	- (sg.CullMode, sg.None)
+	- (sg.IndexType, sg.None)
+}
+
+
+
+
 
 
 

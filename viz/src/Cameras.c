@@ -2,8 +2,8 @@
 #include "viz/Userinputs.h"
 #include "viz/Geometries.h"
 
-#include "vendor/HandmadeMath.h"
-#include "vendor/sokol_app.h"
+#include <sokol/HandmadeMath.h>
+#include <sokol/sokol_app.h>
 
 #include <easymath/mathtypes.h>
 #include <easymath/lin_f32.h>

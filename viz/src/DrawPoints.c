@@ -2,10 +2,10 @@
 #include "viz/Cameras.h"
 #include "viz/Windows.h"
 #include "viz/Pointclouds.h"
-#include "vendor/sokol_gfx.h"
-#include "vendor/sokol_debugtext.h"
-#include "vendor/sokol_app.h"
-#include "vendor/HandmadeMath.h"
+#include <sokol/sokol_gfx.h>
+#include <sokol/sokol_debugtext.h>
+#include <sokol/sokol_app.h>
+#include <sokol/HandmadeMath.h>
 #include <platform/log.h>
 #include <platform/fs.h>
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <flecs.h>
-#include "vendor/sokol_gfx.h"
-#include "vendor/sokol_shape.h"
+#include <sokol/sokol_gfx.h>
+#include <sokol/sokol_shape.h>
 
 typedef struct
 {

@@ -6,13 +6,13 @@
 #include "viz/Geometries.h"
 #include "viz/Cameras.h"
 
-#include "vendor/sokol_app.h"
-#include "vendor/sokol_gfx.h"
-#include "vendor/sokol_log.h"
-#include "vendor/sokol_glue.h"
-#include "vendor/sokol_shape.h"
-#include "vendor/HandmadeMath.h"
-#include "vendor//dbgui.h"
+#include <sokol/sokol_app.h>
+#include <sokol/sokol_gfx.h>
+#include <sokol/sokol_log.h>
+#include <sokol/sokol_glue.h>
+#include <sokol/sokol_shape.h>
+#include <sokol/HandmadeMath.h>
+#include <sokol/dbgui.h>
 
 #include <platform/fs.h>
 #include <platform/log.h>
@@ -274,4 +274,44 @@ void draw_shapes_frame(ecs_world_t *world)
 		sg_draw(state.shapes[i].draw.base_element, state.shapes[i].draw.num_elements, 1);
 	}
 	sg_end_pass();
+}
+
+
+
+void Draw(ecs_iter_t *it)
+{
+	// EG_ITER_INFO(it);
+	Camera *cam = ecs_field(it, Camera, 1); // up
+	Position3 *pos = ecs_field(it, Position3, 2);
+	for (int i = 0; i < it->count; ++i, ++pos)
+	{
+		// per shape model-view-projection matrix
+		hmm_mat4 vp;
+		ecs_os_memcpy_t(&vp, cam->mvp, hmm_mat4);
+		hmm_mat4 rm = model1(it->delta_time);
+		hmm_mat4 m = HMM_MultiplyMat4(HMM_Translate(state.shapes[i].pos), rm);
+		state.vs_params.mvp = HMM_MultiplyMat4(vp, m);
+
+		sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &SG_RANGE(state.vs_params));
+		sg_draw(state.shapes[i].draw.base_element, state.shapes[i].draw.num_elements, 1);
+	}
+}
+
+
+
+
+
+void DrawShapesImport(ecs_world_t *world)
+{
+
+/*
+	ecs_system_init(world, &(ecs_system_desc_t){
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = Draw,
+		.query.filter.terms =
+		{
+			{.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
+			{.id = ecs_id(Position3)}
+		}});
+		*/
 }

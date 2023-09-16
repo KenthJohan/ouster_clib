@@ -5,12 +5,12 @@
 #include "viz/Pointclouds.h"
 #include "GraphicsShapes.h"
 
-#include "vendor/sokol_gfx.h"
-#include "vendor/sokol_gl.h"
-#include "vendor/sokol_log.h"
-#include "vendor/sokol_glue.h"
-#include "vendor/HandmadeMath.h"
-#include "vendor/sokol_shape.h"
+#include <sokol/sokol_gfx.h>
+#include <sokol/sokol_gl.h>
+#include <sokol/sokol_log.h>
+#include <sokol/sokol_glue.h>
+#include <sokol/HandmadeMath.h>
+#include <sokol/sokol_shape.h>
 
 #include <math.h>
 #include <stdlib.h>

@@ -1,6 +1,6 @@
 #include "viz/Windows.h"
 
-#include "vendor/sokol_app.h"
+#include <sokol/sokol_app.h>
 
 ECS_COMPONENT_DECLARE(Window);
 ECS_COMPONENT_DECLARE(RenderingsContext);

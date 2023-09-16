@@ -1,9 +1,9 @@
 #include "viz/DrawText.h"
 #include "viz/Geometries.h"
 #include "viz/Cameras.h"
-#include "vendor/sokol_gfx.h"
-#include "vendor/sokol_debugtext.h"
-#include "vendor/sokol_app.h"
+#include <sokol/sokol_gfx.h>
+#include <sokol/sokol_debugtext.h>
+#include <sokol/sokol_app.h>
 
 ECS_COMPONENT_DECLARE(Text);
 
@@ -51,12 +51,12 @@ void DrawTextImport(ecs_world_t *world)
 							   .callback = Update0});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = RenderText,
-							   .query.filter.terms =
-								   {
-									   {.id = ecs_id(Text)},
-									   {.id = ecs_id(Position2)}}});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = RenderText,
+		.query.filter.terms =
+		{
+		{.id = ecs_id(Text)},
+		{.id = ecs_id(Position2)}}});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
 							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),

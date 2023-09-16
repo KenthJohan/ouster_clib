@@ -92,7 +92,8 @@
 		"mutex": "c",
 		"curl.h": "c",
 		"unistd.h": "c",
-		"basics.h": "c"
+		"basics.h": "c",
+		"sg.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

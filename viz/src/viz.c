@@ -5,12 +5,12 @@
 #include "viz/Userinputs.h"
 #include "viz/Windows.h"
 
-#include "vendor/sokol_app.h"
-#include "vendor/sokol_gfx.h"
-#include "vendor/sokol_log.h"
-#include "vendor/sokol_gl.h"
-#include "vendor/sokol_glue.h"
-#include "vendor/sokol_debugtext.h"
+#include <sokol/sokol_app.h>
+#include <sokol/sokol_gfx.h>
+#include <sokol/sokol_log.h>
+#include <sokol/sokol_gl.h>
+#include <sokol/sokol_glue.h>
+#include <sokol/sokol_debugtext.h>
 
 #include <stdlib.h>
 #include <math.h>

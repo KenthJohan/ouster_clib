@@ -1,5 +1,5 @@
 #include "viz/Pointclouds.h"
-#include "vendor/HandmadeMath.h"
+#include <sokol/HandmadeMath.h>
 #include <assert.h>
 
 ECS_COMPONENT_DECLARE(Pointcloud);

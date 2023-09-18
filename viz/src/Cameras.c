@@ -136,8 +136,8 @@ void CamerasImport(ecs_world_t *world)
 	ECS_SYSTEM(world, Camera_Update, EcsOnUpdate, Camera(self), Position3(self));
 
 	ecs_set_hooks(world, Camera, {
-									 .ctor = ecs_ctor(Camera),
-								 });
+		.ctor = ecs_ctor(Camera),
+		});
 
 	ecs_struct(world, {.entity = ecs_id(Camera),
 					   .members = {

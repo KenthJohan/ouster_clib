@@ -46,19 +46,27 @@ vbuf1 {
 }
 
 shape1 : vbuf1 {
-    - geometries.Sphere{r:5,slices:7,stacks:3}
+    - geometries.Sphere{r:2,slices:7,stacks:3}
     //- Index
 }
 
 shape2 : vbuf1 {
-    - geometries.Sphere{r:10,slices:6,stacks:4}
+    - geometries.Sphere{r:4,slices:10,stacks:8}
     //- Index
 }
 
-render_instances : vbuf1 {
+
+//ins1 : shape1 {- geometries.GeometriesInstances}
+
+
+render_instances1 : vbuf1 {
     - draw.instances.DrawInstancesDesc{cap: 1000*1000}
 }
 
-draw : camera1, render_instances, window1, shape2 {
+draw1 : camera1, render_instances1, window1, shape1 {
     - geometries.Position3{10,10,10}
+}
+
+draw2 : camera1, render_instances1, window1, shape2 {
+    - geometries.Position3{10,10,-10}
 }

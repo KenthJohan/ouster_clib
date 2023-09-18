@@ -258,9 +258,6 @@ void draw_shapes_frame(ecs_world_t *world)
 
 	Camera const *cam = ecs_get(world, e, Camera);
 	ecs_os_memcpy_t(&view_proj, cam->mvp, hmm_mat4);
-
-	// render shapes...
-	sg_begin_default_pass(&state.pass_action, sapp_width(), sapp_height());
 	sg_apply_pipeline(state.pip);
 	sg_apply_bindings(&(sg_bindings){
 		.vertex_buffers[0] = state.vbuf,
@@ -273,7 +270,6 @@ void draw_shapes_frame(ecs_world_t *world)
 		sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &SG_RANGE(state.vs_params));
 		sg_draw(state.shapes[i].draw.base_element, state.shapes[i].draw.num_elements, 1);
 	}
-	sg_end_pass();
 }
 
 

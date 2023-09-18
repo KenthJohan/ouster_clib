@@ -153,17 +153,19 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 
 	for (int i = 0; i < it->count; ++i, ++pos)
 	{
-		// printf("%s\n", ecs_get_name(it->world, it->entities[i]));
+		//printf("%s\n", ecs_get_name(it->world, it->entities[i]));
 		if (rend->cap <= 0)
 		{
 			continue;
 		}
 
 		// update instance data
-		sg_range range = {.ptr = pos, .size = (size_t)1 * sizeof(hmm_vec3)};
-		sg_update_buffer(rend->bind.vertex_buffers[1], &range);
+		//sg_range range = {.ptr = pos, .size = (size_t)1 * sizeof(hmm_vec3)};
+		//sg_update_buffer(rend->bind.vertex_buffers[1], &range);
 
-		sg_begin_default_pass(&rend->pass_action, window->w, window->h);
+		int offset = sg_append_buffer(rend->bind.vertex_buffers[1], &(sg_range) { .ptr=pos, .size=(size_t)1 * sizeof(hmm_vec3) });
+		rend->bind.vertex_buffer_offsets[1] = offset;
+		
 		sg_apply_pipeline(rend->pip);
 		sg_apply_bindings(&rend->bind);
 
@@ -171,9 +173,11 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 		sg_range a = {&rend->vs_params, sizeof(vs_params_t)};
 		sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &a);
 		sg_draw(shape->element.base_element, shape->element.num_elements, 1);
-		sg_end_pass();
+
 	}
 }
+
+
 
 void DrawInstancesImport(ecs_world_t *world)
 {
@@ -196,6 +200,7 @@ void DrawInstancesImport(ecs_world_t *world)
 					   .members = {
 						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
 					   }});
+
 
 	ecs_system_init(world, &(ecs_system_desc_t){
 		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),

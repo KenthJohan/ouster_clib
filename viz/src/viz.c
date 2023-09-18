@@ -46,11 +46,12 @@ static void frame(viz_state_t *state)
 			.load_action = SG_LOADACTION_CLEAR,
 			.clear_value = {0.1f, 0.1f, 0.1f, 1.0f}}};
 	sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
-	sg_end_pass();
 
 	ecs_progress(world, 0);
 
 	draw_shapes_frame(world);
+	
+	sg_end_pass();
 
 	sg_commit();
 }

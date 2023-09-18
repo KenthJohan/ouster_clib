@@ -26,17 +26,11 @@ static void RenderText(ecs_iter_t *it)
 static void Update0(ecs_iter_t *it)
 {
 	sdtx_canvas(sapp_width() / 10, sapp_height() / 10);
-	const sg_pass_action pass_action = (sg_pass_action){
-		.colors[0].load_action = SG_LOADACTION_DONTCARE,
-		.depth.load_action = SG_LOADACTION_DONTCARE,
-		.stencil.load_action = SG_LOADACTION_DONTCARE};
-	sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
 }
 
 static void Update1(ecs_iter_t *it)
 {
 	sdtx_draw();
-	sg_end_pass();
 }
 
 void DrawTextImport(ecs_world_t *world)
@@ -47,8 +41,8 @@ void DrawTextImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, Text);
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = Update0});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = Update0});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
 		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
@@ -63,9 +57,9 @@ void DrawTextImport(ecs_world_t *world)
 							   .callback = Update1});
 
 	ecs_struct(world, {.entity = ecs_id(Text),
-					   .members = {
-						   {.name = "content", .type = ecs_id(ecs_string_t)},
-					   }});
+		.members = {
+			{.name = "content", .type = ecs_id(ecs_string_t)},
+		}});
 
 	/*
 	ecs_entity_t e = ecs_new(world, 0);

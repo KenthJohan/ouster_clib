@@ -115,7 +115,6 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 		}
 		sg_range range = {.ptr = s->vertices, .size = (size_t)n * sizeof(vertex_t)};
 		sg_update_buffer(s->bind.vertex_buffers[0], &range);
-		sg_begin_default_passf(&s->pass_action, window->w, window->h);
 		sg_apply_pipeline(pip->id);
 		sg_apply_bindings(&s->bind);
 		s->vs_params.viewport.X = window->w;
@@ -124,8 +123,6 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 		sg_range a = {&s->vs_params, sizeof(vs_params_t)};
 		sg_apply_uniforms(SG_SHADERSTAGE_VS, 0, &a);
 		sg_draw(0, n, 1);
-		sg_end_pass();
-		sg_commit();
 	}
 }
 

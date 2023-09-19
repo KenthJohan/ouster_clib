@@ -14,7 +14,7 @@ camera1 {
 }
 
 
-render_points : renderings.pip_points {
+render_points : renderings.pipes.points {
 	- draw.points.Desc{cap:1000*1000}
 }
 

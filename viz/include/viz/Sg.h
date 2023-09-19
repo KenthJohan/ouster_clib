@@ -30,6 +30,12 @@ typedef struct
 typedef struct
 {
 	ecs_i32_t index;
+} SgLocation;
+
+typedef struct
+{
+	ecs_i32_t offset;
+	ecs_i32_t buffer_index;
 } SgAttribute;
 
 typedef struct
@@ -84,6 +90,7 @@ extern ECS_COMPONENT_DECLARE(SgPipeline);
 extern ECS_COMPONENT_DECLARE(SgShaderCreate);
 extern ECS_COMPONENT_DECLARE(SgShader);
 extern ECS_COMPONENT_DECLARE(SgAttribute);
+extern ECS_COMPONENT_DECLARE(SgLocation);
 extern ECS_COMPONENT_DECLARE(SgAttributes);
 extern ECS_COMPONENT_DECLARE(SgUniformBlocks);
 extern ECS_COMPONENT_DECLARE(SgVertexFormat);
@@ -106,5 +113,10 @@ extern ECS_TAG_DECLARE(SgU16);
 extern ECS_TAG_DECLARE(SgU32);
 extern ECS_TAG_DECLARE(SgFront);
 extern ECS_TAG_DECLARE(SgBack);
+
+extern ECS_TAG_DECLARE(SgAttributeShapePosition);
+extern ECS_TAG_DECLARE(SgAttributeShapeNormal);
+extern ECS_TAG_DECLARE(SgAttributeShapeTextcoord);
+extern ECS_TAG_DECLARE(SgAttributeShapeColor);
 
 void SgImport(ecs_world_t *world);

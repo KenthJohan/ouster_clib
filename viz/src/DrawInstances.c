@@ -3,6 +3,7 @@
 #include "viz/Cameras.h"
 #include "viz/Windows.h"
 #include "viz/Pointclouds.h"
+#include "viz/Sg.h"
 #include "GraphicsShapes.h"
 
 #include <sokol/sokol_gfx.h>
@@ -106,11 +107,6 @@ void DrawInstancesState_Add(ecs_iter_t *it)
 		DrawInstancesState *rend = ecs_get_mut(it->world, it->entities[i], DrawInstancesState);
 		rend->cap = desc->cap;
 
-		rend->pass_action = (sg_pass_action){
-			.colors[0].load_action = SG_LOADACTION_DONTCARE,
-			.depth.load_action = SG_LOADACTION_DONTCARE,
-			.stencil.load_action = SG_LOADACTION_DONTCARE};
-
 		assert(sbuf->buf.valid);
 		const sg_buffer_desc vbuf_desc = sshape_vertex_buffer_desc(&sbuf->buf);
 		const sg_buffer_desc ibuf_desc = sshape_index_buffer_desc(&sbuf->buf);
@@ -120,6 +116,10 @@ void DrawInstancesState_Add(ecs_iter_t *it)
 			.size = rend->cap * sizeof(float) * 3,
 			.usage = SG_USAGE_STREAM,
 			.label = "instance-data"});
+
+
+		
+		
 		sg_shader shd = create_shader("../../viz/src/instance.fs.glsl", "../../viz/src/instance.vs.glsl");
 		// a pipeline object
 		rend->pip = sg_make_pipeline(&(sg_pipeline_desc){
@@ -140,6 +140,7 @@ void DrawInstancesState_Add(ecs_iter_t *it)
 				.write_enabled = true,
 			},
 			.label = "instancing-pipeline"});
+			
 	}
 }
 

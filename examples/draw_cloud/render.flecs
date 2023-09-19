@@ -5,18 +5,56 @@
 
 using flecs.meta
 
+
+
+
+
+
+
+
+
+
+
+
 renderings
 {
 
-vattrs {
-	- sg.Attributes
-	position {
-		- sg.Attribute{0}
-		- (sg.VertexFormat, sg.Float4)
+attributes {
+	points {
+		- sg.Attributes
+		position {
+			- sg.Location{0}
+			- sg.Attribute{offset: 0, buffer_index: 0}
+			- (sg.VertexFormat, sg.Float4)
+		}
+		color0 {
+			- sg.Location{1}
+			- sg.Attribute{offset: 0, buffer_index: 0}
+			- (sg.VertexFormat, sg.Ubyte4n)
+		}
 	}
-	color0 {
-		- sg.Attribute{1}
-		- (sg.VertexFormat, sg.Ubyte4n)
+	instances {
+		- sg.Attributes
+		position {
+			- sg.Location{0}
+			- sg.AttributeShapePosition
+		}
+		normal {
+			- sg.Location{1}
+			- sg.AttributeShapeNormal
+		}
+		texcoord {
+			- sg.Location{2}
+			- sg.AttributeShapeTextcoord
+		}
+		color0 {
+			- sg.Location{3}
+			- sg.AttributeShapeColor
+		}
+		inst_pos {
+			- sg.Location{4}
+			- (sg.VertexFormat, sg.Float3)
+		}
 	}
 }
 
@@ -31,21 +69,34 @@ uniblocks {
 	}
 }
 
-shader_points : vattrs, uniblocks {
-	- sg.ShaderCreate{filename_fs:"../../viz/src/points.fs.glsl", filename_vs:"../../viz/src/points.vs.glsl"}
-	- sg.shaders.Entry//{"main"}
+shaders {
+	points : attributes.points, uniblocks {
+		- sg.ShaderCreate{filename_fs:"../../viz/src/points.fs.glsl", filename_vs:"../../viz/src/points.vs.glsl"}
+		- sg.shaders.Entry//{"main"}
+	}
+
+	instances : attributes.instances, uniblocks {
+		- sg.ShaderCreate{filename_fs:"../../viz/src/instance.fs.glsl", filename_vs:"../../viz/src/instance.vs.glsl"}
+		- sg.shaders.Entry//{"main"}
+	}
 }
 
 
-pip_points : shader_points, vattrs {
-	- sg.PipelineCreate
-	- (sg.PrimitiveType, sg.Points)
-	- (sg.CullMode, sg.None)
-	- (sg.IndexType, sg.None)
+pipes {
+	points : shaders.points, attributes.points {
+		- sg.PipelineCreate
+		- (sg.PrimitiveType, sg.Points)
+		- (sg.CullMode, sg.None)
+		- (sg.IndexType, sg.None)
+	}
+
+	instances : shaders.points, attributes.instances {
+		- sg.PipelineCreate
+		- (sg.PrimitiveType, sg.Points)
+		- (sg.CullMode, sg.None)
+		- (sg.IndexType, sg.None)
+	}
 }
-
-
-
 
 
 

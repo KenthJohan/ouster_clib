@@ -3,12 +3,14 @@
 #include <platform/log.h>
 #include <platform/fs.h>
 #include <platform/assert.h>
+#include <sokol/sokol_shape.h>
 
 
 ECS_COMPONENT_DECLARE(SgPipelineCreate);
 ECS_COMPONENT_DECLARE(SgPipeline);
 ECS_COMPONENT_DECLARE(SgShaderCreate);
 ECS_COMPONENT_DECLARE(SgShader);
+ECS_COMPONENT_DECLARE(SgLocation);
 ECS_COMPONENT_DECLARE(SgAttribute);
 ECS_COMPONENT_DECLARE(SgAttributes);
 ECS_COMPONENT_DECLARE(SgUniformBlocks);
@@ -33,6 +35,11 @@ ECS_TAG_DECLARE(SgU32);
 ECS_TAG_DECLARE(SgFront);
 ECS_TAG_DECLARE(SgBack);
 
+ECS_TAG_DECLARE(SgAttributeShapePosition);
+ECS_TAG_DECLARE(SgAttributeShapeNormal);
+ECS_TAG_DECLARE(SgAttributeShapeTextcoord);
+ECS_TAG_DECLARE(SgAttributeShapeColor);
+
 #define ENTITY_COLOR "#003366"
 
 void print_entity(ecs_world_t * world, ecs_entity_t e)
@@ -52,6 +59,18 @@ void const * ecsx_get_target_data(ecs_world_t * world, ecs_entity_t e, ecs_entit
 	return ecs_get_id(world, target, type);
 }
 
+
+ecs_entity_t get_vertex_format_entity(sg_vertex_format t)
+{
+	switch (t)
+	{
+	case SG_VERTEXFORMAT_FLOAT2: return SgFloat2;
+	case SG_VERTEXFORMAT_FLOAT3: return SgFloat3;
+	case SG_VERTEXFORMAT_FLOAT4: return SgFloat4;
+	case SG_VERTEXFORMAT_UBYTE4N: return SgUbyte4n;
+	default: return 0;
+	}
+}
 
 void iterate_children(ecs_world_t * world, ecs_entity_t parent)
 {
@@ -77,8 +96,8 @@ void iterate_shader_attrs(ecs_world_t * world, ecs_entity_t parent, sg_shader_at
 			ecs_entity_t e = it.entities[i];
 			ecs_doc_set_color(world, e, ENTITY_COLOR);
 			char const * name = ecs_get_name(world, e);
-			ecs_i32_t index = ecs_get(world, e, SgAttribute)->index;
-			descs[index].name = name;
+			SgLocation const * loc = ecs_get(world, e, SgLocation);
+			descs[loc->index].name = name;
 		}
 	}
 }
@@ -136,12 +155,53 @@ void iterate_vertex_attrs(ecs_world_t * world, ecs_entity_t parent, sg_vertex_at
 		for (int i = 0; i < it.count; i ++)
 		{
 			ecs_entity_t e = it.entities[i];
+			print_entity(world, e);
 			ecs_doc_set_color(world, e, ENTITY_COLOR);
-			ecs_i32_t index = ecs_get(world, e, SgAttribute)->index;
-			SgVertexFormat const * format = ecsx_get_target_data(world, e, ecs_id(SgVertexFormat));
-			descs[index].buffer_index = 0;
-			descs[index].offset = 0;
-			descs[index].format = format->value;
+			SgLocation const * loc = ecs_get(world, e, SgLocation);
+			sg_vertex_attr_state * outstate = descs + loc->index;
+			// TODO: This code will have to change, its too much:
+			if(ecs_has(world, e, SgAttributeShapePosition))
+			{
+				outstate[0] = sshape_position_vertex_attr_state();
+			}
+			else if(ecs_has(world, e, SgAttributeShapeNormal))
+			{
+				outstate[0] = sshape_position_vertex_attr_state();
+			}
+			else if(ecs_has(world, e, SgAttributeShapeTextcoord))
+			{
+				outstate[0] = sshape_position_vertex_attr_state();
+			}
+			else if(ecs_has(world, e, SgAttributeShapeColor))
+			{
+				outstate[0] = sshape_position_vertex_attr_state();
+			}
+
+			if(ecs_has(world, e, SgAttribute))
+			{
+				SgAttribute const * attr = ecs_get(world, e, SgAttribute);
+				outstate->buffer_index = attr->buffer_index;
+				outstate->offset = attr->offset;
+			}
+			else
+			{
+				SgAttribute * attr = ecs_get_mut(world, e, SgAttribute);
+				attr->buffer_index = outstate->buffer_index;
+				attr->offset = outstate->offset;
+			}
+
+			if(ecs_has_pair(world, e, ecs_id(SgVertexFormat), EcsWildcard))
+			{
+				SgVertexFormat const * format = ecsx_get_target_data(world, e, ecs_id(SgVertexFormat));
+				platform_assert_notnull(format);
+				outstate->format = format->value;
+			}
+			else
+			{
+				ecs_add_pair(world, e, ecs_id(SgVertexFormat), get_vertex_format_entity(outstate->format));
+			}
+
+
 		}
 	}
 }
@@ -251,6 +311,7 @@ void Shader_Create(ecs_iter_t *it)
 
 
 
+
 void SgImport(ecs_world_t *world)
 {
 	ECS_MODULE(world, Sg);
@@ -260,6 +321,7 @@ void SgImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, SgPipeline);
 	ECS_COMPONENT_DEFINE(world, SgShaderCreate);
 	ECS_COMPONENT_DEFINE(world, SgShader);
+	ECS_COMPONENT_DEFINE(world, SgLocation);
 	ECS_COMPONENT_DEFINE(world, SgAttribute);
 	ECS_COMPONENT_DEFINE(world, SgAttributes);
 	ECS_COMPONENT_DEFINE(world, SgUniformBlocks);
@@ -289,6 +351,11 @@ void SgImport(ecs_world_t *world)
 	ECS_TAG_DEFINE(world, SgU32);
 	ECS_TAG_DEFINE(world, SgFront);
 	ECS_TAG_DEFINE(world, SgBack);
+
+	ECS_TAG_DEFINE(world, SgAttributeShapePosition);
+	ECS_TAG_DEFINE(world, SgAttributeShapeNormal);
+	ECS_TAG_DEFINE(world, SgAttributeShapeTextcoord);
+	ECS_TAG_DEFINE(world, SgAttributeShapeColor);
 
 
 
@@ -336,6 +403,12 @@ void SgImport(ecs_world_t *world)
 		}});
 
 	ecs_struct(world, {.entity = ecs_id(SgAttribute),
+		.members = {
+			{.name = "offset", .type = ecs_id(ecs_i32_t)},
+			{.name = "buffer_index", .type = ecs_id(ecs_i32_t)},
+		}});
+
+	ecs_struct(world, {.entity = ecs_id(SgLocation),
 		.members = {
 			{.name = "index", .type = ecs_id(ecs_i32_t)},
 		}});

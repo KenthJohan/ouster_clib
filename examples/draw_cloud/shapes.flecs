@@ -4,7 +4,7 @@ shapes {
 	}
 
 	shape1 : vbuf1 {
-		- geometries.Sphere{r:2,slices:7,stacks:3}
+		- geometries.Sphere{r:2,slices:20,stacks:3}
 		//- Index
 	}
 

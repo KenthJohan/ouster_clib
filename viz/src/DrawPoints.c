@@ -80,7 +80,7 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 	Pointcloud *cloud = ecs_field(it, Pointcloud, 1);		// self or up
 	SgPipeline *pip = ecs_field(it, SgPipeline, 2);		    // up
 	DrawPointsState *s = ecs_field(it, DrawPointsState, 3); // up
-	Camera *cam = ecs_field(it, Camera, 4);					// up
+	CamerasCamera *cam = ecs_field(it, CamerasCamera, 4);	// up
 	Window *window = ecs_field(it, Window, 5);				// up
 
 	int self1 = ecs_field_is_self(it, 1);
@@ -152,7 +152,7 @@ void DrawPointsImport(ecs_world_t *world)
 				{.id = ecs_id(Pointcloud)},
 				{.id = ecs_id(SgPipeline), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(DrawPointsState), .src.trav = EcsIsA, .src.flags = EcsUp},
-				{.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(CamerasCamera), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
 			}});

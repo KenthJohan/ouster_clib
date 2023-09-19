@@ -11,12 +11,12 @@
 #include <easymath/transform.h>
 #include <stdio.h>
 
-ECS_COMPONENT_DECLARE(Camera);
+ECS_COMPONENT_DECLARE(CamerasCamera);
 
 static void Camera_Controller(ecs_iter_t *it)
 {
 	// EG_ITER_INFO(it);
-	Camera *camera = ecs_field(it, Camera, 1);
+	CamerasCamera *camera = ecs_field(it, CamerasCamera, 1);
 	UserinputsKeys *input = ecs_field(it, UserinputsKeys, 2);
 	for (int i = 0; i < it->count; ++i, ++camera)
 	{
@@ -47,7 +47,7 @@ void rot(v3f32 const *look, qf32 *q, float speed)
 static void Camera_Update(ecs_iter_t *it)
 {
 	// EG_ITER_INFO(it);
-	Camera *camera = ecs_field(it, Camera, 1);
+	CamerasCamera *camera = ecs_field(it, CamerasCamera, 1);
 	Position3 *pos = ecs_field(it, Position3, 2);
 	for (int i = 0; i < it->count; ++i, ++camera, ++pos)
 	{
@@ -120,32 +120,33 @@ void Camera_OnUpdate(ecs_iter_t *it)
 }
 */
 
-ECS_CTOR(Camera, ptr, {
-	ecs_os_memset_t(ptr, 0, Camera);
+ECS_CTOR(CamerasCamera, ptr, {
+	ecs_os_memset_t(ptr, 0, CamerasCamera);
 	qf32_identity((qf32 *)ptr->q);
 })
 
 void CamerasImport(ecs_world_t *world)
 {
 	ECS_MODULE(world, Cameras);
+	ecs_set_name_prefix(world, "Cameras");
 	ECS_IMPORT(world, Userinputs);
 	ECS_IMPORT(world, Geometries);
-	ECS_COMPONENT_DEFINE(world, Camera);
+	ECS_COMPONENT_DEFINE(world, CamerasCamera);
 
-	ECS_SYSTEM(world, Camera_Controller, EcsOnUpdate, Camera(self), UserinputsKeys($));
-	ECS_SYSTEM(world, Camera_Update, EcsOnUpdate, Camera(self), Position3(self));
+	ECS_SYSTEM(world, Camera_Controller, EcsOnUpdate, CamerasCamera(self), UserinputsKeys($));
+	ECS_SYSTEM(world, Camera_Update, EcsOnUpdate, CamerasCamera(self), Position3(self));
 
-	ecs_set_hooks(world, Camera, {
-		.ctor = ecs_ctor(Camera),
+	ecs_set_hooks(world, CamerasCamera, {
+		.ctor = ecs_ctor(CamerasCamera),
 		});
 
-	ecs_struct(world, {.entity = ecs_id(Camera),
-					   .members = {
-						   {.name = "speed", .type = ecs_id(ecs_f32_t)},
-						   {.name = "mvp", .type = ecs_id(ecs_f32_t), .count = 16},
-						   {.name = "proj", .type = ecs_id(ecs_f32_t), .count = 16},
-						   {.name = "q", .type = ecs_id(ecs_f32_t), .count = 4},
-						   {.name = "move", .type = ecs_id(ecs_f32_t), .count = 3},
-						   {.name = "look", .type = ecs_id(ecs_f32_t), .count = 3},
-					   }});
+	ecs_struct(world, {.entity = ecs_id(CamerasCamera),
+		.members = {
+			{.name = "speed", .type = ecs_id(ecs_f32_t)},
+			{.name = "mvp", .type = ecs_id(ecs_f32_t), .count = 16},
+			{.name = "proj", .type = ecs_id(ecs_f32_t), .count = 16},
+			{.name = "q", .type = ecs_id(ecs_f32_t), .count = 4},
+			{.name = "move", .type = ecs_id(ecs_f32_t), .count = 3},
+			{.name = "look", .type = ecs_id(ecs_f32_t), .count = 3},
+		}});
 }

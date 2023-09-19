@@ -94,7 +94,7 @@ pipes {
 
 	instances : shaders.instances {
 		- sg.PipelineCreate
-		- (sg.PrimitiveType, sg.Points)
+		- (sg.PrimitiveType, sg.Lines)
 		- (sg.CullMode, sg.Back)
 		- (sg.IndexType, sg.U16)
 		

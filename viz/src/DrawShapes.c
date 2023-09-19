@@ -13,6 +13,7 @@
 #include <sokol/sokol_shape.h>
 #include <sokol/HandmadeMath.h>
 #include <sokol/dbgui.h>
+#include <sokol/align.h>
 
 #include <platform/fs.h>
 #include <platform/log.h>
@@ -23,18 +24,14 @@
 #include <stddef.h>
 #include <assert.h>
 
-#if !defined(SOKOL_SHDC_ALIGN)
-#if defined(_MSC_VER)
-#define SOKOL_SHDC_ALIGN(a) __declspec(align(a))
-#else
-#define SOKOL_SHDC_ALIGN(a) __attribute__((aligned(a)))
-#endif
-#endif
+
 #define ATTR_vs_position (0)
 #define ATTR_vs_normal (1)
 #define ATTR_vs_texcoord (2)
 #define ATTR_vs_color0 (3)
 #define SLOT_vs_params (0)
+
+
 #pragma pack(push, 1)
 SOKOL_SHDC_ALIGN(16)
 typedef struct vs_params_t
@@ -262,7 +259,7 @@ void draw_shapes_frame(ecs_world_t *world)
 
 	ecs_entity_t e = ecs_lookup(world, "camera1");
 
-	Camera const *cam = ecs_get(world, e, Camera);
+	CamerasCamera const *cam = ecs_get(world, e, CamerasCamera);
 	ecs_os_memcpy_t(&view_proj, cam->mvp, hmm_mat4);
 	sg_apply_pipeline(state.pip);
 	sg_apply_bindings(&(sg_bindings){
@@ -283,7 +280,7 @@ void draw_shapes_frame(ecs_world_t *world)
 void Draw(ecs_iter_t *it)
 {
 	// EG_ITER_INFO(it);
-	Camera *cam = ecs_field(it, Camera, 1); // up
+	CamerasCamera *cam = ecs_field(it, CamerasCamera, 1); // up
 	Position3 *pos = ecs_field(it, Position3, 2);
 	for (int i = 0; i < it->count; ++i, ++pos)
 	{

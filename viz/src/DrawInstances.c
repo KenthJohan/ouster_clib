@@ -12,6 +12,7 @@
 #include <sokol/sokol_glue.h>
 #include <sokol/HandmadeMath.h>
 #include <sokol/sokol_shape.h>
+#include <sokol/align.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -21,18 +22,13 @@
 #include <platform/fs.h>
 #include <platform/log.h>
 
-#if !defined(SOKOL_SHDC_ALIGN)
-#if defined(_MSC_VER)
-#define SOKOL_SHDC_ALIGN(a) __declspec(align(a))
-#else
-#define SOKOL_SHDC_ALIGN(a) __attribute__((aligned(a)))
-#endif
-#endif
+
 #define ATTR_vs_position (0)
 #define ATTR_vs_normal (1)
 #define ATTR_vs_texcoord (2)
 #define ATTR_vs_color0 (3)
 #define SLOT_vs_params (0)
+
 #pragma pack(push, 1)
 SOKOL_SHDC_ALIGN(16)
 typedef struct vs_params_t
@@ -64,13 +60,13 @@ typedef struct
 	ecs_i32_t cap;
 	vs_params_t vs_params;
 	sg_pass_action pass_action;
-	sg_pipeline pip;
 	sg_bindings bind;
 } DrawInstancesState;
 
 ECS_COMPONENT_DECLARE(DrawInstancesDesc);
 ECS_COMPONENT_DECLARE(DrawInstancesState);
 
+/*
 static sg_shader create_shader(char *path_fs, char *path_vs)
 {
 	platform_log("Creating shaders from files %s %s in ", path_fs, path_vs);
@@ -96,17 +92,16 @@ static sg_shader create_shader(char *path_fs, char *path_vs)
 	sg_shader shd = sg_make_shader(&desc);
 	return shd;
 }
+*/
 
 void DrawInstancesState_Add(ecs_iter_t *it)
 {
 	DrawInstancesDesc *desc = ecs_field(it, DrawInstancesDesc, 1); // Self
 	ShapeBufferImpl *sbuf = ecs_field(it, ShapeBufferImpl, 2);	   // Up
-
 	for (int i = 0; i < it->count; ++i, ++desc)
 	{
 		DrawInstancesState *rend = ecs_get_mut(it->world, it->entities[i], DrawInstancesState);
 		rend->cap = desc->cap;
-
 		assert(sbuf->buf.valid);
 		const sg_buffer_desc vbuf_desc = sshape_vertex_buffer_desc(&sbuf->buf);
 		const sg_buffer_desc ibuf_desc = sshape_index_buffer_desc(&sbuf->buf);
@@ -115,34 +110,7 @@ void DrawInstancesState_Add(ecs_iter_t *it)
 		rend->bind.vertex_buffers[1] = sg_make_buffer(&(sg_buffer_desc){
 			.size = rend->cap * sizeof(float) * 3,
 			.usage = SG_USAGE_STREAM,
-			.label = "instance-data"});
-
-
-		
-		
-		sg_shader shd = create_shader("../../viz/src/instance.fs.glsl", "../../viz/src/instance.vs.glsl");
-		// a pipeline object
-		rend->pip = sg_make_pipeline(&(sg_pipeline_desc){
-			.layout = {
-				.buffers[1].step_func = SG_VERTEXSTEP_PER_INSTANCE,
-				.buffers[0] = sshape_vertex_buffer_layout_state(),
-				.attrs = {
-					[0] = sshape_position_vertex_attr_state(),
-					[1] = sshape_normal_vertex_attr_state(),
-					[2] = sshape_texcoord_vertex_attr_state(),
-					[3] = sshape_color_vertex_attr_state(),
-					[4] = {.format = SG_VERTEXFORMAT_FLOAT3, .buffer_index = 1}}},
-			.shader = shd,
-			.index_type = SG_INDEXTYPE_UINT16,
-			.cull_mode = SG_CULLMODE_BACK,
-			.depth = {
-				.compare = SG_COMPAREFUNC_LESS_EQUAL,
-				.write_enabled = true,
-			},
-			.label = "instancing-pipeline"});
-			
-
-			
+			.label = "instance-data"});	
 	}
 }
 
@@ -151,34 +119,23 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 	Position3 *pos = ecs_field(it, Position3, 1);
 	SgPipeline *pip = ecs_field(it, SgPipeline, 2);  // up
 	DrawInstancesState *rend = ecs_field(it, DrawInstancesState, 3);
-	Camera *cam = ecs_field(it, Camera, 4);
+	CamerasCamera *cam = ecs_field(it, CamerasCamera, 4);
 	ShapeIndex *shape = ecs_field(it, ShapeIndex, 5);
 	Window *window = ecs_field(it, Window, 6); // up
-
 	for (int i = 0; i < it->count; ++i, ++pos)
 	{
-		//printf("%s\n", ecs_get_name(it->world, it->entities[i]));
 		if (rend->cap <= 0)
 		{
 			continue;
 		}
-
-		// update instance data
-		//sg_range range = {.ptr = pos, .size = (size_t)1 * sizeof(hmm_vec3)};
-		//sg_update_buffer(rend->bind.vertex_buffers[1], &range);
-
 		int offset = sg_append_buffer(rend->bind.vertex_buffers[1], &(sg_range) { .ptr=pos, .size=(size_t)1 * sizeof(hmm_vec3) });
 		rend->bind.vertex_buffer_offsets[1] = offset;
-		
-		//sg_apply_pipeline(rend->pip);
 		sg_apply_pipeline(pip->id);
 		sg_apply_bindings(&rend->bind);
-
 		ecs_os_memcpy_t(&rend->vs_params.mvp, cam->mvp, hmm_mat4);
 		sg_range a = {&rend->vs_params, sizeof(vs_params_t)};
 		sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &a);
 		sg_draw(shape->element.base_element, shape->element.num_elements, 1);
-
 	}
 }
 
@@ -198,18 +155,14 @@ void DrawInstancesImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, DrawInstancesState);
 
 	ecs_struct(world, {.entity = ecs_id(DrawInstancesDesc),
-					   .members = {
-						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
-					   }});
+		.members = {
+			{.name = "cap", .type = ecs_id(ecs_i32_t)},
+		}});
 
 	ecs_struct(world, {.entity = ecs_id(DrawInstancesState),
-					   .members = {
-						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
-					   }});
-
-
-
-
+		.members = {
+			{.name = "cap", .type = ecs_id(ecs_i32_t)},
+		}});
 
 	ecs_system_init(world, &(ecs_system_desc_t){
 		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
@@ -230,7 +183,7 @@ void DrawInstancesImport(ecs_world_t *world)
 				{.id = ecs_id(Position3)},
 				{.id = ecs_id(SgPipeline), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(DrawInstancesState), .src.trav = EcsIsA, .src.flags = EcsUp},
-				{.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
+				{.id = ecs_id(CamerasCamera), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(ShapeIndex), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},

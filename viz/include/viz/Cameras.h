@@ -12,8 +12,8 @@ typedef struct
 
 	float move[3]; //
 	float look[3];
-} Camera;
+} CamerasCamera;
 
-extern ECS_COMPONENT_DECLARE(Camera);
+extern ECS_COMPONENT_DECLARE(CamerasCamera);
 
 void CamerasImport(ecs_world_t *world);

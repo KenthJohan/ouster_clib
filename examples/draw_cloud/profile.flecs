@@ -22,7 +22,7 @@ sensor1 {
     - sensors.SensorsDesc{metafile:"/home/johan/Downloads/OS1_Captures_128/a.json", radius_filter:100.0}
 }
 
-draw1 : window1, camera1, render_points, sensor1 {
+draw_sensor : window1, camera1, render_points, sensor1 {
 	//- pointclouds.Pointcloud{cap: 1024*128}
 }
 
@@ -38,12 +38,6 @@ text1 {
 
 
 
-
-
-
-
-
-
 //ins1 : shape1 {- geometries.GeometriesInstances}
 
 
@@ -51,10 +45,10 @@ render_instances1 : renderings.pipes.instances, shapes.vbuf1 {
     - draw.instances.Desc{cap: 1000*1000}
 }
 
-draw1 : camera1, render_instances1, window1, shapes.shape1 {
+draw_instance0 : camera1, render_instances1, window1, shapes.shape1 {
     - geometries.Position3{10,10,10}
 }
 
-draw2 : camera1, render_instances1, window1, shapes.shape2 {
+draw_instance1 : camera1, render_instances1, window1, shapes.shape2 {
     - geometries.Position3{10,10,-10}
 }

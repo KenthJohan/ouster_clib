@@ -141,16 +141,19 @@ void DrawInstancesState_Add(ecs_iter_t *it)
 			},
 			.label = "instancing-pipeline"});
 			
+
+			
 	}
 }
 
 void RenderPointcloud_Draw(ecs_iter_t *it)
 {
 	Position3 *pos = ecs_field(it, Position3, 1);
-	DrawInstancesState *rend = ecs_field(it, DrawInstancesState, 2);
-	Camera *cam = ecs_field(it, Camera, 3);
-	ShapeIndex *shape = ecs_field(it, ShapeIndex, 4);
-	Window *window = ecs_field(it, Window, 5); // up
+	SgPipeline *pip = ecs_field(it, SgPipeline, 2);  // up
+	DrawInstancesState *rend = ecs_field(it, DrawInstancesState, 3);
+	Camera *cam = ecs_field(it, Camera, 4);
+	ShapeIndex *shape = ecs_field(it, ShapeIndex, 5);
+	Window *window = ecs_field(it, Window, 6); // up
 
 	for (int i = 0; i < it->count; ++i, ++pos)
 	{
@@ -167,7 +170,8 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 		int offset = sg_append_buffer(rend->bind.vertex_buffers[1], &(sg_range) { .ptr=pos, .size=(size_t)1 * sizeof(hmm_vec3) });
 		rend->bind.vertex_buffer_offsets[1] = offset;
 		
-		sg_apply_pipeline(rend->pip);
+		//sg_apply_pipeline(rend->pip);
+		sg_apply_pipeline(pip->id);
 		sg_apply_bindings(&rend->bind);
 
 		ecs_os_memcpy_t(&rend->vs_params.mvp, cam->mvp, hmm_mat4);
@@ -224,6 +228,7 @@ void DrawInstancesImport(ecs_world_t *world)
 		.query.filter.terms =
 			{
 				{.id = ecs_id(Position3)},
+				{.id = ecs_id(SgPipeline), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(DrawInstancesState), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(Camera), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(ShapeIndex), .src.trav = EcsIsA, .src.flags = EcsUp},

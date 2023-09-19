@@ -4,6 +4,7 @@
 #include <platform/fs.h>
 #include <platform/assert.h>
 #include <sokol/sokol_shape.h>
+#include <stdio.h>
 
 
 ECS_COMPONENT_DECLARE(SgPipelineCreate);
@@ -12,6 +13,7 @@ ECS_COMPONENT_DECLARE(SgShaderCreate);
 ECS_COMPONENT_DECLARE(SgShader);
 ECS_COMPONENT_DECLARE(SgLocation);
 ECS_COMPONENT_DECLARE(SgAttribute);
+ECS_COMPONENT_DECLARE(SgVertexBufferLayout);
 ECS_COMPONENT_DECLARE(SgAttributes);
 ECS_COMPONENT_DECLARE(SgUniformBlocks);
 ECS_COMPONENT_DECLARE(SgVertexFormat);
@@ -29,7 +31,9 @@ ECS_TAG_DECLARE(SgTriangles);
 ECS_TAG_DECLARE(SgFloat2);
 ECS_TAG_DECLARE(SgFloat3);
 ECS_TAG_DECLARE(SgFloat4);
+ECS_TAG_DECLARE(SgByte4n);
 ECS_TAG_DECLARE(SgUbyte4n);
+ECS_TAG_DECLARE(SgUshort2n);
 ECS_TAG_DECLARE(SgU16);
 ECS_TAG_DECLARE(SgU32);
 ECS_TAG_DECLARE(SgFront);
@@ -39,6 +43,7 @@ ECS_TAG_DECLARE(SgAttributeShapePosition);
 ECS_TAG_DECLARE(SgAttributeShapeNormal);
 ECS_TAG_DECLARE(SgAttributeShapeTextcoord);
 ECS_TAG_DECLARE(SgAttributeShapeColor);
+ECS_TAG_DECLARE(SgVertexBufferLayoutShape);
 
 #define ENTITY_COLOR "#003366"
 
@@ -56,7 +61,8 @@ void const * ecsx_get_target_data(ecs_world_t * world, ecs_entity_t e, ecs_entit
 {
 	ecs_entity_t target = ecs_get_target(world, e, type, 0);
 	if(target == 0){return NULL;}
-	return ecs_get_id(world, target, type);
+	void const * p = ecs_get_id(world, target, type);
+	return p;
 }
 
 
@@ -67,7 +73,9 @@ ecs_entity_t get_vertex_format_entity(sg_vertex_format t)
 	case SG_VERTEXFORMAT_FLOAT2: return SgFloat2;
 	case SG_VERTEXFORMAT_FLOAT3: return SgFloat3;
 	case SG_VERTEXFORMAT_FLOAT4: return SgFloat4;
+	case SG_VERTEXFORMAT_BYTE4N: return SgByte4n;
 	case SG_VERTEXFORMAT_UBYTE4N: return SgUbyte4n;
+	case SG_VERTEXFORMAT_USHORT2N: return SgUshort2n;
 	default: return 0;
 	}
 }
@@ -166,15 +174,15 @@ void iterate_vertex_attrs(ecs_world_t * world, ecs_entity_t parent, sg_vertex_at
 			}
 			else if(ecs_has(world, e, SgAttributeShapeNormal))
 			{
-				outstate[0] = sshape_position_vertex_attr_state();
+				outstate[0] = sshape_normal_vertex_attr_state();
 			}
 			else if(ecs_has(world, e, SgAttributeShapeTextcoord))
 			{
-				outstate[0] = sshape_position_vertex_attr_state();
+				outstate[0] = sshape_texcoord_vertex_attr_state();
 			}
 			else if(ecs_has(world, e, SgAttributeShapeColor))
 			{
-				outstate[0] = sshape_position_vertex_attr_state();
+				outstate[0] = sshape_color_vertex_attr_state();
 			}
 
 			if(ecs_has(world, e, SgAttribute))
@@ -198,14 +206,40 @@ void iterate_vertex_attrs(ecs_world_t * world, ecs_entity_t parent, sg_vertex_at
 			}
 			else
 			{
-				ecs_add_pair(world, e, ecs_id(SgVertexFormat), get_vertex_format_entity(outstate->format));
+				ecs_entity_t f = get_vertex_format_entity(outstate->format);
+				ecs_add_pair(world, e, ecs_id(SgVertexFormat), f);
 			}
-
-
 		}
 	}
 }
 
+
+void set_vertex_buffers(ecs_world_t * world, ecs_entity_t parent, sg_vertex_buffer_layout_state buffers[SG_MAX_VERTEX_BUFFERS])
+{
+	char buf[8];
+	for(int i = 0; i < SG_MAX_VERTEX_BUFFERS; ++i)
+	{
+		snprintf(buf, sizeof(buf), "buf%i", i);
+		ecs_entity_t e = ecs_lookup_child(world, parent, buf);
+		if(e == 0){continue;}
+		if(ecs_has(world, e, SgVertexBufferLayoutShape))
+		{
+			buffers[i] = sshape_vertex_buffer_layout_state();
+			SgVertexBufferLayout * b = ecs_get_mut(world, e, SgVertexBufferLayout);
+			b->stride = buffers[i].stride;
+			b->step_func = buffers[i].step_func;
+			b->step_rate = buffers[i].step_rate;
+		}
+		else
+		{
+			SgVertexBufferLayout const * b = ecs_get(world, e, SgVertexBufferLayout);
+			if(b == NULL){continue;}
+			buffers[i].stride = b->stride;
+			buffers[i].step_func = b->step_func;
+			buffers[i].step_rate = b->step_rate;
+		}
+	}
+}
 
 
 void Pip_Create(ecs_iter_t *it)
@@ -221,7 +255,7 @@ void Pip_Create(ecs_iter_t *it)
 	{
 		ecs_entity_t e = it->entities[i];
 		ecs_doc_set_color(world, e, ENTITY_COLOR);
-		//print_entity(world, e);
+		print_entity(world, e);
 
 		SgPipeline *pip = ecs_get_mut(world, e, SgPipeline);
 		
@@ -241,38 +275,11 @@ void Pip_Create(ecs_iter_t *it)
 			.cull_mode = cull_mode->value,
 		};
 		iterate_vertex_attrs(world, entity_attrs, desc.layout.attrs);
+		set_vertex_buffers(world, e, desc.layout.buffers);
 
 		pip->id = sg_make_pipeline(&desc);
 	}
 }
-
-
-
-
-
-static sg_shader create_shader(char *path_fs, char *path_vs)
-{
-	platform_log("Creating shaders from files %s %s in ", path_fs, path_vs);
-	fs_pwd();
-	platform_log("\n");
-	sg_shader_desc desc = {0};
-	desc.attrs[0].name = "position";
-	desc.attrs[1].name = "color0";
-	desc.vs.source = fs_readfile(path_vs);
-	desc.vs.entry = "main";
-	desc.vs.uniform_blocks[0].size = 80;
-	desc.vs.uniform_blocks[0].layout = SG_UNIFORMLAYOUT_STD140;
-	desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params";
-	desc.vs.uniform_blocks[0].uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
-	desc.vs.uniform_blocks[0].uniforms[0].array_count = 5;
-	desc.fs.source = fs_readfile(path_fs);
-	desc.fs.entry = "main";
-	desc.label = "primtypes_shader";
-	sg_shader shd = sg_make_shader(&desc);
-	return shd;
-}
-
-
 
 
 // https://github.com/SanderMertens/flecs/blob/ca73ed213310f2ca23f2afde38f72af793091e50/examples/c/entities/hierarchy/src/main.c#L52
@@ -291,6 +298,7 @@ void Shader_Create(ecs_iter_t *it)
 	for (int i = 0; i < it->count; ++i)
 	{
 		ecs_entity_t e = it->entities[i];
+		print_entity(world, e);
 		ecs_doc_set_color(world, e, "#003366");
 		SgShader *shader = ecs_get_mut(world, e, SgShader);
 		sg_shader_desc desc = {0};
@@ -303,6 +311,8 @@ void Shader_Create(ecs_iter_t *it)
 		//shader->id = create_shader(desc->filename_fs, desc->filename_vs);
 		iterate_shader_attrs(world, entity_attrs, desc.attrs);
 		iterate_shader_blocks(world, entity_blocks, desc.vs.uniform_blocks);
+		
+
 		sg_shader shd = sg_make_shader(&desc);
 		shader->id = shd;
 		platform_log("");
@@ -323,6 +333,7 @@ void SgImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, SgShader);
 	ECS_COMPONENT_DEFINE(world, SgLocation);
 	ECS_COMPONENT_DEFINE(world, SgAttribute);
+	ECS_COMPONENT_DEFINE(world, SgVertexBufferLayout);
 	ECS_COMPONENT_DEFINE(world, SgAttributes);
 	ECS_COMPONENT_DEFINE(world, SgUniformBlocks);
 	ECS_COMPONENT_DEFINE(world, SgVertexFormat);
@@ -346,7 +357,9 @@ void SgImport(ecs_world_t *world)
 	ECS_TAG_DEFINE(world, SgFloat2);
 	ECS_TAG_DEFINE(world, SgFloat3);
 	ECS_TAG_DEFINE(world, SgFloat4);
+	ECS_TAG_DEFINE(world, SgByte4n);
 	ECS_TAG_DEFINE(world, SgUbyte4n);
+	ECS_TAG_DEFINE(world, SgUshort2n);
 	ECS_TAG_DEFINE(world, SgU16);
 	ECS_TAG_DEFINE(world, SgU32);
 	ECS_TAG_DEFINE(world, SgFront);
@@ -356,6 +369,7 @@ void SgImport(ecs_world_t *world)
 	ECS_TAG_DEFINE(world, SgAttributeShapeNormal);
 	ECS_TAG_DEFINE(world, SgAttributeShapeTextcoord);
 	ECS_TAG_DEFINE(world, SgAttributeShapeColor);
+	ECS_TAG_DEFINE(world, SgVertexBufferLayoutShape);
 
 
 
@@ -406,6 +420,13 @@ void SgImport(ecs_world_t *world)
 		.members = {
 			{.name = "offset", .type = ecs_id(ecs_i32_t)},
 			{.name = "buffer_index", .type = ecs_id(ecs_i32_t)},
+		}});
+
+	ecs_struct(world, {.entity = ecs_id(SgVertexBufferLayout),
+		.members = {
+			{.name = "stride", .type = ecs_id(ecs_i32_t)},
+			{.name = "step_func", .type = ecs_id(ecs_i32_t)},
+			{.name = "step_rate", .type = ecs_id(ecs_i32_t)},
 		}});
 
 	ecs_struct(world, {.entity = ecs_id(SgLocation),

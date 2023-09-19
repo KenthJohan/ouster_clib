@@ -47,7 +47,7 @@ text1 {
 //ins1 : shape1 {- geometries.GeometriesInstances}
 
 
-render_instances1 : shapes.vbuf1 {
+render_instances1 : renderings.pipes.instances, shapes.vbuf1 {
     - draw.instances.Desc{cap: 1000*1000}
 }
 

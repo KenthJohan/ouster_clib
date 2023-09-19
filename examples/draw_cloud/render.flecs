@@ -19,6 +19,7 @@ using flecs.meta
 renderings
 {
 
+
 attributes {
 	points {
 		- sg.Attributes
@@ -53,6 +54,7 @@ attributes {
 		}
 		inst_pos {
 			- sg.Location{4}
+			- sg.Attribute{offset: 0, buffer_index: 1}
 			- (sg.VertexFormat, sg.Float3)
 		}
 	}
@@ -83,18 +85,26 @@ shaders {
 
 
 pipes {
-	points : shaders.points, attributes.points {
+	points : shaders.points {
 		- sg.PipelineCreate
 		- (sg.PrimitiveType, sg.Points)
 		- (sg.CullMode, sg.None)
 		- (sg.IndexType, sg.None)
 	}
 
-	instances : shaders.points, attributes.instances {
+	instances : shaders.instances {
 		- sg.PipelineCreate
 		- (sg.PrimitiveType, sg.Points)
-		- (sg.CullMode, sg.None)
-		- (sg.IndexType, sg.None)
+		- (sg.CullMode, sg.Back)
+		- (sg.IndexType, sg.U16)
+		
+		buf0 {
+			- sg.VertexBufferLayoutShape
+		}
+		buf1 {
+			// step_func = 2 : SG_VERTEXSTEP_PER_INSTANCE
+			- sg.VertexBufferLayout{stride:0, step_func:2, step_rate:0}
+		}
 	}
 }
 

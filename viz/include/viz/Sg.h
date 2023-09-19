@@ -40,6 +40,13 @@ typedef struct
 
 typedef struct
 {
+	ecs_i32_t stride;
+	ecs_i32_t step_func;
+	ecs_i32_t step_rate;
+} SgVertexBufferLayout;
+
+typedef struct
+{
 	ecs_i32_t dummy;
 } SgAttributes;
 
@@ -90,6 +97,7 @@ extern ECS_COMPONENT_DECLARE(SgPipeline);
 extern ECS_COMPONENT_DECLARE(SgShaderCreate);
 extern ECS_COMPONENT_DECLARE(SgShader);
 extern ECS_COMPONENT_DECLARE(SgAttribute);
+extern ECS_COMPONENT_DECLARE(SgVertexBufferLayout);
 extern ECS_COMPONENT_DECLARE(SgLocation);
 extern ECS_COMPONENT_DECLARE(SgAttributes);
 extern ECS_COMPONENT_DECLARE(SgUniformBlocks);
@@ -118,5 +126,6 @@ extern ECS_TAG_DECLARE(SgAttributeShapePosition);
 extern ECS_TAG_DECLARE(SgAttributeShapeNormal);
 extern ECS_TAG_DECLARE(SgAttributeShapeTextcoord);
 extern ECS_TAG_DECLARE(SgAttributeShapeColor);
+extern ECS_TAG_DECLARE(SgVertexBufferLayoutShape);
 
 void SgImport(ecs_world_t *world);

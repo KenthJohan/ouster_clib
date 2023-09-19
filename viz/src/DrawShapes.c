@@ -105,8 +105,8 @@ static sg_shader create_shader(char *path_fs, char *path_vs)
 	platform_log("Creating shaders from files %s %s in ", path_fs, path_vs);
 	fs_pwd();
 	platform_log("\n");
-	char const * source_vs = fs_readfile(path_vs);
-	char const * source_fs = fs_readfile(path_fs);
+	char * source_vs = fs_readfile(path_vs);
+	char * source_fs = fs_readfile(path_fs);
 	assert(source_vs);
 	assert(source_fs);
 	sg_shader_desc desc = {0};

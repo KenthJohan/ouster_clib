@@ -7,6 +7,7 @@
 #include <sokol/sokol_debugtext.h>
 #include <sokol/sokol_app.h>
 #include <sokol/HandmadeMath.h>
+#include <sokol/align.h>
 #include <platform/log.h>
 #include <platform/fs.h>
 
@@ -23,16 +24,11 @@ typedef struct
 	uint32_t color;
 } vertex_t;
 
-#if !defined(SOKOL_SHDC_ALIGN)
-#if defined(_MSC_VER)
-#define SOKOL_SHDC_ALIGN(a) __declspec(align(a))
-#else
-#define SOKOL_SHDC_ALIGN(a) __attribute__((aligned(a)))
-#endif
-#endif
+
 #define ATTR_vs_position (0)
 #define ATTR_vs_color0 (1)
 #define SLOT_vs_params (0)
+
 #pragma pack(push, 1)
 SOKOL_SHDC_ALIGN(16)
 typedef struct vs_params_t
@@ -75,10 +71,6 @@ void DrawPointsState_Add(ecs_iter_t *it)
 			.usage = SG_USAGE_STREAM,
 		});
 		s->bind.index_buffer.id = SG_INVALID_ID;
-		s->pass_action = (sg_pass_action){
-			.colors[0].load_action = SG_LOADACTION_DONTCARE,
-			.depth.load_action = SG_LOADACTION_DONTCARE,
-			.stencil.load_action = SG_LOADACTION_DONTCARE};
 		s->vertices = ecs_os_calloc_n(vertex_t, s->cap);
 	}
 }
@@ -129,6 +121,7 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 void DrawPointsImport(ecs_world_t *world)
 {
 	ECS_MODULE(world, DrawPoints);
+	ecs_set_name_prefix(world, "DrawPoints");
 	ECS_IMPORT(world, Cameras);
 	ECS_IMPORT(world, Windows);
 	ECS_IMPORT(world, Pointclouds);

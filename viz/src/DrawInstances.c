@@ -182,6 +182,7 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 void DrawInstancesImport(ecs_world_t *world)
 {
 	ECS_MODULE(world, DrawInstances);
+	ecs_set_name_prefix(world, "DrawInstances");
 	ECS_IMPORT(world, Cameras);
 	ECS_IMPORT(world, Geometries);
 	ECS_IMPORT(world, Windows);
@@ -200,6 +201,9 @@ void DrawInstancesImport(ecs_world_t *world)
 					   .members = {
 						   {.name = "cap", .type = ecs_id(ecs_i32_t)},
 					   }});
+
+
+
 
 
 	ecs_system_init(world, &(ecs_system_desc_t){

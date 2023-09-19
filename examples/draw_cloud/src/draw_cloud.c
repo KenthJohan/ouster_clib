@@ -35,8 +35,9 @@ int main(int argc, char *argv[])
 
 	// https://www.flecs.dev/explorer/?remote=true
 	ecs_set(world, EcsWorld, EcsRest, {.port = 0});
-	ecs_plecs_from_file(world, "profile.flecs");
 	ecs_plecs_from_file(world, "render.flecs");
+	ecs_plecs_from_file(world, "shapes.flecs");
+	ecs_plecs_from_file(world, "profile.flecs");
 	// ecs_set_threads(world, 4);
 
 	while (0)

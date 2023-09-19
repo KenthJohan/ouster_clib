@@ -1,0 +1,15 @@
+shapes {
+	vbuf1 {
+		- geometries.ShapeBuffer{cap_vertices:6*1024, cap_indices:16 * 1024}
+	}
+
+	shape1 : vbuf1 {
+		- geometries.Sphere{r:2,slices:7,stacks:3}
+		//- Index
+	}
+
+	shape2 : vbuf1 {
+		- geometries.Sphere{r:4,slices:10,stacks:8}
+		//- Index
+	}
+}

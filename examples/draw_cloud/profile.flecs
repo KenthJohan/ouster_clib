@@ -15,7 +15,7 @@ camera1 {
 
 
 render_points : renderings.pip_points {
-	- draw.points.DrawPointsDesc{cap:1000*1000}
+	- draw.points.Desc{cap:1000*1000}
 }
 
 sensor1 {
@@ -41,32 +41,20 @@ text1 {
 
 
 
-vbuf1 {
-    - geometries.ShapeBuffer{cap_vertices:6*1024, cap_indices:16 * 1024}
-}
 
-shape1 : vbuf1 {
-    - geometries.Sphere{r:2,slices:7,stacks:3}
-    //- Index
-}
-
-shape2 : vbuf1 {
-    - geometries.Sphere{r:4,slices:10,stacks:8}
-    //- Index
-}
 
 
 //ins1 : shape1 {- geometries.GeometriesInstances}
 
 
-render_instances1 : vbuf1 {
-    - draw.instances.DrawInstancesDesc{cap: 1000*1000}
+render_instances1 : shapes.vbuf1 {
+    - draw.instances.Desc{cap: 1000*1000}
 }
 
-draw1 : camera1, render_instances1, window1, shape1 {
+draw1 : camera1, render_instances1, window1, shapes.shape1 {
     - geometries.Position3{10,10,10}
 }
 
-draw2 : camera1, render_instances1, window1, shape2 {
+draw2 : camera1, render_instances1, window1, shapes.shape2 {
     - geometries.Position3{10,10,-10}
 }

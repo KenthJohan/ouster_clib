@@ -84,7 +84,7 @@ void Pointcloud_Fill(ecs_iter_t *it)
 		ouster_field_cpy(sensor->app->fields2, sensor->app->fields1, FIELD_COUNT, &sensor->app->meta);
 		ecs_os_mutex_unlock(sensor->app->lock);
 
-		ouster_lut_cartesian(lut, field_range->data, image_points_data);
+		ouster_lut_cartesian_f64(lut, field_range->data, image_points_data, 3);
 		int n = sensor->app->lut.w * sensor->app->lut.h;
 		Pointcloud_copy(cloud, image_points_data, field_ir->data, n, desc->radius_filter);
 	}

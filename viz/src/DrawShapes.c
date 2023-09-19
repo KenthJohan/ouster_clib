@@ -105,22 +105,28 @@ static sg_shader create_shader(char *path_fs, char *path_vs)
 	platform_log("Creating shaders from files %s %s in ", path_fs, path_vs);
 	fs_pwd();
 	platform_log("\n");
+	char const * source_vs = fs_readfile(path_vs);
+	char const * source_fs = fs_readfile(path_fs);
+	assert(source_vs);
+	assert(source_fs);
 	sg_shader_desc desc = {0};
 	desc.attrs[0].name = "position";
 	desc.attrs[1].name = "normal";
 	desc.attrs[2].name = "texcoord";
 	desc.attrs[3].name = "color0";
-	desc.vs.source = fs_readfile(path_vs);
+	desc.vs.source = source_vs;
 	desc.vs.entry = "main";
 	desc.vs.uniform_blocks[0].size = sizeof(float) * 5 * 4;
 	desc.vs.uniform_blocks[0].layout = SG_UNIFORMLAYOUT_STD140;
 	desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params";
 	desc.vs.uniform_blocks[0].uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
 	desc.vs.uniform_blocks[0].uniforms[0].array_count = 5;
-	desc.fs.source = fs_readfile(path_fs);
+	desc.fs.source = source_fs;
 	desc.fs.entry = "main";
 	desc.label = "shapes_shader";
 	sg_shader shd = sg_make_shader(&desc);
+	free(source_vs);
+	free(source_fs);
 	return shd;
 }
 

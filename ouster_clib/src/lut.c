@@ -264,7 +264,7 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	}
 }
 
-void ouster_lut_cartesian(ouster_lut_t const *lut, uint32_t const *range, double *out_xyz)
+void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, double *out_xyz, int out_xyz_stride)
 {
 	platform_assert_notnull(lut);
 	platform_assert_notnull(range);
@@ -272,12 +272,29 @@ void ouster_lut_cartesian(ouster_lut_t const *lut, uint32_t const *range, double
 
 	double const *d = lut->direction;
 	double const *o = lut->offset;
-	for (int i = 0; i < (lut->w * lut->h); ++i, out_xyz += 3, d += 3, o += 3)
+	for (int i = 0; i < (lut->w * lut->h); ++i, out_xyz += out_xyz_stride, d += 3, o += 3)
 	{
 		double mag = range[i];
 		out_xyz[0] = mag * d[0] + o[0];
 		out_xyz[1] = mag * d[1] + o[1];
 		out_xyz[2] = mag * d[2] + o[2];
+		// printf("%+f %+f\n", mag, sqrt(V3_DOT(out_xyz, out_xyz)));
+	}
+}
+void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, float *out_xyz, int out_xyz_stride)
+{
+	platform_assert_notnull(lut);
+	platform_assert_notnull(range);
+	platform_assert_notnull(out_xyz);
+
+	double const *d = lut->direction;
+	double const *o = lut->offset;
+	for (int i = 0; i < (lut->w * lut->h); ++i, out_xyz += out_xyz_stride, d += 3, o += 3)
+	{
+		double mag = range[i];
+		out_xyz[0] = (float)(mag * d[0] + o[0]);
+		out_xyz[1] = (float)(mag * d[1] + o[1]);
+		out_xyz[2] = (float)(mag * d[2] + o[2]);
 		// printf("%+f %+f\n", mag, sqrt(V3_DOT(out_xyz, out_xyz)));
 	}
 }

@@ -13,7 +13,7 @@
 			"environment": [],
 			"program": "${workspaceFolder}/examples/client_example/bin/x64-Linux-debug/client_example",
 			"args": [
-				"~/Downloads/OS1_captures/OS1-16A.json"
+				"~/Downloads/OS1_Captures_128/a.json",
 			],
 			"osx": {
 				"MIMode": "lldb",
@@ -33,7 +33,7 @@
 			"environment": [],
 			"program": "${workspaceFolder}/examples/opencv_example/bin/x64-Linux-debug/opencv_example",
 			"args": [
-				"~/Downloads/OS1_captures/OS1-16A.json"
+				"~/Downloads/OS1_Captures_128/a.json",
 			],
 			"osx": {
 				"MIMode": "lldb",
@@ -76,8 +76,30 @@
 			"environment": [],
 			"program": "${workspaceFolder}/tools/ouster_monitor/bin/x64-Linux-debug/ouster_monitor",
 			"args": [
-				"~/Downloads/test/a.json",
+				"~/Downloads/OS1_Captures_128/a.json",
 				"column"
+			],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
+		{
+			"name": "Launch ouster_snapshot",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/tools/ouster_snapshot",
+			"environment": [],
+			"program": "${workspaceFolder}/tools/ouster_snapshot/bin/x64-Linux-debug/ouster_snapshot",
+			"args": [
+				"~/Downloads/OS1_Captures_128/a.json",
+				"destagger",
+				"output.png"
 			],
 			"osx": {
 				"MIMode": "lldb",

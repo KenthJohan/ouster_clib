@@ -52,3 +52,20 @@ draw_instance0 : camera1, render_instances1, window1, shapes.shape1 {
 draw_instance1 : camera1, render_instances1, window1, shapes.shape2 {
     - geometries.Position3{10,10,-10}
 }
+
+
+
+
+
+render_shapes1 : renderings.pipes.shapes, shapes.vbuf1 {
+    - draw.shapes.Desc{cap: 1000*1000}
+}
+
+
+draw_shape1 : camera1, render_shapes1, window1, shapes.shape2 {
+    - geometries.Position3{0,0,0}
+}
+
+draw_shape2 : camera1, render_shapes1, window1, shapes.shape3 {
+    - geometries.Position3{0,1,0}
+}

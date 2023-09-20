@@ -4,6 +4,7 @@
 #include "viz/Windows.h"
 #include "viz/Pointclouds.h"
 #include "viz/Sg.h"
+#include "viz/vs_params.h"
 #include "GraphicsShapes.h"
 
 #include <sokol/sokol_gfx.h>
@@ -22,22 +23,6 @@
 #include <platform/fs.h>
 #include <platform/log.h>
 
-
-#define ATTR_vs_position (0)
-#define ATTR_vs_normal (1)
-#define ATTR_vs_texcoord (2)
-#define ATTR_vs_color0 (3)
-#define SLOT_vs_params (0)
-
-#pragma pack(push, 1)
-SOKOL_SHDC_ALIGN(16)
-typedef struct vs_params_t
-{
-	hmm_mat4 mvp;
-	float draw_mode;
-	uint8_t _pad_68[12];
-} vs_params_t;
-#pragma pack(pop)
 
 enum
 {
@@ -66,33 +51,6 @@ typedef struct
 ECS_COMPONENT_DECLARE(DrawInstancesDesc);
 ECS_COMPONENT_DECLARE(DrawInstancesState);
 
-/*
-static sg_shader create_shader(char *path_fs, char *path_vs)
-{
-	platform_log("Creating shaders from files %s %s in ", path_fs, path_vs);
-	fs_pwd();
-	platform_log("\n");
-	sg_shader_desc desc = {0};
-	desc.attrs[0].name = "position";
-	desc.attrs[1].name = "normal";
-	desc.attrs[2].name = "texcoord";
-	desc.attrs[3].name = "color0";
-	desc.attrs[4].name = "inst_pos";
-
-	desc.vs.source = fs_readfile(path_vs);
-	desc.vs.entry = "main";
-	desc.vs.uniform_blocks[0].size = sizeof(float) * 5 * 4;
-	desc.vs.uniform_blocks[0].layout = SG_UNIFORMLAYOUT_STD140;
-	desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params";
-	desc.vs.uniform_blocks[0].uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
-	desc.vs.uniform_blocks[0].uniforms[0].array_count = 5;
-	desc.fs.source = fs_readfile(path_fs);
-	desc.fs.entry = "main";
-	desc.label = "instancing_shader";
-	sg_shader shd = sg_make_shader(&desc);
-	return shd;
-}
-*/
 
 void DrawInstancesState_Add(ecs_iter_t *it)
 {
@@ -134,7 +92,8 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 		sg_apply_bindings(&rend->bind);
 		ecs_os_memcpy_t(&rend->vs_params.mvp, cam->mvp, hmm_mat4);
 		sg_range a = {&rend->vs_params, sizeof(vs_params_t)};
-		sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &a);
+		int slot = 0;
+		sg_apply_uniforms(SG_SHADERSTAGE_VS, slot, &a);
 		sg_draw(shape->element.base_element, shape->element.num_elements, 1);
 	}
 }

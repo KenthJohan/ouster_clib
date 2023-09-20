@@ -4,12 +4,17 @@ shapes {
 	}
 
 	shape1 : vbuf1 {
-		- geometries.Sphere{r:2,slices:20,stacks:3}
+		- geometries.Sphere{r:2,slices:20,stacks:20}
 		//- Index
 	}
 
 	shape2 : vbuf1 {
 		- geometries.Sphere{r:4,slices:10,stacks:8}
+		//- Index
+	}
+
+	shape3 : vbuf1 {
+		- geometries.Sphere{r:3,slices:5,stacks:5}
 		//- Index
 	}
 }

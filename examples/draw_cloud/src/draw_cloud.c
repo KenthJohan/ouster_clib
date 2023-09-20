@@ -3,6 +3,7 @@
 #include <viz/DrawInstances.h>
 #include <viz/DrawText.h>
 #include <viz/DrawPoints.h>
+#include <viz/DrawShapes.h>
 #include <viz/Cameras.h>
 #include <viz/Windows.h>
 #include <viz/Pointclouds.h>
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
 	ECS_IMPORT(world, Sg);
 	ECS_IMPORT(world, DrawInstances);
 	ECS_IMPORT(world, DrawPoints);
+	ECS_IMPORT(world, DrawShapes);
 	ECS_IMPORT(world, DrawText);
 	ECS_IMPORT(world, Geometries);
 	ECS_IMPORT(world, Pointclouds);

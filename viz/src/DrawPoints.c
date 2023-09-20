@@ -3,6 +3,7 @@
 #include "viz/Windows.h"
 #include "viz/Pointclouds.h"
 #include "viz/Sg.h"
+#include "viz/vs_params.h"
 #include <sokol/sokol_gfx.h>
 #include <sokol/sokol_debugtext.h>
 #include <sokol/sokol_app.h>
@@ -25,18 +26,8 @@ typedef struct
 } vertex_t;
 
 
-#define ATTR_vs_position (0)
-#define ATTR_vs_color0 (1)
-#define SLOT_vs_params (0)
 
-#pragma pack(push, 1)
-SOKOL_SHDC_ALIGN(16)
-typedef struct vs_params_t
-{
-	hmm_mat4 mvp;
-	hmm_vec4 viewport;
-} vs_params_t;
-#pragma pack(pop)
+
 
 typedef struct
 {
@@ -113,7 +104,8 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 		s->vs_params.viewport.Y = window->h;
 		ecs_os_memcpy_t(&s->vs_params.mvp, cam->mvp, hmm_mat4);
 		sg_range a = {&s->vs_params, sizeof(vs_params_t)};
-		sg_apply_uniforms(SG_SHADERSTAGE_VS, 0, &a);
+		int slot = 0;
+		sg_apply_uniforms(SG_SHADERSTAGE_VS, slot, &a);
 		sg_draw(0, n, 1);
 	}
 }

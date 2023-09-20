@@ -1,7 +1,4 @@
 #include "viz/viz.h"
-#include "viz/DrawInstances.h"
-#include "viz/DrawShapes.h"
-#include "viz/DrawPoints.h"
 #include "viz/Userinputs.h"
 #include "viz/Windows.h"
 
@@ -31,9 +28,6 @@ static void init(viz_state_t *state)
 		.logger.func = slog_func,
 	});
 	//__dbgui_setup(sapp_sample_count());
-
-	draw_shapes_init();
-
 	ecs_singleton_set(world, RenderingsContext, {0});
 }
 
@@ -48,11 +42,8 @@ static void frame(viz_state_t *state)
 	sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
 
 	ecs_progress(world, 0);
-
-	draw_shapes_frame(world);
 	
 	sg_end_pass();
-
 	sg_commit();
 }
 

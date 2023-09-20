@@ -1,6 +1,11 @@
 #pragma once
-
 #include <flecs.h>
 
-void draw_shapes_init(void);
-void draw_shapes_frame(ecs_world_t * world);
+typedef struct
+{
+	ecs_i32_t cap;
+} DrawShapesDesc;
+
+extern ECS_COMPONENT_DECLARE(DrawShapesDesc);
+
+void DrawShapesImport(ecs_world_t *world);

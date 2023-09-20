@@ -102,17 +102,17 @@ renderings
 
 	shaders {
 		points : attributes.points, ubs.standard {
-			- sg.ShaderCreate{filename_fs:"../../viz/src/points.fs.glsl", filename_vs:"../../viz/src/points.vs.glsl"}
+			- sg.ShaderCreate{filename_fs:"../../viz/src/shaders/points.fs.glsl", filename_vs:"../../viz/src/shaders/points.vs.glsl"}
 			- sg.shaders.Entry//{"main"}
 		}
 
 		instances : attributes.instances, ubs.standard {
-			- sg.ShaderCreate{filename_fs:"../../viz/src/instance.fs.glsl", filename_vs:"../../viz/src/instance.vs.glsl"}
+			- sg.ShaderCreate{filename_fs:"../../viz/src/shaders/instance.fs.glsl", filename_vs:"../../viz/src/shaders/instance.vs.glsl"}
 			- sg.shaders.Entry//{"main"}
 		}
 
 		shapes : attributes.shapes, ubs.standard {
-			- sg.ShaderCreate{filename_fs:"../../viz/src/shapes.fs.glsl", filename_vs:"../../viz/src/shapes.vs.glsl"}
+			- sg.ShaderCreate{filename_fs:"../../viz/src/shaders/shapes.fs.glsl", filename_vs:"../../viz/src/shaders/shapes.vs.glsl"}
 			- sg.shaders.Entry//{"main"}
 		}
 	}

@@ -72,16 +72,13 @@ void DrawShapesState_Draw(ecs_iter_t *it)
 	DrawShapesState *rend = ecs_field(it, DrawShapesState, 3);
 	CamerasCamera *cam = ecs_field(it, CamerasCamera, 4);
 	ShapeIndex *shape = ecs_field(it, ShapeIndex, 5);
-	Window *window = ecs_field(it, Window, 6); // up
-
-	int self1 = ecs_field_is_self(it, 1);
 
 	for (int i = 0; i < it->count; ++i, ++pos)
 	{
 		sg_apply_pipeline(pip->id);
 		sg_apply_bindings(&rend->bind);
 
-		m4f32 t = M4F32_IDENTITY;
+		m4f32 t = {M4_IDENTITY};
 		m4f32_translation3(&t, &(v3f32){{pos->x, pos->y, pos->z}});
 		m4f32 mvp;
 		m4f32_mul(&mvp, (m4f32*)cam->mvp, &t);
@@ -132,7 +129,6 @@ void DrawShapesImport(ecs_world_t *world)
 				{.id = ecs_id(DrawShapesState), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(CamerasCamera), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(ShapeIndex), .src.trav = EcsIsA, .src.flags = EcsUp},
-				{.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
 			}});
 }

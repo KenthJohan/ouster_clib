@@ -7,8 +7,9 @@
         "use" : ["platform", "ouster_clib", "viz", "sokol", "flecs"]
     },
     "lang.c": {
-        "defines": [],
+		"c-standard": "c11",
+        "defines": ["flecs_STATIC"],
         "lib": ["flecs", "platform", "ouster_clib", "viz", "sokol", "curl", "m", "GL", "X11", "Xi", "Xcursor"],
-        "cflags":["-Werror", "-Wall", "-Wextra", "-Wno-error=unused-variable", "-Wno-error=pedantic"]
+        "cflags":["-Werror", "-Wall", "-Wextra", "-Wno-error=unused-variable", "-Wno-error=pedantic", "-flto=auto"]
     }
 }

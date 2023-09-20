@@ -29,112 +29,61 @@ static void Camera_Controller(ecs_iter_t *it)
 	}
 }
 
-static void rot(v3f32 const *look, qf32 *q, float speed)
+static void rotation_procedure(v3f32 const *look, qf32 *q, float speed)
 {
 	assert(fabsf(qf32_norm2(q) - 1.0f) < 0.1f);				// Check quaternion valididy:
 	qf32 q_pitch;											// Quaternion pitch rotation
 	qf32 q_yaw;												// Quaternion yaw rotation
 	qf32 q_roll;											// Quaternion roll rotation
-	//printf("look:[%f %f %f %f]\n", look->x, look->y, look->z, speed);
 	qf32_xyza(&q_pitch, 1.0f, 0.0f, 0.0f, look->x * speed); // Make pitch quaternion
 	qf32_xyza(&q_yaw, 0.0f, 1.0f, 0.0f, look->y * speed);	// Make yaw quaternion
 	qf32_xyza(&q_roll, 0.0f, 0.0f, 1.0f, look->z * speed);	// Make roll quaternion
-	//printf("qp:[%f %f %f %f]\n", q_pitch.x, q_pitch.y, q_pitch.z, q_pitch.w);
-	//printf("qy:[%f %f %f %f]\n", q_yaw.x, q_yaw.y, q_yaw.z, q_yaw.w);
-	//printf("qr:[%f %f %f %f]\n", q_roll.x, q_roll.y, q_roll.z, q_roll.w);
-
-	//qf32_normalize (q, q);
+	qf32_normalize (q, q);
 	qf32_mul(q, &q_roll, q);								// Apply roll rotation
 	qf32_mul(q, &q_yaw, q);									// Apply yaw rotation
 	qf32_mul(q, &q_pitch, q);								// Apply pitch rotation
-	// TODO: in release quaternion does not change. But adding printf fixes the problem, why?
-	//printf("q:[%f %f %f %f]\n", q->x, q->y, q->z, q->w);
-	qf32 temp;
-	qf32_normalize(&temp, q);									// Normalize quaternion against floating point error
-	*q = temp;
+	qf32_normalize(q, q);									// Normalize quaternion against floating point error
 }
+
 
 static void Camera_Update(ecs_iter_t *it)
 {
-	// EG_ITER_INFO(it);
 	CamerasCamera *camera = ecs_field(it, CamerasCamera, 1);
 	Position3 *pos = ecs_field(it, Position3, 2);
 	for (int i = 0; i < it->count; ++i, ++camera, ++pos)
 	{
-		qf32 *q = (qf32 *)(camera->q);
 		v3f32 *move = (v3f32 *)(camera->move);
 		v3f32 *look = (v3f32 *)(camera->look);
 		m4f32 *proj = (m4f32 *)(camera->proj);
 		m4f32 *mvp = (m4f32 *)(camera->mvp);
 
-		rot(look, q, it->delta_time * 0.5f); // (look,q) -> q
-		//printf("d:%f, look:[%f %f %f], q:[%f %f %f %f]\n", it->delta_time, look->x, look->y, look->z, q->x, q->y, q->z, q->w);
+		rotation_procedure(look, &camera->q, it->delta_time * camera->look_speed);
 
-		m4f32 mr = M4F32_IDENTITY;
-		qf32_unit_m4(&mr, q); // Convert unit quaternion to rotation matrix (mr)
+		m4f32 mr = {M4_IDENTITY};
+		qf32_unit_to_m4(&camera->q, &mr); // Convert unit quaternion to rotation matrix (mr)
 
 		v3f32 dir;
 		v3f32_m4_mul(&dir, &mr, move); // Multiply rotation matrix (mr) with move vector (move) to velocity vector (v)
-		v3f32_mul(&dir, &dir, it->delta_time * camera->speed);
+		v3f32_mul(&dir, &dir, it->delta_time * camera->move_speed);
 		v3f32_add((v3f32 *)pos, (v3f32 *)pos, &dir);
-		// printf("%f %f %f => %f %f %f => %f %f %f\n", move->x, move->y, move->z, dir.x, dir.y, dir.z, pos->x, pos->y, pos->z);
 
 		float rad2deg = (2.0f * M_PI) / 360.0f;
 		float aspect = sapp_widthf() / sapp_heightf();
 		m4f32_perspective1(proj, 45.0f * rad2deg, aspect, 0.01f, 10000.0f);
 
-		m4f32 t = M4F32_IDENTITY;
+		m4f32 t = {M4_IDENTITY};
 		m4f32_translation3(&t, (v3f32 *)pos);
 		m4f32_mul(&mr, &mr, &t);
 		m4f32_mul(mvp, proj, &mr);
-
-		// printf("\n");
-
-		// ecs_os_memcpy_t(mvp, proj, m4f32);
 	}
 }
 
-/*
-float ry;
-
-void Camera_OnUpdate(ecs_iter_t *it)
-{
-	Camera *cam = ecs_field(it, Camera, 1);
-	UserinputsKeys *input = ecs_field(it, UserinputsKeys, 2);
-	const float frame_time = (float)(sapp_frame_duration());
-	for(int i = 0; i < it->count; ++i, ++cam)
-	{
-		if(input->keys[SAPP_KEYCODE_W])
-		{
-			cam->pos[2]++;
-		}
-		if(input->keys[SAPP_KEYCODE_S])
-		{
-			cam->pos[2]--;
-		}
-		if(input->keys[SAPP_KEYCODE_D])
-		{
-			cam->pos[0]++;
-		}
-		if(input->keys[SAPP_KEYCODE_A])
-		{
-			cam->pos[0]--;
-		}
-		// model-view-projection matrix
-		hmm_mat4 proj = HMM_Perspective(60.0f, sapp_widthf()/sapp_heightf(), 0.01f, 50.0f);
-		hmm_mat4 view = HMM_LookAt(HMM_Vec3(0.0f, 1.5f, 12.0f), HMM_Vec3(cam->pos[0], cam->pos[1], cam->pos[2]), HMM_Vec3(0.0f, 1.0f, 0.0f));
-		hmm_mat4 view_proj = HMM_MultiplyMat4(proj, view);
-		ry += 60.0f * frame_time;
-		hmm_mat4 mvp = HMM_MultiplyMat4(view_proj, HMM_Rotate(ry, HMM_Vec3(0.0f, 1.0f, 0.0f)));
-		ecs_os_memcpy_t(cam->mvp, &mvp, hmm_mat4);
-	}
-}
-*/
 
 ECS_CTOR(CamerasCamera, ptr, {
 	ecs_os_memset_t(ptr, 0, CamerasCamera);
-	qf32_identity((qf32 *)ptr->q);
+	qf32_identity(&ptr->q);
 })
+
 
 void CamerasImport(ecs_world_t *world)
 {
@@ -153,11 +102,12 @@ void CamerasImport(ecs_world_t *world)
 
 	ecs_struct(world, {.entity = ecs_id(CamerasCamera),
 		.members = {
-			{.name = "speed", .type = ecs_id(ecs_f32_t)},
+			{.name = "q", .type = ecs_id(ecs_f32_t), .count = 4},
 			{.name = "mvp", .type = ecs_id(ecs_f32_t), .count = 16},
 			{.name = "proj", .type = ecs_id(ecs_f32_t), .count = 16},
-			{.name = "q", .type = ecs_id(ecs_f32_t), .count = 4},
 			{.name = "move", .type = ecs_id(ecs_f32_t), .count = 3},
 			{.name = "look", .type = ecs_id(ecs_f32_t), .count = 3},
+			{.name = "move_speed", .type = ecs_id(ecs_f32_t)},
+			{.name = "look_speed", .type = ecs_id(ecs_f32_t)},
 		}});
 }

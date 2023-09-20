@@ -34,7 +34,13 @@ static float qf32_norm (qf32 const * q)
 
 static void qf32_normalize (qf32 * r, qf32 const * q)
 {
-	v4f32_normalize ((v4f32 *)r, (v4f32 const *)q);
+	float l = sqrtf(V4_DOT(q->e, q->e));
+	r->x = q->x / l;
+	r->y = q->y / l;
+	r->z = q->z / l;
+	r->w = q->w / l;
+	// does not work in release mode O3:
+	// v4f32_normalize ((v4f32 *)r, (v4f32 const *)q);
 }
 
 
@@ -63,12 +69,12 @@ static void qf32_axis_angle (qf32 * q, v3f32 const * v, float angle)
 
 static void qf32_mul1 (qf32 * r, qf32 const * p, qf32 const * q)
 {
-	ASSERT_BOOL (r != p);
-	ASSERT_BOOL (r != q);
-	r->x = p->w * q->x + p->x * q->w + p->y * q->z - p->z * q->y;
-	r->y = p->w * q->y - p->x * q->z + p->y * q->w + p->z * q->x;
-	r->z = p->w * q->z + p->x * q->y - p->y * q->x + p->z * q->w;
-	r->w = p->w * q->w - p->x * q->x - p->y * q->y - p->z * q->z;
+	//ASSERT_BOOL (r != p);
+	//ASSERT_BOOL (r != q);
+	r->x = (p->w * q->x) + (p->x * q->w) + (p->y * q->z) - (p->z * q->y);
+	r->y = (p->w * q->y) - (p->x * q->z) + (p->y * q->w) + (p->z * q->x);
+	r->z = (p->w * q->z) + (p->x * q->y) - (p->y * q->x) + (p->z * q->w);
+	r->w = (p->w * q->w) - (p->x * q->x) - (p->y * q->y) - (p->z * q->z);
 }
 
 
@@ -83,16 +89,21 @@ static void qf32_mul2 (qf32 * r, qf32 const * p, qf32 const * q)
 */
 
 
+
+
 static void qf32_mul (qf32 * r, qf32 const * p, qf32 const * q)
 {
-	qf32 t;
-	qf32_mul1 (&t, p, q);
-	qf32_cpy (r, &t);
+	qf32 t = {0};
+	t.x = (p->w * q->x) + (p->x * q->w) + (p->y * q->z) - (p->z * q->y);
+	t.y = (p->w * q->y) - (p->x * q->z) + (p->y * q->w) + (p->z * q->x);
+	t.z = (p->w * q->z) + (p->x * q->y) - (p->y * q->x) + (p->z * q->w);
+	t.w = (p->w * q->w) - (p->x * q->x) - (p->y * q->y) - (p->z * q->z);
+	(*r) = t;
 }
 
 
 
-static void qf32_unit_m4 (m4f32 * r, qf32 const * q)
+static void qf32_unit_to_m4 (qf32 const * q, m4f32 * r)
 {
 	float a = q->w;
 	float b = q->x;

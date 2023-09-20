@@ -79,7 +79,6 @@ void RenderPointcloud_Draw(ecs_iter_t *it)
 	DrawInstancesState *rend = ecs_field(it, DrawInstancesState, 3);
 	CamerasCamera *cam = ecs_field(it, CamerasCamera, 4);
 	ShapeIndex *shape = ecs_field(it, ShapeIndex, 5);
-	Window *window = ecs_field(it, Window, 6); // up
 	for (int i = 0; i < it->count; ++i, ++pos)
 	{
 		if (rend->cap <= 0)
@@ -144,7 +143,6 @@ void DrawInstancesImport(ecs_world_t *world)
 				{.id = ecs_id(DrawInstancesState), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(CamerasCamera), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(ShapeIndex), .src.trav = EcsIsA, .src.flags = EcsUp},
-				{.id = ecs_id(Window), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
 			}});
 			

@@ -82,7 +82,6 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 		{
 			continue;
 		}
-		const uint32_t colors[3] = {0xFF0000DD, 0xFF00DD00, 0xFF00DDDD};
 		int n = ECS_MIN(cloud->count, s->cap);
 		for (int j = 0; j < n; ++j)
 		{

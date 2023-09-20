@@ -4,7 +4,7 @@
     "value": {
         "language": "c",
         "public": true,
-        "use" : []
+        "use" : ["flecs", "platform"]
     },
     "lang.c": {
         "c-standard": "c11",

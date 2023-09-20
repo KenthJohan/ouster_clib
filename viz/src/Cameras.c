@@ -29,19 +29,29 @@ static void Camera_Controller(ecs_iter_t *it)
 	}
 }
 
-void rot(v3f32 const *look, qf32 *q, float speed)
+static void rot(v3f32 const *look, qf32 *q, float speed)
 {
 	assert(fabsf(qf32_norm2(q) - 1.0f) < 0.1f);				// Check quaternion valididy:
 	qf32 q_pitch;											// Quaternion pitch rotation
 	qf32 q_yaw;												// Quaternion yaw rotation
 	qf32 q_roll;											// Quaternion roll rotation
+	//printf("look:[%f %f %f %f]\n", look->x, look->y, look->z, speed);
 	qf32_xyza(&q_pitch, 1.0f, 0.0f, 0.0f, look->x * speed); // Make pitch quaternion
 	qf32_xyza(&q_yaw, 0.0f, 1.0f, 0.0f, look->y * speed);	// Make yaw quaternion
 	qf32_xyza(&q_roll, 0.0f, 0.0f, 1.0f, look->z * speed);	// Make roll quaternion
+	//printf("qp:[%f %f %f %f]\n", q_pitch.x, q_pitch.y, q_pitch.z, q_pitch.w);
+	//printf("qy:[%f %f %f %f]\n", q_yaw.x, q_yaw.y, q_yaw.z, q_yaw.w);
+	//printf("qr:[%f %f %f %f]\n", q_roll.x, q_roll.y, q_roll.z, q_roll.w);
+
+	//qf32_normalize (q, q);
 	qf32_mul(q, &q_roll, q);								// Apply roll rotation
 	qf32_mul(q, &q_yaw, q);									// Apply yaw rotation
 	qf32_mul(q, &q_pitch, q);								// Apply pitch rotation
-	qf32_normalize(q, q);									// Normalize quaternion against floating point error
+	// TODO: in release quaternion does not change. But adding printf fixes the problem, why?
+	//printf("q:[%f %f %f %f]\n", q->x, q->y, q->z, q->w);
+	qf32 temp;
+	qf32_normalize(&temp, q);									// Normalize quaternion against floating point error
+	*q = temp;
 }
 
 static void Camera_Update(ecs_iter_t *it)
@@ -58,6 +68,7 @@ static void Camera_Update(ecs_iter_t *it)
 		m4f32 *mvp = (m4f32 *)(camera->mvp);
 
 		rot(look, q, it->delta_time * 0.5f); // (look,q) -> q
+		//printf("d:%f, look:[%f %f %f], q:[%f %f %f %f]\n", it->delta_time, look->x, look->y, look->z, q->x, q->y, q->z, q->w);
 
 		m4f32 mr = M4F32_IDENTITY;
 		qf32_unit_m4(&mr, q); // Convert unit quaternion to rotation matrix (mr)

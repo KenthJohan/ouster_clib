@@ -12,6 +12,6 @@
         "static": true,
         "defines": ["SOKOL_GLCORE33", "SOKOL_NO_ENTRY"],
         "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=pedantic", "-Wno-error=unused-variable"],
-        "lib": ["platform", "sokol", "m", "GL", "X11", "Xi", "Xcursor"]
+        "lib": ["flecs", "platform", "sokol", "m", "GL", "X11", "Xi", "Xcursor"]
     }
 }

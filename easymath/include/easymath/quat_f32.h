@@ -1,6 +1,7 @@
 #include "mathtypes.h"
 #include "lin_f32.h"
-
+#include <assert.h>
+#include <stdio.h>
 
 static void qf32_cpy (qf32 * r, qf32 const * a)
 {
@@ -41,11 +42,13 @@ static void qf32_xyza (qf32 * q, float x, float y, float z, float a)
 {
 	float const c = cosf (a * 0.5f);
 	float const s = sinf (a * 0.5f);
+	assert((c != 0) || (s != 0));
 	q->x = s * x;
 	q->y = s * y;
 	q->z = s * z;
 	q->w = c;
-	qf32_normalize (q, q);
+	//printf("%f %f %f %f, %f %f\n", x, y, z, a, c, s);
+	//printf("q:[%f %f %f %f]\n", q->x, q->y, q->z, q->w);
 	//vf32_normalize (4, q, q);
 	//float n = vf32_norm (4, q);
 	//printf ("%f\n", n);

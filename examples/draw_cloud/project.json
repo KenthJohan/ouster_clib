@@ -8,7 +8,7 @@
     },
     "lang.c": {
         "defines": [],
-        "lib": ["platform", "ouster_clib", "viz", "sokol", "curl", "m", "GL", "X11", "Xi", "Xcursor"],
+        "lib": ["flecs", "platform", "ouster_clib", "viz", "sokol", "curl", "m", "GL", "X11", "Xi", "Xcursor"],
         "cflags":["-Werror", "-Wall", "-Wextra", "-Wno-error=unused-variable", "-Wno-error=pedantic"]
     }
 }

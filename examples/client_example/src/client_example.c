@@ -96,9 +96,9 @@ int main(int argc, char *argv[])
 			ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
 			if (lidar.last_mid == meta.mid1)
 			{
-				ouster_lut_cartesian(&lut, fields[FIELD_RANGE].data, xyz);
+				ouster_lut_cartesian_f64(&lut, fields[FIELD_RANGE].data, xyz, 3);
 				// printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
-				ouster_field_zero(fields, FIELD_COUNT);
+				ouster_field_zero(fields, FIELD_COUNT, &meta);
 				platform_log("mid_loss %i\n", lidar.mid_loss);
 			}
 		}

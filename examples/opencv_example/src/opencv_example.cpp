@@ -39,9 +39,12 @@ int pixsize_to_cv_type(int size)
     return 0;
 }
 
-cv::Mat ouster_get_cvmat(ouster_field_t * field)
+cv::Mat ouster_get_cvmat(ouster_field_t * field, ouster_meta_t * meta)
 {
-    cv::Mat m(field->rows, field->cols, pixsize_to_cv_type(field->depth), field->data);
+	int cols = meta->columns_per_frame;
+	int rows = meta->pixels_per_column;
+	int depth = meta->extract[field->quantity].depth;
+    cv::Mat m(rows, cols, pixsize_to_cv_type(depth), field->data);
     return m;
 }
 
@@ -82,17 +85,27 @@ int main(int argc, char* argv[])
         {.quantity = OUSTER_QUANTITY_SIGNAL},
         {.quantity = OUSTER_QUANTITY_NEAR_IR}
     };
+	cv::Mat mat_f0 = ouster_get_cvmat(fields + 0, &meta);
+	cv::Mat mat_f1 = ouster_get_cvmat(fields + 1, &meta);
+	cv::Mat mat_f2 = ouster_get_cvmat(fields + 2, &meta);
+	cv::Mat mat_f3 = ouster_get_cvmat(fields + 3, &meta);
 
     ouster_field_init(fields, FIELD_COUNT, &meta);
 
-    cv::namedWindow("RANGE", cv::WINDOW_FREERATIO);
-    cv::namedWindow("REFLECTIVITY", cv::WINDOW_FREERATIO);
-    cv::namedWindow("SIGNAL", cv::WINDOW_FREERATIO);
-    cv::namedWindow("NEAR_IR", cv::WINDOW_FREERATIO);
-    cv::resizeWindow("RANGE", fields[0].cols*5, fields[0].rows*5);
-    cv::resizeWindow("REFLECTIVITY", fields[1].cols*5, fields[1].rows*2);
-    cv::resizeWindow("SIGNAL", fields[2].cols*5, fields[2].rows*2);
-    cv::resizeWindow("RANGE", fields[3].cols*5, fields[3].rows*2);
+	{
+		int cols = meta.columns_per_frame;
+		int rows = meta.pixels_per_column;
+		int colsf = 5;
+		int rowsf = 5;
+		cv::namedWindow("RANGE"       , cv::WINDOW_FREERATIO);
+		cv::namedWindow("REFLECTIVITY", cv::WINDOW_FREERATIO);
+		cv::namedWindow("SIGNAL"      , cv::WINDOW_FREERATIO);
+		cv::namedWindow("NEAR_IR"     , cv::WINDOW_FREERATIO);
+		cv::resizeWindow("RANGE"       , cols*colsf, rows*rowsf);
+		cv::resizeWindow("REFLECTIVITY", cols*colsf, rows*rowsf);
+		cv::resizeWindow("SIGNAL"      , cols*colsf, rows*rowsf);
+		cv::resizeWindow("RANGE"       , cols*colsf, rows*rowsf);
+	}
     
 
     ouster_lidar_t lidar = {0};
@@ -124,13 +137,7 @@ int main(int argc, char* argv[])
             platform_log("mid_loss %i\n", lidar.mid_loss);
             if(lidar.last_mid == meta.mid1)
             {
-
                 ouster_field_destagger(fields, FIELD_COUNT, &meta);
-
-                cv::Mat mat_f0 = ouster_get_cvmat(fields + 0);
-                cv::Mat mat_f1 = ouster_get_cvmat(fields + 1);
-                cv::Mat mat_f2 = ouster_get_cvmat(fields + 2);
-                cv::Mat mat_f3 = ouster_get_cvmat(fields + 3);
                 cv::Mat mat_f0_show;
                 cv::Mat mat_f1_show;
                 cv::Mat mat_f2_show;
@@ -147,7 +154,7 @@ int main(int argc, char* argv[])
                 cv::imshow("NEAR_IR", mat_f3_show);
                 
                 //printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
-                ouster_field_zero(fields, FIELD_COUNT);
+                ouster_field_zero(fields, FIELD_COUNT, &meta);
 
 
                 int key = cv::pollKey();

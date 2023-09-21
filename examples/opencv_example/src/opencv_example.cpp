@@ -39,11 +39,11 @@ int pixsize_to_cv_type(int size)
     return 0;
 }
 
-cv::Mat ouster_get_cvmat(ouster_field_t * field, ouster_meta_t * meta)
+cv::Mat ouster_get_cvmat(ouster_field_t * field)
 {
-	int cols = meta->columns_per_frame;
-	int rows = meta->pixels_per_column;
-	int depth = meta->extract[field->quantity].depth;
+	int cols = field->cols;
+	int rows = field->rows;
+	int depth = field->depth;
     cv::Mat m(rows, cols, pixsize_to_cv_type(depth), field->data);
     return m;
 }
@@ -85,12 +85,12 @@ int main(int argc, char* argv[])
         {.quantity = OUSTER_QUANTITY_SIGNAL, .depth = 4},
         {.quantity = OUSTER_QUANTITY_NEAR_IR, .depth = 4}
     };
-	cv::Mat mat_f0 = ouster_get_cvmat(fields + 0, &meta);
-	cv::Mat mat_f1 = ouster_get_cvmat(fields + 1, &meta);
-	cv::Mat mat_f2 = ouster_get_cvmat(fields + 2, &meta);
-	cv::Mat mat_f3 = ouster_get_cvmat(fields + 3, &meta);
 
     ouster_field_init(fields, FIELD_COUNT, &meta);
+	cv::Mat mat_f0 = ouster_get_cvmat(fields + 0);
+	cv::Mat mat_f1 = ouster_get_cvmat(fields + 1);
+	cv::Mat mat_f2 = ouster_get_cvmat(fields + 2);
+	cv::Mat mat_f3 = ouster_get_cvmat(fields + 3);
 
 	{
 		int cols = meta.columns_per_frame;

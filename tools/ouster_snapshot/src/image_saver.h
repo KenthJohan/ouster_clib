@@ -7,6 +7,7 @@ typedef struct
 	int n;
 	int w;
 	int h;
+	int depth;
 	int comp;
 	uint8_t * image;
 	char const *filename;

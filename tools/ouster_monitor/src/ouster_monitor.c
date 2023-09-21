@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
             {
                 ouster_lut_cartesian_f64(&lut, fields[FIELD_RANGE].data, xyz, 3);
                 //printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
-                ouster_field_zero(fields, FIELD_COUNT, &meta);
+                ouster_field_zero(fields, FIELD_COUNT);
                 if(mode == MONITOR_MODE_LOSS)
                 {
                     ouster_lidar_header_t header = {0};

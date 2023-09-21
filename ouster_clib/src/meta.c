@@ -255,11 +255,8 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 		ouster_extract_init(e, out->profile, quantity);
 		int rows = out->pixels_per_column;
 		int cols = out->midw;
-		e->rowsize = cols * e->depth;
-		e->data_size = rows * e->rowsize;
 		platform_assert(rows >= 0, "");
 		platform_assert(cols >= 0, "");
-		e->_canary = quantity * 10;
 	}
 
 

@@ -73,9 +73,13 @@ int main(int argc, char *argv[])
 	}
 
 	monitor_mode_t mode = get_mode(argv[2]);
+	if(mode == SNAPSHOT_MODE_UNKNOWN)
+	{
+		printf("The mode %s does not exist.\n", argv[2]);
+		return 0;
+	}
 
 	ouster_meta_t meta = {0};
-	ouster_lut_t lut = {0};
 
 	{
 		char *content = fs_readfile(argv[1]);
@@ -85,28 +89,28 @@ int main(int argc, char *argv[])
 		}
 		ouster_meta_parse(content, &meta);
 		free(content);
-		ouster_lut_init(&lut, &meta);
 		printf("Column window: %i %i\n", meta.mid0, meta.mid1);
 	}
-
-	image_saver_t saver = {
-		.filename = argv[3],
-		.w = meta.midw,
-		.h = meta.pixels_per_column
-	};
-	image_saver_init(&saver);
-
 	
 
 	int socks[2];
 	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
 	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu("7503");
-	// int sock_tcp = ouster_sock_create_tcp("192.168.1.137");
 
-	ouster_field_t fields[FIELD_COUNT] = {[FIELD_RANGE] = {.quantity = OUSTER_QUANTITY_RANGE}};
+	ouster_field_t fields[FIELD_COUNT] = {
+		[FIELD_RANGE] = {.quantity = OUSTER_QUANTITY_RANGE, .depth = 4}
+	};
 
 	ouster_field_init(fields, FIELD_COUNT, &meta);
-	// ouster_field_init(fields + 1, &meta);
+
+	image_saver_t saver = {
+		.filename = argv[3],
+		.w = meta.midw,
+		.h = meta.pixels_per_column,
+		.depth = meta.extract[OUSTER_QUANTITY_RANGE].depth
+	};
+	image_saver_init(&saver);
+
 
 	ouster_lidar_t lidar = {0};
 
@@ -140,7 +144,7 @@ int main(int argc, char *argv[])
                 	ouster_field_destagger(fields, FIELD_COUNT, &meta);
 					image_saver_save(&saver, fields[FIELD_RANGE].data);
 				}
-				ouster_field_zero(fields, FIELD_COUNT, &meta);
+                ouster_field_zero(fields, FIELD_COUNT);
 			}
 		}
 

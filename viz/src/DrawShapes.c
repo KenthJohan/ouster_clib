@@ -81,7 +81,7 @@ void DrawShapesState_Draw(ecs_iter_t *it)
 		m4f32 t = {M4_IDENTITY};
 		m4f32_translation3(&t, &(v3f32){{pos->x, pos->y, pos->z}});
 		m4f32 mvp;
-		m4f32_mul(&mvp, (m4f32*)cam->mvp, &t);
+		m4f32_mul(&mvp, &cam->vp, &t);
 
 		ecs_os_memcpy_t(&rend->vs_params.mvp, &mvp, hmm_mat4);
 

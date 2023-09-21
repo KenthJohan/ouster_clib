@@ -5,15 +5,12 @@
 typedef struct
 {
 	qf32 q; // Orientation quaternion
-
-	float mvp[16];	// For shader
-	float proj[16]; // Projection matrix
-
-	float move[3]; //
-	float look[3];
-
-	float move_speed;
-	float look_speed;
+	m4f32 vp; // View Projection matrix
+	m4f32 p; // Projection matrix
+	v3f32 moving; // Moving direction
+	v3f32 looking; // Looking direction
+	float moving_speed;
+	float looking_speed;
 } CamerasCamera;
 
 extern ECS_COMPONENT_DECLARE(CamerasCamera);

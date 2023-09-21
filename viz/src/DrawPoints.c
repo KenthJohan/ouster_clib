@@ -101,7 +101,7 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 		sg_apply_bindings(&s->bind);
 		s->vs_params.viewport.X = window->w;
 		s->vs_params.viewport.Y = window->h;
-		ecs_os_memcpy_t(&s->vs_params.mvp, cam->mvp, hmm_mat4);
+		ecs_os_memcpy_t(&s->vs_params.mvp, &cam->vp, hmm_mat4);
 		sg_range a = {&s->vs_params, sizeof(vs_params_t)};
 		int slot = 0;
 		sg_apply_uniforms(SG_SHADERSTAGE_VS, slot, &a);

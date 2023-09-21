@@ -28,6 +28,7 @@ typedef struct
     ecs_f32_t z;
 } Position3;
 
+
 typedef struct
 {
 	ecs_vec_t pos; //vec<Position3>

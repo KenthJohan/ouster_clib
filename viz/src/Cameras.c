@@ -20,16 +20,16 @@ static void Camera_Controller(ecs_iter_t *it)
 	UserinputsKeys *input = ecs_field(it, UserinputsKeys, 2);
 	for (int i = 0; i < it->count; ++i, ++camera)
 	{
-		camera->look[0] = input->keys[SAPP_KEYCODE_UP] - input->keys[SAPP_KEYCODE_DOWN];
-		camera->look[1] = input->keys[SAPP_KEYCODE_RIGHT] - input->keys[SAPP_KEYCODE_LEFT];
-		camera->look[2] = input->keys[SAPP_KEYCODE_E] - input->keys[SAPP_KEYCODE_Q];
-		camera->move[0] = input->keys[SAPP_KEYCODE_A] - input->keys[SAPP_KEYCODE_D];
-		camera->move[1] = input->keys[SAPP_KEYCODE_LEFT_CONTROL] - input->keys[SAPP_KEYCODE_SPACE];
-		camera->move[2] = input->keys[SAPP_KEYCODE_W] - input->keys[SAPP_KEYCODE_S];
+		camera->looking.x = input->keys[SAPP_KEYCODE_UP] - input->keys[SAPP_KEYCODE_DOWN];
+		camera->looking.y = input->keys[SAPP_KEYCODE_RIGHT] - input->keys[SAPP_KEYCODE_LEFT];
+		camera->looking.z = input->keys[SAPP_KEYCODE_E] - input->keys[SAPP_KEYCODE_Q];
+		camera->moving.x = input->keys[SAPP_KEYCODE_A] - input->keys[SAPP_KEYCODE_D];
+		camera->moving.y = input->keys[SAPP_KEYCODE_LEFT_CONTROL] - input->keys[SAPP_KEYCODE_SPACE];
+		camera->moving.z = input->keys[SAPP_KEYCODE_W] - input->keys[SAPP_KEYCODE_S];
 	}
 }
 
-static void rotation_procedure(v3f32 const *look, qf32 *q, float speed)
+static void quaternion_rotation_procedure(v3f32 const *look, qf32 *q, float speed)
 {
 	assert(fabsf(qf32_norm2(q) - 1.0f) < 0.1f);				// Check quaternion valididy:
 	qf32 q_pitch;											// Quaternion pitch rotation
@@ -48,33 +48,35 @@ static void rotation_procedure(v3f32 const *look, qf32 *q, float speed)
 
 static void Camera_Update(ecs_iter_t *it)
 {
+	float delta = it->delta_time;
 	CamerasCamera *camera = ecs_field(it, CamerasCamera, 1);
 	Position3 *pos = ecs_field(it, Position3, 2);
 	for (int i = 0; i < it->count; ++i, ++camera, ++pos)
 	{
-		v3f32 *move = (v3f32 *)(camera->move);
-		v3f32 *look = (v3f32 *)(camera->look);
-		m4f32 *proj = (m4f32 *)(camera->proj);
-		m4f32 *mvp = (m4f32 *)(camera->mvp);
+		// This rotates quaternion as air-plane mode:
+		quaternion_rotation_procedure(&camera->looking, &camera->q, delta * camera->looking_speed);
 
-		rotation_procedure(look, &camera->q, it->delta_time * camera->look_speed);
+		// Convert unit quaternion to rotation matrix (r)
+		m4f32 r = {M4_IDENTITY};
+		qf32_unit_to_m4(&camera->q, &r);
 
-		m4f32 mr = {M4_IDENTITY};
-		qf32_unit_to_m4(&camera->q, &mr); // Convert unit quaternion to rotation matrix (mr)
-
+		// Translate postion (pos) relative to direction of camera rotation
 		v3f32 dir;
-		v3f32_m4_mul(&dir, &mr, move); // Multiply rotation matrix (mr) with move vector (move) to velocity vector (v)
-		v3f32_mul(&dir, &dir, it->delta_time * camera->move_speed);
+		v3f32_m4_mul(&dir, &r, &camera->moving);
+		v3f32_mul(&dir, &dir, delta * camera->moving_speed);
 		v3f32_add((v3f32 *)pos, (v3f32 *)pos, &dir);
 
+		// Make projection matrix (p)
 		float rad2deg = (2.0f * M_PI) / 360.0f;
 		float aspect = sapp_widthf() / sapp_heightf();
-		m4f32_perspective1(proj, 45.0f * rad2deg, aspect, 0.01f, 10000.0f);
+		m4f32_perspective1(&camera->p, 45.0f * rad2deg, aspect, 0.01f, 10000.0f);
 
+		// Apply translation (t), rotation (r), projection - which creates the view-projection-matrix (vp).
+		// The view-projection-matrix can then be later used in shaders.
 		m4f32 t = {M4_IDENTITY};
 		m4f32_translation3(&t, (v3f32 *)pos);
-		m4f32_mul(&mr, &mr, &t);
-		m4f32_mul(mvp, proj, &mr);
+		m4f32_mul(&r, &r, &t);
+		m4f32_mul(&camera->vp, &camera->p, &r);
 	}
 }
 

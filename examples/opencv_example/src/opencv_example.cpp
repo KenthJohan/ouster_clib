@@ -80,10 +80,10 @@ int main(int argc, char* argv[])
 
     #define FIELD_COUNT 4
     ouster_field_t fields[FIELD_COUNT] = {
-        {.quantity = OUSTER_QUANTITY_RANGE},
-        {.quantity = OUSTER_QUANTITY_REFLECTIVITY},
-        {.quantity = OUSTER_QUANTITY_SIGNAL},
-        {.quantity = OUSTER_QUANTITY_NEAR_IR}
+        {.quantity = OUSTER_QUANTITY_RANGE, .depth = 4},
+        {.quantity = OUSTER_QUANTITY_REFLECTIVITY, .depth = 4},
+        {.quantity = OUSTER_QUANTITY_SIGNAL, .depth = 4},
+        {.quantity = OUSTER_QUANTITY_NEAR_IR, .depth = 4}
     };
 	cv::Mat mat_f0 = ouster_get_cvmat(fields + 0, &meta);
 	cv::Mat mat_f1 = ouster_get_cvmat(fields + 1, &meta);
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
                 cv::imshow("NEAR_IR", mat_f3_show);
                 
                 //printf("mat = %i of %i\n", mat.num_valid_pixels, mat.dim[1] * mat.dim[2]);
-                ouster_field_zero(fields, FIELD_COUNT, &meta);
+                ouster_field_zero(fields, FIELD_COUNT);
 
 
                 int key = cv::pollKey();

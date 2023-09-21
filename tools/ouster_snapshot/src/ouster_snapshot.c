@@ -56,6 +56,18 @@ mode_t get_mode(char const *str)
 	return SNAPSHOT_MODE_UNKNOWN;
 }
 
+
+void print_help(int argc, char *argv[])
+{
+	printf("Hello welcome to %s!\n", argv[0]);
+	printf("This tool takes snapshots from LiDAR sensor and saves it as PNG image.\n");
+	printf("To use this tool you will have to provide the meta file that correspond to the LiDAR sensor configuration\n");
+	printf("\t$ %s <%s> <%s> <%s>\n", argv[0], "meta.json", "mode", "output_filename");
+	printf("\t$ %s <%s> %s %s\n", argv[0], "meta.json", "raw", "raw.png");
+	printf("\t$ %s <%s> %s %s\n", argv[0], "meta.json", "destagger", "destaggered.png");
+}
+
+
 int main(int argc, char *argv[])
 {
 	printf("===================================================================\n");
@@ -63,19 +75,15 @@ int main(int argc, char *argv[])
 
 	if (argc <= 3)
 	{
-		printf("Hello welcome to %s!\n", argv[0]);
-		printf("This tool takes snapshots from LiDAR sensor and saves it as PNG image.\n");
-		printf("To use this tool you will have to provide the meta file that correspond to the LiDAR sensor configuration\n");
-		printf("\t$ %s <%s> <%s> <%s>\n", argv[0], "meta.json", "mode", "output_filename");
-		printf("\t$ %s <%s> %s %s\n", argv[0], "meta.json", "raw", "raw.png");
-		printf("\t$ %s <%s> %s %s\n", argv[0], "meta.json", "destagger", "destaggered.png");
+		print_help(argc, argv);
 		return 0;
 	}
 
 	monitor_mode_t mode = get_mode(argv[2]);
 	if(mode == SNAPSHOT_MODE_UNKNOWN)
 	{
-		printf("The mode %s does not exist.\n", argv[2]);
+		printf("The mode <%s> does not exist.\n", argv[2]);
+		print_help(argc, argv);
 		return 0;
 	}
 

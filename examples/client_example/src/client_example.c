@@ -68,7 +68,8 @@ int main(int argc, char *argv[])
 	// int sock_tcp = ouster_sock_create_tcp("192.168.1.137");
 
 	ouster_field_t fields[FIELD_COUNT] = {
-		[FIELD_RANGE] = {.quantity = OUSTER_QUANTITY_RANGE}};
+		[FIELD_RANGE] = {.quantity = OUSTER_QUANTITY_RANGE, .depth = 4}
+	};
 
 	ouster_field_init(fields, FIELD_COUNT, &meta);
 	// ouster_field_init(fields + 1, &meta);
@@ -98,7 +99,7 @@ int main(int argc, char *argv[])
 			{
 				ouster_lut_cartesian_f64(&lut, fields[FIELD_RANGE].data, xyz, 3);
 				// printf("mat = %i of %i\n", fields[0].num_valid_pixels, fields[0].mat.dim[1] * fields[0].mat.dim[2]);
-				ouster_field_zero(fields, FIELD_COUNT, &meta);
+				ouster_field_zero(fields, FIELD_COUNT);
 				platform_log("mid_loss %i\n", lidar.mid_loss);
 			}
 		}

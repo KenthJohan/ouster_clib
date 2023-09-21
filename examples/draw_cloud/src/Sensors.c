@@ -39,7 +39,7 @@ ECS_COMPONENT_DECLARE(SensorsDesc);
 
 
 
-void Pointcloud_copy(Pointcloud *cloud, double const *src_pos, uint16_t const *src_ir, int n, double filter_radius)
+void Pointcloud_copy(Pointcloud *cloud, double const *src_pos, uint32_t const *src_ir, int n, double filter_radius)
 {
 	int k = 0;
 	float *dst_pos = cloud->pos;
@@ -54,12 +54,13 @@ void Pointcloud_copy(Pointcloud *cloud, double const *src_pos, uint16_t const *s
 		dst_pos[0] = src_pos[0] * 0.01;
 		dst_pos[1] = src_pos[1] * 0.01;
 		dst_pos[2] = src_pos[2] * 0.01;
+		int ir = src_ir[0] * 3;
 		// AABBGGRR
 		dst_col[0] =
 			0xFF000000 |
-			((src_ir[0] & 0xFF) << 0) |
-			((src_ir[0] & 0xFF) << 8) |
-			((src_ir[0] & 0xFF) << 16);
+			((ir & 0xFF) << 0) |
+			((ir & 0xFF) << 8) |
+			((ir & 0xFF) << 16);
 		dst_pos += 3;
 		dst_col += 1;
 		k++;
@@ -81,7 +82,7 @@ void Pointcloud_Fill(ecs_iter_t *it)
 		double *  image_points_data = sensor->app->image_points_data;
 
 		ecs_os_mutex_lock(sensor->app->lock);
-		ouster_field_cpy(sensor->app->fields2, sensor->app->fields1, FIELD_COUNT, &sensor->app->meta);
+		ouster_field_cpy(sensor->app->fields2, sensor->app->fields1, FIELD_COUNT);
 		ecs_os_mutex_unlock(sensor->app->lock);
 
 		ouster_lut_cartesian_f64(lut, field_range->data, image_points_data, 3);
@@ -103,7 +104,7 @@ static void Sensor_Add(ecs_iter_t *it)
 			.fields = {.q = {OUSTER_QUANTITY_RANGE, OUSTER_QUANTITY_NEAR_IR}}
 			});
 		int count = sensor->app->lut.w * sensor->app->lut.h;
-		ecs_set(it->world, it->entities[i], Pointcloud, {.cap = count, .count = count, .point_size = 1.0f});
+		ecs_set(it->world, it->entities[i], Pointcloud, {.cap = count, .count = count, .point_size = 0.1f});
 	}
 }
 

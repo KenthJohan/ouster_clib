@@ -35,7 +35,7 @@ void *thread_receiver(void *arg)
 			if (lidar.last_mid == app->meta.mid1)
 			{
 				ecs_os_mutex_lock(app->lock);
-				ouster_field_cpy(app->fields1, app->fields0, FIELD_COUNT, &app->meta);
+				ouster_field_cpy(app->fields1, app->fields0, FIELD_COUNT);
 				ecs_os_mutex_unlock(app->lock);
 			}
 		}
@@ -67,11 +67,23 @@ ouster_app_t * ouster_app_init(ouster_app_desc_t * desc)
 	platform_log("Column window: %i %i\n", app->meta.mid0, app->meta.mid1);
 
 	app->fields0[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
+	app->fields0[FIELD_RANGE].depth = 4;
+
 	app->fields0[FIELD_IR].quantity = OUSTER_QUANTITY_NEAR_IR;
+	app->fields0[FIELD_IR].depth = 4;
+
 	app->fields1[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
+	app->fields1[FIELD_RANGE].depth = 4;
+
 	app->fields1[FIELD_IR].quantity = OUSTER_QUANTITY_NEAR_IR;
+	app->fields1[FIELD_IR].depth = 4;
+
 	app->fields2[FIELD_RANGE].quantity = OUSTER_QUANTITY_RANGE;
+	app->fields2[FIELD_RANGE].depth = 4;
+
 	app->fields2[FIELD_IR].quantity = OUSTER_QUANTITY_NEAR_IR;
+	app->fields2[FIELD_IR].depth = 4;
+
 	ouster_field_init(app->fields0, FIELD_COUNT, &app->meta);
 	ouster_field_init(app->fields1, FIELD_COUNT, &app->meta);
 	ouster_field_init(app->fields2, FIELD_COUNT, &app->meta);

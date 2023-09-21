@@ -151,9 +151,6 @@ void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_q
 		f->offset = 2;
 		f->depth = 1;
 		break;
-	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_SIGNAL):
-		platform_assert(0, "");
-		break;
 	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_NEAR_IR):
 		f->mask = UINT32_C(0xFFFFFFFF);
 		f->offset = 3;

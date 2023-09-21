@@ -1,0 +1,14 @@
+{
+    "id": "ouster_replay",
+    "type": "application",
+    "value": {
+        "language": "c",
+        "public": false,
+        "use" : ["platform"]
+    },
+    "lang.c": {
+        "lib": ["platform", "pcap", "m"],
+        "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable", "-Wno-error=unused-but-set-variable"],
+		"defines":["_DEFAULT_SOURCE"]
+    }
+}

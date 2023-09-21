@@ -19,6 +19,9 @@ render_points : renderings.pipes.points {
 }
 
 sensor1 {
+    //- sensors.SensorsDesc{metafile:"/home/johan/OS16_RNG15_RFL8_NIR8.json", radius_filter:100.0}OS16_RNG19_RFL8_SIG16_NIR16
+    //- sensors.SensorsDesc{metafile:"/home/johan/OS16_RNG19_RFL8_SIG16_NIR16.json", radius_filter:100.0}
+    //- sensors.SensorsDesc{metafile:"/home/johan/Downloads/nowcap/a.json", radius_filter:100.0}
     - sensors.SensorsDesc{metafile:"/home/johan/Downloads/OS1_Captures_128/a.json", radius_filter:100.0}
 }
 

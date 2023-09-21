@@ -60,8 +60,23 @@ bake/setup.sh
 cd ~/Downloads
 git clone https://github.com/KenthJohan/ouster_clib/
 cd ouster_clib
+bake platform
 bake ouster_clib
 ```
+
+
+
+### Build tools
+```bash
+bake tools
+```
+
+
+### Build examples
+```bash
+bake examples
+```
+
 
 ### VS code
 ```bash

@@ -113,16 +113,14 @@ int main(int argc, char* argv[])
     while(1)
     {
         
-        int timeout_sec = 0;
-        int timeout_usec = 1000*20;
+        int timeout_sec = 1;
+        int timeout_usec = 0;
         uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
 
         if(a == 0)
         {
-            //ouster_log("Timeout\n");
+            platform_log("Timeout\n");
         }
-
-        //https://static.ouster.dev/sdk-docs/reference/lidar-scan.html#staggering-and-destaggering
 
         if(a & (1 << SOCK_INDEX_LIDAR))
         {

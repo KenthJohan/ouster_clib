@@ -12,6 +12,6 @@ void UserinputsImport(ecs_world_t *world)
 	ECS_COMPONENT_DEFINE(world, UserinputsKeys);
 
 	ecs_set_hooks(world, UserinputsKeys, {
-											 .ctor = ecs_ctor(UserinputsKeys),
-										 });
+		.ctor = ecs_ctor(UserinputsKeys),
+		});
 }

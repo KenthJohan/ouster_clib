@@ -1,5 +1,6 @@
 #include "viz/Sg.h"
 #include "viz/Windows.h"
+#include "viz/Userinputs.h"
 #include <platform/log.h>
 #include <platform/fs.h>
 #include <platform/assert.h>
@@ -326,6 +327,8 @@ void SgImport(ecs_world_t *world)
 {
 	ECS_MODULE(world, Sg);
 	ECS_IMPORT(world, Windows);
+	ECS_IMPORT(world, Userinputs);
+
 	ecs_set_name_prefix(world, "Sg");
 	ECS_COMPONENT_DEFINE(world, SgPipelineCreate);
 	ECS_COMPONENT_DEFINE(world, SgPipeline);

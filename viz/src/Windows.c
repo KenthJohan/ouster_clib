@@ -41,23 +41,23 @@ void WindowsImport(ecs_world_t *world)
 	ECS_OBSERVER(world, it_set, EcsOnSet, Window, RenderingsContext($));
 
 	ecs_system_init(world, &(ecs_system_desc_t){
-							   .entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
-							   .callback = it_update,
-							   .query.filter.terms =
-								   {
-									   {.id = ecs_id(Window)},
-									   {.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
-								   }});
+		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
+		.callback = it_update,
+		.query.filter.terms =
+		{
+			{.id = ecs_id(Window)},
+			{.id = ecs_id(RenderingsContext), .src.id = ecs_id(RenderingsContext)},
+		}});
 
 	ecs_struct(world, {.entity = ecs_id(Window),
-					   .members = {
-						   {.name = "w", .type = ecs_id(ecs_i32_t)},
-						   {.name = "h", .type = ecs_id(ecs_i32_t)},
-						   {.name = "dt", .type = ecs_id(ecs_f32_t)},
-						   {.name = "title", .type = ecs_id(ecs_string_t)},
-					   }});
+		.members = {
+			{.name = "w", .type = ecs_id(ecs_i32_t)},
+			{.name = "h", .type = ecs_id(ecs_i32_t)},
+			{.name = "dt", .type = ecs_id(ecs_f32_t)},
+			{.name = "title", .type = ecs_id(ecs_string_t)},
+		}});
 
 	ecs_set_hooks(world, Window, {
-									 .ctor = ecs_ctor(Window),
-								 });
+		.ctor = ecs_ctor(Window),
+	});
 }

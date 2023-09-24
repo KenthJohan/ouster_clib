@@ -38,8 +38,6 @@
 typedef struct
 {
 	ecs_i32_t cap;
-	vs_params_t vs_params;
-	sg_pass_action pass_action;
 	sg_bindings bind;
 } DrawShapesState;
 
@@ -55,13 +53,14 @@ void DrawShapesState_Add(ecs_iter_t *it)
 	ShapeBufferImpl *sbuf = ecs_field(it, ShapeBufferImpl, 2);	   // Up
 	for (int i = 0; i < it->count; ++i, ++desc)
 	{
-		DrawShapesState *rend = ecs_get_mut(it->world, it->entities[i], DrawShapesState);
-		rend->cap = desc->cap;
+		DrawShapesState *s = ecs_get_mut(it->world, it->entities[i], DrawShapesState);
+		memset(s, 0, sizeof(DrawShapesState));
+		s->cap = desc->cap;
 		assert(sbuf->buf.valid);
 		const sg_buffer_desc vbuf_desc = sshape_vertex_buffer_desc(&sbuf->buf);
 		const sg_buffer_desc ibuf_desc = sshape_index_buffer_desc(&sbuf->buf);
-		rend->bind.vertex_buffers[0] = sg_make_buffer(&vbuf_desc);
-		rend->bind.index_buffer = sg_make_buffer(&ibuf_desc);
+		s->bind.vertex_buffers[0] = sg_make_buffer(&vbuf_desc);
+		s->bind.index_buffer = sg_make_buffer(&ibuf_desc);
 	}
 }
 
@@ -83,11 +82,10 @@ void DrawShapesState_Draw(ecs_iter_t *it)
 		m4f32 mvp;
 		m4f32_mul(&mvp, &cam->vp, &t);
 
-		ecs_os_memcpy_t(&rend->vs_params.mvp, &mvp, hmm_mat4);
-
-		sg_range a = {&rend->vs_params, sizeof(vs_params_t)};
+		vs_params_t vs_params = {0};
+		ecs_os_memcpy_t(&vs_params.mvp, &mvp, hmm_mat4);
 		int slot = 0;
-		sg_apply_uniforms(SG_SHADERSTAGE_VS, slot, &a);
+		sg_apply_uniforms(SG_SHADERSTAGE_VS, slot, &(sg_range){.ptr = &vs_params, .size = sizeof(vs_params_t)});
 		sg_draw(shape->element.base_element, shape->element.num_elements, 1);
 	}
 }

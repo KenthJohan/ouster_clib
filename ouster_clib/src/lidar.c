@@ -74,7 +74,6 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 
 		for (int j = 0; j < fcount; ++j)
 		{
-			// TODO: Copy rest of the fields also
 			field_copy(fields + j, meta, column.mid, pxbuf);
 			lidar->num_valid_pixels += meta->pixels_per_column;
 		}

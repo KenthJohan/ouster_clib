@@ -32,9 +32,6 @@ typedef struct
 typedef struct
 {
 	ecs_i32_t cap;
-	vs_params_t vs_params;
-	sg_pass_action pass_action;
-	// per-primitive-type data
 
 	sg_buffer ibuf;
 	sg_bindings bind;
@@ -56,6 +53,7 @@ void DrawPointsState_Add(ecs_iter_t *it)
 	for (int i = 0; i < it->count; ++i, ++desc)
 	{
 		DrawPointsState *s = ecs_get_mut(it->world, it->entities[i], DrawPointsState);
+		memset(s, 0, sizeof(DrawPointsState));
 		s->cap = desc->cap;
 		s->bind.vertex_buffers[0] = sg_make_buffer(&(sg_buffer_desc){
 			.size = s->cap * sizeof(vertex_t),
@@ -99,12 +97,13 @@ void DrawPointsState_Draw(ecs_iter_t *it)
 		sg_update_buffer(s->bind.vertex_buffers[0], &range);
 		sg_apply_pipeline(pip->id);
 		sg_apply_bindings(&s->bind);
-		s->vs_params.viewport.X = window->w;
-		s->vs_params.viewport.Y = window->h;
-		ecs_os_memcpy_t(&s->vs_params.mvp, &cam->vp, hmm_mat4);
-		sg_range a = {&s->vs_params, sizeof(vs_params_t)};
+
+		vs_params_t vs_params;
+		vs_params.viewport.X = window->w;
+		vs_params.viewport.Y = window->h;
+		ecs_os_memcpy_t(&vs_params.mvp, &cam->vp, hmm_mat4);
 		int slot = 0;
-		sg_apply_uniforms(SG_SHADERSTAGE_VS, slot, &a);
+		sg_apply_uniforms(SG_SHADERSTAGE_VS, slot, &(sg_range){.ptr = &vs_params, .size = sizeof(vs_params_t)});
 		sg_draw(0, n, 1);
 	}
 }

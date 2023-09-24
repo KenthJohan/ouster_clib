@@ -109,7 +109,7 @@ void CamerasImport(ecs_world_t *world)
 			{.name = "proj", .type = ecs_id(ecs_f32_t), .count = 16},
 			{.name = "move", .type = ecs_id(ecs_f32_t), .count = 3},
 			{.name = "look", .type = ecs_id(ecs_f32_t), .count = 3},
-			{.name = "move_speed", .type = ecs_id(ecs_f32_t)},
-			{.name = "look_speed", .type = ecs_id(ecs_f32_t)},
+			{.name = "moving_speed", .type = ecs_id(ecs_f32_t)},
+			{.name = "looking_speed", .type = ecs_id(ecs_f32_t)},
 		}});
 }

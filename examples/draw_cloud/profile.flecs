@@ -9,7 +9,7 @@ window1 {
 }
 
 camera1 {
-    - cameras.Camera{move_speed:10.0, look_speed:1.0}
+    - cameras.Camera{moving_speed:10.0, looking_speed:1.0}
     - geometries.Position3
 }
 

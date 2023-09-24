@@ -29,7 +29,10 @@ void field_copy(ouster_field_t *field, ouster_meta_t *meta, int mid, char const 
 	int offset = extract->offset;
 	int rowsize = field->rowsize;
 	int rows = meta->pixels_per_column;
-	char *dst = data + (mid - meta->mid0) * field->depth;
+	int mid0 = meta->mid0;
+	int mid1 = meta->mid1;
+	platform_assert(mid <= mid1, "");
+	char *dst = data + (mid - mid0) * field->depth;
 	pxcpy(dst, rowsize, pxbuf + offset, meta->channel_data_size, rows, depth);
 }
 
@@ -74,6 +77,9 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 
 		for (int j = 0; j < fcount; ++j)
 		{
+			platform_assert(fields[j].cols > 0, "");
+			platform_assert(fields[j].rows > 0, "");
+			platform_assert(fields[j].depth > 0, "");
 			field_copy(fields + j, meta, column.mid, pxbuf);
 			lidar->num_valid_pixels += meta->pixels_per_column;
 		}
@@ -84,5 +90,13 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 	{
 		// TODO: Refactor this mask procedure
 		ouster_field_apply_mask_u32(fields + j, meta);
+	}
+
+	for (int j = 0; j < fcount; ++j)
+	{
+		platform_assert_notnull(fields[j].data);
+		platform_assert(fields[j].cols > 0, "");
+		platform_assert(fields[j].rows > 0, "");
+		platform_assert(fields[j].depth > 0, "");
 	}
 }

@@ -12,6 +12,7 @@ void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
 	ouster_field_t *f = fields;
 	for (int i = 0; i < count; ++i, f++)
 	{
+		platform_assert(f->depth > 0, "");
 		f->rows = meta->pixels_per_column;
 		f->cols = meta->midw;
 		f->rowsize = f->cols * f->depth;
@@ -97,9 +98,10 @@ void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta)
 	if (field->depth == 4)
 	{
 		uint32_t *data32 = (uint32_t *)field->data;
-		int rows = meta->pixels_per_column;
-		int cols = meta->midw;
-		for (int i = 0; i < rows * cols; ++i)
+		int rows = field->rows;
+		int cols = field->cols;
+		int cells = rows * cols;
+		for (int i = 0; i < cells; ++i)
 		{
 			data32[i] &= mask;
 		}

@@ -9,7 +9,7 @@
 #include "viz/Pointclouds.h"
 #include "viz/Sg.h"
 #include "viz/vs_params.h"
-#include "GraphicsShapes.h"
+#include "viz/GraphicsShapes.h"
 
 #include <sokol/sokol_gfx.h>
 #include <sokol/sokol_gl.h>
@@ -50,17 +50,19 @@ ECS_COMPONENT_DECLARE(DrawShapesState);
 void DrawShapesState_Add(ecs_iter_t *it)
 {
 	DrawShapesDesc *desc = ecs_field(it, DrawShapesDesc, 1); // Self
-	ShapeBufferImpl *sbuf = ecs_field(it, ShapeBufferImpl, 2);	   // Up
+	ShapeBufferImpl *sbuf = ecs_field(it, ShapeBufferImpl, 2);// Up
 	for (int i = 0; i < it->count; ++i, ++desc)
 	{
 		DrawShapesState *s = ecs_get_mut(it->world, it->entities[i], DrawShapesState);
 		memset(s, 0, sizeof(DrawShapesState));
+		/*
 		s->cap = desc->cap;
 		assert(sbuf->buf.valid);
 		const sg_buffer_desc vbuf_desc = sshape_vertex_buffer_desc(&sbuf->buf);
 		const sg_buffer_desc ibuf_desc = sshape_index_buffer_desc(&sbuf->buf);
 		s->bind.vertex_buffers[0] = sg_make_buffer(&vbuf_desc);
 		s->bind.index_buffer = sg_make_buffer(&ibuf_desc);
+		*/
 	}
 }
 

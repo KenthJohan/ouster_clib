@@ -14,11 +14,11 @@ void Add(ecs_iter_t *it)
 	GeometriesInstances *ins = ecs_field(it, GeometriesInstances, 1); // up
 	Position3 *pos = ecs_field(it, Position3, 1); // self
 
-	Position3 * pos1 = ecs_vec_grow_t(NULL, &ins->pos, Position3, it->count);
+	//Position3 * pos1 = ecs_vec_grow_t(NULL, &ins->pos, Position3, it->count);
 
 	for (int i = 0; i < it->count; ++i)
 	{
-		pos1[i] = pos[i];
+		//pos1[i] = pos[i];
 	}
 }
 
@@ -58,7 +58,7 @@ void GeometriesImport(ecs_world_t *world)
 						   {.name = "z", .type = ecs_id(ecs_f32_t)},
 					   }});
 
-
+	/**
 	ecs_system_init(world, &(ecs_system_desc_t){
 		.entity = ecs_entity(world, {.add = {ecs_dependson(EcsOnUpdate)}}),
 		.callback = Add,
@@ -67,5 +67,6 @@ void GeometriesImport(ecs_world_t *world)
 				{.id = ecs_id(GeometriesInstances), .src.trav = EcsIsA, .src.flags = EcsUp},
 				{.id = ecs_id(Position3), .src.flags = EcsSelf},
 			}});
+			*/
 
 }

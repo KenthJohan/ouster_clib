@@ -1,6 +1,7 @@
 #include "viz/Sg.h"
 #include "viz/Windows.h"
 #include "viz/Userinputs.h"
+#include "viz/misc.h"
 #include <platform/log.h>
 #include <platform/fs.h>
 #include <platform/assert.h>
@@ -46,19 +47,9 @@ ECS_TAG_DECLARE(SgAttributeShapeTextcoord);
 ECS_TAG_DECLARE(SgAttributeShapeColor);
 ECS_TAG_DECLARE(SgVertexBufferLayoutShape);
 
-#define ENTITY_COLOR "#003366"
-
-void print_entity(ecs_world_t * world, ecs_entity_t e)
-{
-	char *path_str = ecs_get_fullpath(world, e);
-	char *type_str = ecs_type_str(world, ecs_get_type(world, e));
-	platform_log("%s [%s]\n", path_str, type_str);
-	ecs_os_free(type_str);
-	ecs_os_free(path_str);
-}
 
 
-void const * ecsx_get_target_data(ecs_world_t * world, ecs_entity_t e, ecs_entity_t type)
+static void const * ecsx_get_target_data(ecs_world_t * world, ecs_entity_t e, ecs_entity_t type)
 {
 	ecs_entity_t target = ecs_get_target(world, e, type, 0);
 	if(target == 0){return NULL;}
@@ -121,7 +112,7 @@ void iterate_shader_uniforms(ecs_world_t * world, ecs_entity_t parent, sg_shader
 		{
 			ecs_entity_t e = it.entities[i];
 			ecs_doc_set_color(world, e, ENTITY_COLOR);
-			print_entity(world, e);
+			print_entity_from_it(&it, i);
 			char const * name = ecs_get_name(world, e);
 			SgUniform const * uniform = ecs_get(world, e, SgUniform);
 			SgUniformType const * type = ecsx_get_target_data(world, e, ecs_id(SgUniformType));
@@ -144,7 +135,7 @@ void iterate_shader_blocks(ecs_world_t * world, ecs_entity_t parent, sg_shader_u
 		{
 			ecs_entity_t e = it.entities[i];
 			ecs_doc_set_color(world, e, ENTITY_COLOR);
-			print_entity(world, e);
+			print_entity_from_it(&it, i);
 			//char const * name = ecs_get_name(world, e);
 			ecs_i32_t index = ecs_get(world, e, SgUniformBlock)->index;
 			ecs_i32_t size = ecs_get(world, e, SgUniformBlock)->size;
@@ -164,7 +155,7 @@ void iterate_vertex_attrs(ecs_world_t * world, ecs_entity_t parent, sg_vertex_at
 		for (int i = 0; i < it.count; i ++)
 		{
 			ecs_entity_t e = it.entities[i];
-			print_entity(world, e);
+			print_entity_from_it(&it, i);
 			ecs_doc_set_color(world, e, ENTITY_COLOR);
 			SgLocation const * loc = ecs_get(world, e, SgLocation);
 			sg_vertex_attr_state * outstate = descs + loc->index;
@@ -256,7 +247,7 @@ void Pip_Create(ecs_iter_t *it)
 	{
 		ecs_entity_t e = it->entities[i];
 		ecs_doc_set_color(world, e, ENTITY_COLOR);
-		print_entity(world, e);
+		print_entity_from_it(it, i);
 
 		SgPipeline *pip = ecs_get_mut(world, e, SgPipeline);
 		
@@ -299,7 +290,7 @@ void Shader_Create(ecs_iter_t *it)
 	for (int i = 0; i < it->count; ++i)
 	{
 		ecs_entity_t e = it->entities[i];
-		print_entity(world, e);
+		print_entity_from_it(it, i);
 		ecs_doc_set_color(world, e, "#003366");
 		SgShader *shader = ecs_get_mut(world, e, SgShader);
 		sg_shader_desc desc = {0};

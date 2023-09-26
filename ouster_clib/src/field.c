@@ -60,7 +60,7 @@ inline img_t<T> destagger(const Eigen::Ref<const img_t<T>>& img,
 /*
 https://static.ouster.dev/sdk-docs/reference/lidar-scan.html#staggering-and-destaggering
 */
-void destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[])
+void ouster_destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[])
 {
 	platform_assert_notnull(data);
 	platform_assert_notnull(pixel_shift_by_row);
@@ -79,7 +79,7 @@ void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *m
 	platform_assert_notnull(meta);
 	for (int i = 0; i < count; ++i, ++fields)
 	{
-		destagger(fields->data, fields->cols, fields->rows, fields->depth, fields->rowsize, meta->pixel_shift_by_row);
+		ouster_destagger(fields->data, fields->cols, fields->rows, fields->depth, fields->rowsize, meta->pixel_shift_by_row);
 	}
 }
 

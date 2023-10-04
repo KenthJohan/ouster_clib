@@ -7,11 +7,9 @@
 #include <ouster_clib/types.h>
 #include <ouster_clib/lidar.h>
 #include <ouster_clib/meta.h>
-
-
-#include <platform/net.h>
-#include <platform/log.h>
-#include <platform/fs.h>
+#include <ouster_clib/ouster_net.h>
+#include <ouster_clib/ouster_log.h>
+#include <ouster_clib/ouster_fs.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -119,20 +117,20 @@ int main(int argc, char* argv[])
 
         if(a == 0)
         {
-            platform_log("Timeout\n");
+            ouster_log("Timeout\n");
         }
 
         if(a & (1 << SOCK_INDEX_LIDAR))
         {
             char buf[1024*1024];
             int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-            //platform_log("%-10s %5ji %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
+            //ouster_log("%-10s %5ji %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
             if(n != meta.lidar_packet_size)
             {
-                //platform_log("%-10s %5ji of %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
+                //ouster_log("%-10s %5ji of %5ji:  \n", "SOCK_LIDAR", (intmax_t)n, meta.lidar_packet_size);
             }
             ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
-            platform_log("mid_loss %i\n", lidar.mid_loss);
+            ouster_log("mid_loss %i\n", lidar.mid_loss);
             if(lidar.last_mid == meta.mid1)
             {
                 ouster_field_destagger(fields, FIELD_COUNT, &meta);
@@ -166,7 +164,7 @@ int main(int argc, char* argv[])
         {
             char buf[1024*256];
             int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
-            //platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
+            //ouster_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
         }
 
         //int key = cv::waitKey(1);

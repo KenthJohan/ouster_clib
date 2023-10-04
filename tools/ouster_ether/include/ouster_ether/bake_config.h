@@ -14,11 +14,11 @@
  * dependencies will automatically show up in this file. Include bake_config.h
  * in your main project file. Do not edit! */
 
-#ifndef DRAW_CLOUD_BAKE_CONFIG_H
-#define DRAW_CLOUD_BAKE_CONFIG_H
+#ifndef OUSTER_ETHER_BAKE_CONFIG_H
+#define OUSTER_ETHER_BAKE_CONFIG_H
 
 /* Headers of public dependencies */
-#include <flecs.h>
+/* No dependencies */
 
 #endif
 

@@ -4,7 +4,9 @@
 #include <unistd.h>
 
 #include <ouster_clib/client.h>
-#include <platform/fs.h>
+#include <ouster_clib/ouster_net.h>
+#include <ouster_clib/ouster_log.h>
+#include <ouster_clib/ouster_fs.h>
 
 int main(int argc, char *argv[])
 {

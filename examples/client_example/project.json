@@ -4,10 +4,10 @@
     "value": {
         "language": "c",
         "public": false,
-        "use" : ["platform", "ouster_clib"]
+        "use" : ["ouster_clib"]
     },
     "lang.c": {
-        "lib": ["platform", "ouster_clib", "curl", "m"],
+        "lib": ["ouster_clib", "curl", "m"],
         "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable"]
     }
 }

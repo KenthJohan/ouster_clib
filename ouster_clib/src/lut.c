@@ -1,5 +1,6 @@
 #include "ouster_clib/lut.h"
 #include "ouster_clib/ouster_assert.h"
+#include "ouster_math.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -96,53 +97,7 @@ XYZLut make_xyz_lut(size_t w, size_t h, double range_unit,
 }
 */
 
-#define FMTF "%+20.10f"
-#define FMTF3 FMTF FMTF FMTF "\n"
-#define FMTF4 FMTF FMTF FMTF FMTF "\n"
 
-#define M4_ARGS_1(x) (x)[0], (x)[1], (x)[2], (x)[3], (x)[4], (x)[5], (x)[6], (x)[7], (x)[8], (x)[9], (x)[10], (x)[11], (x)[12], (x)[13], (x)[14], (x)[15]
-#define M4_ARGS_2(x) (x)[0], (x)[4], (x)[8], (x)[12], (x)[1], (x)[5], (x)[9], (x)[13], (x)[2], (x)[6], (x)[10], (x)[14], (x)[3], (x)[7], (x)[11], (x)[15]
-#define M4_FORMAT FMTF4 FMTF4 FMTF4 FMTF4
-
-#define M3_ARGS_1(x) (x)[0], (x)[1], (x)[2], (x)[3], (x)[4], (x)[5], (x)[6], (x)[7], (x)[8]
-#define M3_ARGS_2(x) (x)[0], (x)[3], (x)[6], (x)[1], (x)[4], (x)[7], (x)[2], (x)[5], (x)[8]
-#define M3_FORMAT FMTF3 FMTF3 FMTF3
-
-#define V3_ARGS(x) (x)[0], (x)[1], (x)[2]
-#define V3_FORMAT "%f %f %f\n"
-#define V3_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
-
-void print_m4(double const *a)
-{
-	printf(M4_FORMAT, M4_ARGS_1(a));
-}
-
-void print_m3(double const *a)
-{
-	printf(M3_FORMAT, M3_ARGS_1(a));
-}
-
-void print_v3(double const *a)
-{
-	printf(V3_FORMAT, V3_ARGS(a));
-}
-
-#define M4(i, j) ((i) * 4 + (j))
-#define M3(i, j) ((i) * 3 + (j))
-
-void mul3(double *r, double const *a, double const *x)
-{
-	ouster_assert_notnull(r);
-	ouster_assert_notnull(a);
-	ouster_assert_notnull(x);
-	double temp[3];
-	temp[0] = (a[M3(0, 0)] * x[0]) + (a[M3(1, 0)] * x[1]) + (a[M3(2, 0)] * x[2]);
-	temp[1] = (a[M3(0, 1)] * x[0]) + (a[M3(1, 1)] * x[1]) + (a[M3(2, 1)] * x[2]);
-	temp[2] = (a[M3(0, 2)] * x[0]) + (a[M3(1, 2)] * x[1]) + (a[M3(2, 2)] * x[2]);
-	r[0] = temp[0];
-	r[1] = temp[1];
-	r[2] = temp[2];
-}
 
 void ouster_lut_fini(ouster_lut_t *lut)
 {
@@ -181,7 +136,8 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 
 	float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[M4(0, 3)];
 	float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[M4(2, 3)];
-	print_m4(meta->lidar_to_sensor_transform);
+	m4_print(meta->lidar_to_sensor_transform);
+
 	// This represent a column measurement angle:
 	double azimuth_radians = M_PI * 2.0 / meta->columns_per_frame;
 
@@ -252,11 +208,13 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	lut->w = w;
 	lut->h = h;
 
+	/*
 	for (int i = 0; i < w * h; ++i) {
-		// double *d = direction + i * 3;
-		// double *o = offset + i * 3;
-		//  printf("%+f %+f %+f %+f %+f %+f, %+f\n", o[0], o[1], o[2], d[0], d[1], d[2], sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
+		double *d = direction + i * 3;
+		double *o = offset + i * 3;
+		printf("%+f %+f %+f %+f %+f %+f, %+f\n", o[0], o[1], o[2], d[0], d[1], d[2], sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
 	}
+	*/
 }
 
 void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, void *out, int out_stride)

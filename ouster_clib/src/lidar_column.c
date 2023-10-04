@@ -1,6 +1,6 @@
 #include "ouster_clib/lidar_column.h"
-#include "ouster_clib/ouster_log.h"
 #include "ouster_clib/ouster_assert.h"
+#include "ouster_clib/ouster_log.h"
 #include <string.h>
 
 void ouster_column_log(ouster_column_t const *column)
@@ -13,8 +13,7 @@ void ouster_column_get1(char const *colbuf, void *dst, int type)
 {
 	ouster_assert_notnull(colbuf);
 	ouster_assert_notnull(dst);
-	switch (type)
-	{
+	switch (type) {
 	case ouster_id(ouster_timestamp_t):
 		memcpy(dst, colbuf + 0, sizeof(ouster_timestamp_t));
 		break;

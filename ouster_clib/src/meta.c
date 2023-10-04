@@ -1,21 +1,20 @@
 #include "ouster_clib/meta.h"
-#include "ouster_clib/types.h"
-#include "ouster_clib/ouster_log.h"
-#include "ouster_clib/ouster_assert.h"
 #include "ouster_basics.h"
+#include "ouster_clib/ouster_assert.h"
+#include "ouster_clib/ouster_log.h"
+#include "ouster_clib/types.h"
 
 #define JSMN_HEADER
 #include "jsmn.h"
 #include "json.h"
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define TOK_COUNT 1024
 
 char *jsmn_strerror(int r)
 {
-	switch (r)
-	{
+	switch (r) {
 	case JSMN_ERROR_NOMEM:
 		return "JSMN_ERROR_NOMEM";
 	case JSMN_ERROR_INVAL:
@@ -29,90 +28,80 @@ char *jsmn_strerror(int r)
 
 #define STRING_BUF_SIZE 128
 
-
-
-
-
-
-
 /*
 
 static const Table<ChanField, FieldInfo, 8> legacy_field_info{{
-	{ChanField::RANGE, {UINT32, 0, 0x000fffff, 0}},
-	{ChanField::FLAGS, {UINT8, 3, 0, 4}},
-	{ChanField::REFLECTIVITY, {UINT16, 4, 0, 0}},
-	{ChanField::SIGNAL, {UINT16, 6, 0, 0}},
-	{ChanField::NEAR_IR, {UINT16, 8, 0, 0}},
-	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-	{ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
-	{ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+    {ChanField::RANGE, {UINT32, 0, 0x000fffff, 0}},
+    {ChanField::FLAGS, {UINT8, 3, 0, 4}},
+    {ChanField::REFLECTIVITY, {UINT16, 4, 0, 0}},
+    {ChanField::SIGNAL, {UINT16, 6, 0, 0}},
+    {ChanField::NEAR_IR, {UINT16, 8, 0, 0}},
+    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
 }};
 
 static const Table<ChanField, FieldInfo, 5> lb_field_info{{
-	{ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
-	{ChanField::FLAGS, {UINT8, 1, 0b10000000, 7}},
-	{ChanField::REFLECTIVITY, {UINT8, 2, 0, 0}},
-	{ChanField::NEAR_IR, {UINT8, 3, 0, -4}},
-	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+    {ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
+    {ChanField::FLAGS, {UINT8, 1, 0b10000000, 7}},
+    {ChanField::REFLECTIVITY, {UINT8, 2, 0, 0}},
+    {ChanField::NEAR_IR, {UINT8, 3, 0, -4}},
+    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
 }};
 
 static const Table<ChanField, FieldInfo, 13> dual_field_info{{
-	{ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
-	{ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
-	{ChanField::REFLECTIVITY, {UINT8, 3, 0, 0}},
-	{ChanField::RANGE2, {UINT32, 4, 0x0007ffff, 0}},
-	{ChanField::FLAGS2, {UINT8, 6, 0b11111000, 3}},
-	{ChanField::REFLECTIVITY2, {UINT8, 7, 0, 0}},
-	{ChanField::SIGNAL, {UINT16, 8, 0, 0}},
-	{ChanField::SIGNAL2, {UINT16, 10, 0, 0}},
-	{ChanField::NEAR_IR, {UINT16, 12, 0, 0}},
-	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-	{ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
-	{ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
-	{ChanField::RAW32_WORD4, {UINT32, 12, 0, 0}},
+    {ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
+    {ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
+    {ChanField::REFLECTIVITY, {UINT8, 3, 0, 0}},
+    {ChanField::RANGE2, {UINT32, 4, 0x0007ffff, 0}},
+    {ChanField::FLAGS2, {UINT8, 6, 0b11111000, 3}},
+    {ChanField::REFLECTIVITY2, {UINT8, 7, 0, 0}},
+    {ChanField::SIGNAL, {UINT16, 8, 0, 0}},
+    {ChanField::SIGNAL2, {UINT16, 10, 0, 0}},
+    {ChanField::NEAR_IR, {UINT16, 12, 0, 0}},
+    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+    {ChanField::RAW32_WORD4, {UINT32, 12, 0, 0}},
 }};
 
 static const Table<ChanField, FieldInfo, 8> single_field_info{{
-	{ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
-	{ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
-	{ChanField::REFLECTIVITY, {UINT8, 4, 0, 0}},
-	{ChanField::SIGNAL, {UINT16, 6, 0, 0}},
-	{ChanField::NEAR_IR, {UINT16, 8, 0, 0}},
-	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-	{ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
-	{ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+    {ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
+    {ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
+    {ChanField::REFLECTIVITY, {UINT8, 4, 0, 0}},
+    {ChanField::SIGNAL, {UINT16, 6, 0, 0}},
+    {ChanField::NEAR_IR, {UINT16, 8, 0, 0}},
+    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
 }};
 
 static const Table<ChanField, FieldInfo, 14> five_word_pixel_info{{
-	{ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
-	{ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
-	{ChanField::REFLECTIVITY, {UINT8, 3, 0, 0}},
-	{ChanField::RANGE2, {UINT32, 4, 0x0007ffff, 0}},
-	{ChanField::FLAGS2, {UINT8, 6, 0b11111000, 3}},
-	{ChanField::REFLECTIVITY2, {UINT8, 7, 0, 0}},
-	{ChanField::SIGNAL, {UINT16, 8, 0, 0}},
-	{ChanField::SIGNAL2, {UINT16, 10, 0, 0}},
-	{ChanField::NEAR_IR, {UINT16, 12, 0, 0}},
-	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-	{ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
-	{ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
-	{ChanField::RAW32_WORD4, {UINT32, 12, 0, 0}},
-	{ChanField::RAW32_WORD5, {UINT32, 16, 0, 0}},
+    {ChanField::RANGE, {UINT32, 0, 0x0007ffff, 0}},
+    {ChanField::FLAGS, {UINT8, 2, 0b11111000, 3}},
+    {ChanField::REFLECTIVITY, {UINT8, 3, 0, 0}},
+    {ChanField::RANGE2, {UINT32, 4, 0x0007ffff, 0}},
+    {ChanField::FLAGS2, {UINT8, 6, 0b11111000, 3}},
+    {ChanField::REFLECTIVITY2, {UINT8, 7, 0, 0}},
+    {ChanField::SIGNAL, {UINT16, 8, 0, 0}},
+    {ChanField::SIGNAL2, {UINT16, 10, 0, 0}},
+    {ChanField::NEAR_IR, {UINT16, 12, 0, 0}},
+    {ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
+    {ChanField::RAW32_WORD2, {UINT32, 4, 0, 0}},
+    {ChanField::RAW32_WORD3, {UINT32, 8, 0, 0}},
+    {ChanField::RAW32_WORD4, {UINT32, 12, 0, 0}},
+    {ChanField::RAW32_WORD5, {UINT32, 16, 0, 0}},
 }};
 
 */
 
 #define COMBINE(p, q) (((p) << 0) | ((q) << 8))
 
-
-
-
 void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_quantity_t quantity)
 {
 	ouster_assert_notnull(f);
-	
-	switch (COMBINE(profile, quantity))
-	{
+
+	switch (COMBINE(profile, quantity)) {
 	case COMBINE(OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16, OUSTER_QUANTITY_RANGE):
 		f->mask = UINT32_C(0x0007ffff);
 		f->offset = 0;
@@ -160,11 +149,6 @@ void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_q
 	}
 }
 
-
-
-
-
-
 void ouster_meta_parse(char const *json, ouster_meta_t *out)
 {
 	ouster_assert_notnull(json);
@@ -174,8 +158,7 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	jsmn_init(&p);
 	jsmntok_t tokens[TOK_COUNT];
 	int r = jsmn_parse(&p, json, strlen(json), tokens, TOK_COUNT);
-	if (r < 1)
-	{
+	if (r < 1) {
 		ouster_log("jsmn error: %s\n", jsmn_strerror(r));
 		return;
 	}
@@ -200,33 +183,22 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	char buf[STRING_BUF_SIZE];
 	json_parse_string(json, tokens, (char const *[]){"lidar_data_format", "udp_profile_lidar", NULL}, buf, STRING_BUF_SIZE);
 
-	if (strcmp(buf, "LIDAR_LEGACY") == 0)
-	{
+	if (strcmp(buf, "LIDAR_LEGACY") == 0) {
 		out->profile = OUSTER_PROFILE_LIDAR_LEGACY;
 		out->channel_data_size = 12;
-	}
-	else if (strcmp(buf, "RNG19_RFL8_SIG16_NIR16_DUAL") == 0)
-	{
+	} else if (strcmp(buf, "RNG19_RFL8_SIG16_NIR16_DUAL") == 0) {
 		out->profile = OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL;
 		out->channel_data_size = 16;
-	}
-	else if (strcmp(buf, "RNG19_RFL8_SIG16_NIR16") == 0)
-	{
+	} else if (strcmp(buf, "RNG19_RFL8_SIG16_NIR16") == 0) {
 		out->profile = OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16;
 		out->channel_data_size = 12;
-	}
-	else if (strcmp(buf, "RNG15_RFL8_NIR8") == 0)
-	{
+	} else if (strcmp(buf, "RNG15_RFL8_NIR8") == 0) {
 		out->profile = OUSTER_PROFILE_RNG15_RFL8_NIR8;
 		out->channel_data_size = 4;
-	}
-	else if (strcmp(buf, "FIVE_WORD_PIXEL") == 0)
-	{
+	} else if (strcmp(buf, "FIVE_WORD_PIXEL") == 0) {
 		out->profile = OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL;
 		out->channel_data_size = 20;
-	}
-	else
-	{
+	} else {
 		ouster_assert(0, "Profile not found");
 	}
 
@@ -234,10 +206,10 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	  https://github.com/ouster-lidar/ouster_example/blob/9d0971107f6f9c95e16afd727fa2534d01a0fe4e/ouster_client/src/parsing.cpp#L155
 
 	  col_size = col_header_size + pixels_per_column * channel_data_size +
-				  col_footer_size;
+	              col_footer_size;
 
-			lidar_packet_size = packet_header_size + columns_per_packet * col_size +
-								packet_footer_size;
+	        lidar_packet_size = packet_header_size + columns_per_packet * col_size +
+	                            packet_footer_size;
 
 	*/
 	out->col_size = OUSTER_COLUMN_HEADER_SIZE + out->pixels_per_column * out->channel_data_size + OUSTER_COLUMN_FOOTER_SIZE;
@@ -247,17 +219,14 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	out->mid1 = MAX(column_window[0], column_window[1]);
 	out->midw = abs(column_window[0] - column_window[1]) + 1;
 
-
-	for(ouster_quantity_t quantity = 0; quantity < OUSTER_QUANTITY_CHAN_FIELD_MAX; ++quantity)
-	{
-		ouster_extract_t * e = out->extract + quantity;
+	for (ouster_quantity_t quantity = 0; quantity < OUSTER_QUANTITY_CHAN_FIELD_MAX; ++quantity) {
+		ouster_extract_t *e = out->extract + quantity;
 		ouster_extract_init(e, out->profile, quantity);
 		int rows = out->pixels_per_column;
 		int cols = out->midw;
 		ouster_assert(rows >= 0, "");
 		ouster_assert(cols >= 0, "");
 	}
-
 
 	ouster_assert(out->mid0 < out->mid1, "");
 	ouster_assert(out->midw > 0, "");

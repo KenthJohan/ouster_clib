@@ -1,7 +1,7 @@
 #include "ouster_clib/sock.h"
-#include "ouster_clib/ouster_net.h"
-#include "ouster_clib/ouster_log.h"
 #include "ouster_clib/ouster_assert.h"
+#include "ouster_clib/ouster_log.h"
+#include "ouster_clib/ouster_net.h"
 #include <stddef.h>
 
 int ouster_sock_create_udp_lidar(char const *hint_service)

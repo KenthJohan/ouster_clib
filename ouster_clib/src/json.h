@@ -2,8 +2,7 @@
 
 #include "jsmn.h"
 
-typedef enum
-{
+typedef enum {
 	JSON_TYPE_INT,
 	JSON_TYPE_F64,
 	JSON_TYPE_LAST

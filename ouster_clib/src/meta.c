@@ -1,9 +1,8 @@
 #include "ouster_clib/meta.h"
 #include "ouster_clib/types.h"
-
-#include <platform/log.h>
-#include <platform/basics.h>
-#include <platform/assert.h>
+#include "ouster_clib/ouster_log.h"
+#include "ouster_clib/ouster_assert.h"
+#include "ouster_basics.h"
 
 #define JSMN_HEADER
 #include "jsmn.h"
@@ -110,7 +109,7 @@ static const Table<ChanField, FieldInfo, 14> five_word_pixel_info{{
 
 void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_quantity_t quantity)
 {
-	platform_assert_notnull(f);
+	ouster_assert_notnull(f);
 	
 	switch (COMBINE(profile, quantity))
 	{
@@ -168,8 +167,8 @@ void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_q
 
 void ouster_meta_parse(char const *json, ouster_meta_t *out)
 {
-	platform_assert_notnull(json);
-	platform_assert_notnull(out);
+	ouster_assert_notnull(json);
+	ouster_assert_notnull(out);
 
 	jsmn_parser p;
 	jsmn_init(&p);
@@ -177,18 +176,18 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	int r = jsmn_parse(&p, json, strlen(json), tokens, TOK_COUNT);
 	if (r < 1)
 	{
-		platform_log("jsmn error: %s\n", jsmn_strerror(r));
+		ouster_log("jsmn error: %s\n", jsmn_strerror(r));
 		return;
 	}
-	platform_assert(tokens[0].type == JSMN_OBJECT, "Expected JSMN_OBJECT");
+	ouster_assert(tokens[0].type == JSMN_OBJECT, "Expected JSMN_OBJECT");
 
 	int column_window[2];
 	json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "columns_per_frame", NULL}, &out->columns_per_frame, JSON_TYPE_INT);
 	json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "columns_per_packet", NULL}, &out->columns_per_packet, JSON_TYPE_INT);
 	json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "pixels_per_column", NULL}, &out->pixels_per_column, JSON_TYPE_INT);
 	json_parse_vector(json, tokens, (char const *[]){"lidar_data_format", "column_window", NULL}, column_window, 2, JSON_TYPE_INT);
-	platform_assert(out->pixels_per_column > 0, "Not in range pixels_per_column");
-	platform_assert(out->pixels_per_column <= 128, "Not in range pixels_per_column");
+	ouster_assert(out->pixels_per_column > 0, "Not in range pixels_per_column");
+	ouster_assert(out->pixels_per_column <= 128, "Not in range pixels_per_column");
 	json_parse_vector(json, tokens, (char const *[]){"lidar_data_format", "pixel_shift_by_row", NULL}, out->pixel_shift_by_row, out->pixels_per_column, JSON_TYPE_INT);
 
 	json_parse_value(json, tokens, (char const *[]){"beam_intrinsics", "lidar_origin_to_beam_origin_mm", NULL}, &out->lidar_origin_to_beam_origin_mm, JSON_TYPE_F64);
@@ -228,7 +227,7 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	}
 	else
 	{
-		platform_assert(0, "Profile not found");
+		ouster_assert(0, "Profile not found");
 	}
 
 	/*
@@ -255,12 +254,12 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 		ouster_extract_init(e, out->profile, quantity);
 		int rows = out->pixels_per_column;
 		int cols = out->midw;
-		platform_assert(rows >= 0, "");
-		platform_assert(cols >= 0, "");
+		ouster_assert(rows >= 0, "");
+		ouster_assert(cols >= 0, "");
 	}
 
 
-	platform_assert(out->mid0 < out->mid1, "");
-	platform_assert(out->midw > 0, "");
-	platform_assert(out->channel_data_size > 0, "");
+	ouster_assert(out->mid0 < out->mid1, "");
+	ouster_assert(out->midw > 0, "");
+	ouster_assert(out->channel_data_size > 0, "");
 }

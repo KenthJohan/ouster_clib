@@ -3,9 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <platform/net.h>
-#include <platform/log.h>
-#include <platform/fs.h>
+
 
 #include <ouster_clib/sock.h>
 #include <ouster_clib/client.h>
@@ -16,6 +14,9 @@
 #include <ouster_clib/lut.h>
 #include <ouster_clib/lidar_header.h>
 #include <ouster_clib/lidar_column.h>
+#include <ouster_clib/ouster_fs.h>
+#include <ouster_clib/ouster_net.h>
+#include <ouster_clib/ouster_log.h>
 
 int main(int argc, char *argv[])
 {

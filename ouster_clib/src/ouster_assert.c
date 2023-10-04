@@ -1,15 +1,15 @@
-#include "platform/assert.h"
+#include "ouster_clib/ouster_assert.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-void platform_abort()
+void ouster_abort()
 {
 	abort();
 }
 
-int platform_assert_(
+int ouster_assert_(
 	const char *expr, 
 	const char *file, 
 	int32_t line, 
@@ -22,6 +22,6 @@ int platform_assert_(
 	va_start(args, fmt);
 	int r = vprintf(fmt, args);
 	va_end(args);
-	platform_abort();
+	ouster_abort();
 	return r;
 }

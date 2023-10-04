@@ -1,7 +1,7 @@
 #include "ouster_clib/client.h"
 
-#include <platform/log.h>
-#include <platform/assert.h>
+#include "ouster_clib/ouster_log.h"
+#include "ouster_clib/ouster_assert.h"
 
 #include <curl/curl.h>
 #include <stdlib.h>
@@ -10,7 +10,7 @@
 
 void ouster_buffer_init(ouster_buffer_t *b, int cap)
 {
-	platform_assert_notnull(b);
+	ouster_assert_notnull(b);
 	b->size = 0;
 	b->cap = cap;
 	b->data = calloc(1, b->cap);
@@ -18,7 +18,7 @@ void ouster_buffer_init(ouster_buffer_t *b, int cap)
 
 void ouster_buffer_fini(ouster_buffer_t *b)
 {
-	platform_assert_notnull(b);
+	ouster_assert_notnull(b);
 	free(b->data);
 	b->size = 0;
 	b->cap = 0;
@@ -27,8 +27,8 @@ void ouster_buffer_fini(ouster_buffer_t *b)
 
 size_t write_memory_callback(void *contents, size_t element_size, size_t elements_count, void *user_pointer)
 {
-	platform_assert_notnull(contents);
-	platform_assert_notnull(user_pointer);
+	ouster_assert_notnull(contents);
+	ouster_assert_notnull(user_pointer);
 
 	size_t size_increment = element_size * elements_count;
 	ouster_buffer_t *b = user_pointer;
@@ -38,7 +38,7 @@ size_t write_memory_callback(void *contents, size_t element_size, size_t element
 		b->data = realloc(b->data, new_size);
 		if (b->data == NULL)
 		{
-			platform_log("realloc(): error\n");
+			ouster_log("realloc(): error\n");
 			return 0;
 		}
 		b->cap = new_size;
@@ -55,13 +55,13 @@ size_t write_memory_callback(void *contents, size_t element_size, size_t element
 // http://192.168.1.137/api/v1/sensor/cmd/set_udp_dest_auto
 void req_get(ouster_client_t *client, char const *ip)
 {
-	platform_assert_notnull(client);
-	platform_assert_notnull(ip);
+	ouster_assert_notnull(client);
+	ouster_assert_notnull(ip);
 
 	{
 		char url[1024];
 		snprintf(url, 1024, "http://%s/%s", client->host, ip);
-		platform_log("\033[4;34m""GET""\033[0m"" %s\n",url);
+		ouster_log("\033[4;34m""GET""\033[0m"" %s\n",url);
 		curl_easy_setopt(client->curl, CURLOPT_URL, url);
 	}
 
@@ -72,7 +72,7 @@ void req_get(ouster_client_t *client, char const *ip)
 	curl_easy_setopt(client->curl, CURLOPT_WRITEDATA, &client->buf);
 
 	CURLcode res = curl_easy_perform(client->curl);
-	platform_log("curl_easy_perform() %i, %s\n", res, curl_easy_strerror(res));
+	ouster_log("curl_easy_perform() %i, %s\n", res, curl_easy_strerror(res));
 
 	if (res == CURLE_SEND_ERROR)
 	{
@@ -84,7 +84,7 @@ void req_get(ouster_client_t *client, char const *ip)
 
 	if (res != CURLE_OK)
 	{
-		platform_log("curl_easy_perform() failed\n");
+		ouster_log("curl_easy_perform() failed\n");
 		return;
 	}
 
@@ -93,7 +93,7 @@ void req_get(ouster_client_t *client, char const *ip)
 
 	if (http_code != 200)
 	{
-		platform_log("http_code error: %i\n", http_code);
+		ouster_log("http_code error: %i\n", http_code);
 	}
 }
 
@@ -102,7 +102,7 @@ void req_get(ouster_client_t *client, char const *ip)
 
 void ouster_client_init(ouster_client_t *client)
 {
-	platform_assert_notnull(client);
+	ouster_assert_notnull(client);
 	assert(client->host);
 	curl_global_init(CURL_GLOBAL_ALL);
 	client->curl = curl_easy_init();
@@ -112,7 +112,7 @@ void ouster_client_init(ouster_client_t *client)
 
 void ouster_client_fini(ouster_client_t *client)
 {
-	platform_assert_notnull(client);
+	ouster_assert_notnull(client);
 	curl_easy_cleanup(client->curl);
 	client->curl = NULL;
 	ouster_buffer_fini(&client->buf);
@@ -120,9 +120,9 @@ void ouster_client_fini(ouster_client_t *client)
 
 void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
 {
-	platform_assert_notnull(client);
-	platform_assert_notnull(path);
-	platform_log("Downloading meta to %s\n", path);
+	ouster_assert_notnull(client);
+	ouster_assert_notnull(path);
+	ouster_log("Downloading meta to %s\n", path);
 	req_get(client, URLAPI_METADATA);
 	FILE *f = fopen(path, "w+");
 	fwrite(client->buf.data, client->buf.size, 1, f);

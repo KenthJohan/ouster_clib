@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <platform/net.h>
-#include <platform/log.h>
-#include <platform/fs.h>
+#include <ouster_clib/ouster_net.h>
+#include <ouster_clib/ouster_log.h>
+#include <ouster_clib/ouster_fs.h>
 
 #include <ouster_clib/sock.h>
 #include <ouster_clib/client.h>
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 
 		if (a == 0)
 		{
-			platform_log("Timeout\n");
+			ouster_log("Timeout\n");
 		}
 
 		if (a & (1 << SOCK_INDEX_LIDAR))
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 			int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
 			if (mode == MONITOR_MODE_PACKET)
 			{
-				platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
+				ouster_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
 			}
 		}
 	}

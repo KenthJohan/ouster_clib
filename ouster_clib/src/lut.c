@@ -1,8 +1,10 @@
 #include "ouster_clib/lut.h"
+#include "ouster_clib/ouster_assert.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <platform/assert.h>
+
 
 /*
 
@@ -131,9 +133,9 @@ void print_v3(double const *a)
 
 void mul3(double *r, double const *a, double const *x)
 {
-	platform_assert_notnull(r);
-	platform_assert_notnull(a);
-	platform_assert_notnull(x);
+	ouster_assert_notnull(r);
+	ouster_assert_notnull(a);
+	ouster_assert_notnull(x);
 	double temp[3];
 	temp[0] = (a[M3(0, 0)] * x[0]) + (a[M3(1, 0)] * x[1]) + (a[M3(2, 0)] * x[2]);
 	temp[1] = (a[M3(0, 1)] * x[0]) + (a[M3(1, 1)] * x[1]) + (a[M3(2, 1)] * x[2]);
@@ -157,26 +159,26 @@ https://static.ouster.dev/sensor-docs/image_route1/image_route3/sensor_data/sens
 */
 void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 {
-	platform_assert_notnull(lut);
-	platform_assert_notnull(meta);
+	ouster_assert_notnull(lut);
+	ouster_assert_notnull(meta);
 
 	int w = meta->midw;
 	int h = meta->pixels_per_column;
-	platform_assert(w >= 0, "");
-	platform_assert(w <= 1024, "");
-	platform_assert(h >= 0, "");
-	platform_assert(h <= 128, "");
+	ouster_assert(w >= 0, "");
+	ouster_assert(w <= 1024, "");
+	ouster_assert(h >= 0, "");
+	ouster_assert(h <= 128, "");
 
 	double *encoder = calloc(1, w * h * sizeof(double));  // theta_e
 	double *azimuth = calloc(1, w * h * sizeof(double));  // theta_a
 	double *altitude = calloc(1, w * h * sizeof(double)); // phi
 	double *direction = calloc(1, w * h * 3 * sizeof(double));
 	double *offset = calloc(1, w * h * 3 * sizeof(double));
-	platform_assert_notnull(encoder);
-	platform_assert_notnull(azimuth);
-	platform_assert_notnull(altitude);
-	platform_assert_notnull(direction);
-	platform_assert_notnull(offset);
+	ouster_assert_notnull(encoder);
+	ouster_assert_notnull(azimuth);
+	ouster_assert_notnull(altitude);
+	ouster_assert_notnull(direction);
+	ouster_assert_notnull(offset);
 
 	float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[M4(0, 3)];
 	float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[M4(2, 3)];
@@ -191,8 +193,8 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 		{
 			// Row major - each row is continuous memory
 			int mid = meta->mid0 + c;
-			platform_assert(mid >= meta->mid0, "");
-			platform_assert(mid <= meta->mid1, "");
+			ouster_assert(mid >= meta->mid0, "");
+			ouster_assert(mid <= meta->mid1, "");
 			int i = r * w + c;
 			encoder[i] = 2.0 * M_PI - (mid * azimuth_radians);
 			azimuth[i] = -meta->beam_azimuth_angles[r] * M_PI / 180.0;
@@ -266,9 +268,9 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 
 void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, void *out, int out_stride)
 {
-	platform_assert_notnull(lut);
-	platform_assert_notnull(range);
-	platform_assert_notnull(out);
+	ouster_assert_notnull(lut);
+	ouster_assert_notnull(range);
+	ouster_assert_notnull(out);
 
 	double const *d = lut->direction;
 	double const *o = lut->offset;
@@ -286,9 +288,9 @@ void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, vo
 }
 void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, void *out, int out_stride)
 {
-	platform_assert_notnull(lut);
-	platform_assert_notnull(range);
-	platform_assert_notnull(out);
+	ouster_assert_notnull(lut);
+	ouster_assert_notnull(range);
+	ouster_assert_notnull(out);
 
 	double const *d = lut->direction;
 	double const *o = lut->offset;
@@ -308,7 +310,7 @@ void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, vo
 
 double * ouster_lut_alloc(ouster_lut_t const *lut)
 {
-	platform_assert_notnull(lut);
+	ouster_assert_notnull(lut);
 
 	int n = lut->w * lut->h;
 	int size = n * sizeof(double) * 3;

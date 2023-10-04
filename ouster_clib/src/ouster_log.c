@@ -1,9 +1,9 @@
-#include "platform/log.h"
+#include "ouster_clib/ouster_log.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
 
-void platform_log(char const *format, ...)
+void ouster_log(char const *format, ...)
 {
     assert(format);
     va_list args;

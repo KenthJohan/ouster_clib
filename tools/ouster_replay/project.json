@@ -4,10 +4,10 @@
     "value": {
         "language": "c",
         "public": false,
-        "use" : ["platform"]
+        "use" : []
     },
     "lang.c": {
-        "lib": ["platform", "pcap", "m"],
+        "lib": ["pcap", "m"],
         "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable", "-Wno-error=unused-but-set-variable"],
 		"defines":["_DEFAULT_SOURCE"]
     }

@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-void platform_log(char const *format, ...);
+void ouster_log(char const *format, ...);
 
 #ifdef __cplusplus
 }

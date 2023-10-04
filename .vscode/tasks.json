@@ -1,15 +1,4 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "type": "cppbuild",
-            "label": "build",
-            "command": "bake",
-            "args": ["rebuild","-r","examples/opencv_example/"],
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": "build",
-        }
-    ]
+	"version": "2.0.0",
+	"tasks": []
 }

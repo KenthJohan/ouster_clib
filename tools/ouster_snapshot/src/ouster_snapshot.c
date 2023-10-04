@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <platform/net.h>
-#include <platform/log.h>
-#include <platform/fs.h>
+#include <ouster_clib/ouster_net.h>
+#include <ouster_clib/ouster_log.h>
+#include <ouster_clib/ouster_fs.h>
 
 #include <ouster_clib/sock.h>
 #include <ouster_clib/client.h>
@@ -130,14 +130,14 @@ int main(int argc, char *argv[])
 
 		if (a == 0)
 		{
-			platform_log("Timeout\n");
+			ouster_log("Timeout\n");
 		}
 
 		if (a & (1 << SOCK_INDEX_LIDAR))
 		{
 			char buf[NET_UDP_MAX_SIZE];
 			int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-            platform_log("%-10s %5ji, mid = %04ji\n", "SOCK_LIDAR", (intmax_t)n, (intmax_t)lidar.last_mid);
+            ouster_log("%-10s %5ji, mid = %04ji\n", "SOCK_LIDAR", (intmax_t)n, (intmax_t)lidar.last_mid);
 			ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
 			if (lidar.last_mid == meta.mid1)
 			{
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 		{
 			char buf[NET_UDP_MAX_SIZE];
 			int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
-            platform_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
+            ouster_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
 		}
 	}
 

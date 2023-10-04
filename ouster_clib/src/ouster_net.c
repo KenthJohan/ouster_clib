@@ -1,8 +1,8 @@
 #define _POSIX_C_SOURCE 200112L
 
-#include "platform/net.h"
-#include "platform/log.h"
-#include "platform/assert.h"
+#include "ouster_clib/ouster_net.h"
+#include "ouster_clib/ouster_log.h"
+#include "ouster_clib/ouster_assert.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -21,7 +21,7 @@
 
 int32_t net_get_port(int sock)
 {
-	platform_assert(sock >= 0, "Socket not in range");
+	ouster_assert(sock >= 0, "Socket not in range");
 
 	struct sockaddr_storage ss;
 	socklen_t addrlen = sizeof(ss);
@@ -41,7 +41,7 @@ int32_t net_get_port(int sock)
 
 void inet_ntop_addrinfo(struct addrinfo *ai, char *buf, socklen_t len)
 {
-	platform_assert_notnull(ai);
+	ouster_assert_notnull(ai);
 
 	void *addr = NULL;
 	switch (ai->ai_family)
@@ -58,13 +58,13 @@ void inet_ntop_addrinfo(struct addrinfo *ai, char *buf, socklen_t len)
 
 int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 {
-	platform_assert_notnull(desc);
-	platform_assert_notnull(ai);
+	ouster_assert_notnull(desc);
+	ouster_assert_notnull(ai);
 
 	int s = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 	if (s < 0)
 	{
-		platform_log("socket(): error\n");
+		ouster_log("socket(): error\n");
 		goto error;
 	}
 
@@ -73,7 +73,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		int rc = connect(s, ai->ai_addr, (socklen_t)ai->ai_addrlen);
 		if (rc)
 		{
-			platform_log("connect(): error: %s\n", strerror(errno));
+			ouster_log("connect(): error: %s\n", strerror(errno));
 			goto error;
 		}
 	}
@@ -86,7 +86,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		int rc = setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char *)&tv, sizeof tv);
 		if (rc == -1)
 		{
-			platform_log("fcntl(): error\n");
+			ouster_log("fcntl(): error\n");
 			goto error;
 		}
 	}
@@ -97,7 +97,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		int rc = setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&off, sizeof(off));
 		if (rc)
 		{
-			platform_log("setsockopt(): error\n");
+			ouster_log("setsockopt(): error\n");
 			goto error;
 		}
 	}
@@ -108,7 +108,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		int rc = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&option, sizeof(option));
 		if (rc)
 		{
-			platform_log("setsockopt(): error\n");
+			ouster_log("setsockopt(): error\n");
 			goto error;
 		}
 	}
@@ -119,7 +119,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		int rc = bind(s, ai->ai_addr, (socklen_t)ai->ai_addrlen);
 		if (rc)
 		{
-			platform_log("bind(): error: %s\n", strerror(errno));
+			ouster_log("bind(): error: %s\n", strerror(errno));
 			goto error;
 		}
 	}
@@ -132,22 +132,22 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		rc = inet_pton(AF_INET, desc->group, &(mreq.imr_multiaddr.s_addr));
 		if (rc != 1)
 		{
-			platform_log("inet_pton(): error\n");
+			ouster_log("inet_pton(): error\n");
 			goto error;
 		}
 		if (IN_MULTICAST(ntohl(mreq.imr_multiaddr.s_addr)) == 0)
 		{
-			platform_log("Not multicast\n");
+			ouster_log("Not multicast\n");
 			goto error;
 		}
 		mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 		rc = setsockopt(s, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
 		if (rc < 0)
 		{
-			platform_log("setsockopt(): error\n");
+			ouster_log("setsockopt(): error\n");
 			goto error;
 		}
-		platform_log("IP_ADD_MEMBERSHIP(): %s\n", desc->group);
+		ouster_log("IP_ADD_MEMBERSHIP(): %s\n", desc->group);
 	}
 
 	if (desc->flags & NET_FLAGS_NONBLOCK)
@@ -155,13 +155,13 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		int flags = fcntl(s, F_GETFL, 0);
 		if (flags == -1)
 		{
-			platform_log("fcntl(): error\n");
+			ouster_log("fcntl(): error\n");
 			goto error;
 		}
 		int rc = fcntl(s, F_SETFL, flags | O_NONBLOCK);
 		if (rc == -1)
 		{
-			platform_log("fcntl(): error\n");
+			ouster_log("fcntl(): error\n");
 			goto error;
 		}
 	}
@@ -170,7 +170,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		int rc = setsockopt(s, SOL_SOCKET, SO_RCVBUF, (char *)&desc->rcvbuf_size, sizeof(desc->rcvbuf_size));
 		if (rc)
 		{
-			platform_log("setsockopt(): error\n");
+			ouster_log("setsockopt(): error\n");
 			goto error;
 		}
 	}
@@ -185,7 +185,7 @@ error:
 
 struct addrinfo *get_addrinfo(net_sock_desc_t *desc)
 {
-	platform_assert_notnull(desc);
+	ouster_assert_notnull(desc);
 
 	struct addrinfo *info = NULL;
 	struct addrinfo hints;
@@ -216,13 +216,13 @@ struct addrinfo *get_addrinfo(net_sock_desc_t *desc)
 		ret = getaddrinfo(desc->hint_name, desc->hint_service, &hints, &info);
 		if (ret != 0)
 		{
-			platform_log("getaddrinfo(): %s\n", gai_strerror(ret));
+			ouster_log("getaddrinfo(): %s\n", gai_strerror(ret));
 			goto error;
 		}
 	}
 	if (info == NULL)
 	{
-		platform_log("getaddrinfo(): empty result\n");
+		ouster_log("getaddrinfo(): empty result\n");
 		goto error;
 	}
 	return info;
@@ -230,7 +230,7 @@ struct addrinfo *get_addrinfo(net_sock_desc_t *desc)
 error:
 	if (info)
 	{
-		platform_log("freeaddrinfo()\n");
+		ouster_log("freeaddrinfo()\n");
 		freeaddrinfo(info);
 	}
 	return NULL;
@@ -238,12 +238,12 @@ error:
 
 int net_create(net_sock_desc_t *desc)
 {
-	platform_assert_notnull(desc);
+	ouster_assert_notnull(desc);
 
 	struct addrinfo *info = get_addrinfo(desc);
 	if (info == NULL)
 	{
-		platform_log("get_addrinfo(): error\n");
+		ouster_log("get_addrinfo(): error\n");
 		goto error;
 	}
 	struct addrinfo *ai;
@@ -252,14 +252,14 @@ int net_create(net_sock_desc_t *desc)
 	{
 		char buf[INET6_ADDRSTRLEN];
 		inet_ntop_addrinfo(ai, buf, INET6_ADDRSTRLEN);
-		platform_log("get_addrinfo: %s\n", buf);
+		ouster_log("get_addrinfo: %s\n", buf);
 	}
 	for (ai = info; ai != NULL; ai = ai->ai_next)
 	{
 		char buf[INET6_ADDRSTRLEN];
 		inet_ntop_addrinfo(ai, buf, INET6_ADDRSTRLEN);
 		s = try_create_socket(desc, ai);
-		platform_log("try_create_socket: %s:%i %s%s, socket=%i\n", buf, net_get_port(s),
+		ouster_log("try_create_socket: %s:%i %s%s, socket=%i\n", buf, net_get_port(s),
 					 (desc->flags & NET_FLAGS_TCP) ? "TCP" : "",
 					 (desc->flags & NET_FLAGS_UDP) ? "UDP" : "",
 					 s);
@@ -271,7 +271,7 @@ int net_create(net_sock_desc_t *desc)
 
 	if (s < 0)
 	{
-		platform_log("try_create_socket(): error\n");
+		ouster_log("try_create_socket(): error\n");
 		goto error;
 	}
 
@@ -281,12 +281,12 @@ int net_create(net_sock_desc_t *desc)
 error:
 	if (info)
 	{
-		platform_log("freeaddrinfo()\n");
+		ouster_log("freeaddrinfo()\n");
 		freeaddrinfo(info);
 	}
 	if (s >= 0)
 	{
-		platform_log("close() socket\n");
+		ouster_log("close() socket\n");
 		close(s);
 	}
 	return -1;
@@ -294,8 +294,8 @@ error:
 
 int64_t net_read(int sock, char *buf, int len)
 {
-	platform_assert(sock >= 0, "");
-	platform_assert_notnull(buf);
+	ouster_assert(sock >= 0, "");
+	ouster_assert_notnull(buf);
 
 	int64_t bytes_read = recv(sock, (char *)buf, len, 0);
 	return bytes_read;
@@ -306,13 +306,13 @@ https://stackoverflow.com/questions/5647503/with-a-single-file-descriptor-is-the
 */
 uint64_t net_select(int socks[], int n, const int timeout_sec, const int timeout_usec)
 {
-	platform_assert_notnull(socks);
+	ouster_assert_notnull(socks);
 
 	fd_set rfds;
 	FD_ZERO(&rfds);
 	for (int i = 0; i < n; ++i)
 	{
-		platform_assert(socks[i] >= 0, "Socket not in range");
+		ouster_assert(socks[i] >= 0, "Socket not in range");
 		FD_SET(socks[i], &rfds);
 	}
 
@@ -333,7 +333,7 @@ uint64_t net_select(int socks[], int n, const int timeout_sec, const int timeout
 	int rc = select((int)max + 1, &rfds, NULL, NULL, &tv);
 	if (rc == -1)
 	{
-		platform_log("select(): error\n");
+		ouster_log("select(): error\n");
 		return 0;
 	}
 	for (int i = 0; i < n; ++i)

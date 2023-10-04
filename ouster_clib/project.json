@@ -2,9 +2,7 @@
 	"id": "ouster_clib",
 	"type": "package",
 	"value": {
-		"use": [
-			"platform"
-		],
+		"use": [],
 		"language": "c",
 		"public": true
 	},
@@ -22,7 +20,6 @@
 			"-Wno-error=unused-variable"
 		],
 		"lib": [
-			"platform",
 			"curl",
 			"m"
 		]

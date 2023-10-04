@@ -1,14 +1,14 @@
 #include "ouster_clib/lidar.h"
 #include "ouster_clib/lidar_header.h"
 #include "ouster_clib/lidar_column.h"
-#include <platform/log.h>
-#include <platform/assert.h>
+#include "ouster_clib/ouster_log.h"
+#include "ouster_clib/ouster_assert.h"
 #include <string.h>
 
 void pxcpy(char *dst, int dst_inc, char const *src, int src_inc, int n, int esize)
 {
-	platform_assert_notnull(dst);
-	platform_assert_notnull(src);
+	ouster_assert_notnull(dst);
+	ouster_assert_notnull(src);
 	char *d = dst;
 	char const *s = src;
 	for (int i = 0; i < n; i++, d += dst_inc, s += src_inc)
@@ -19,9 +19,9 @@ void pxcpy(char *dst, int dst_inc, char const *src, int src_inc, int n, int esiz
 
 void field_copy(ouster_field_t *field, ouster_meta_t *meta, int mid, char const *pxbuf)
 {
-	platform_assert_notnull(field);
-	platform_assert_notnull(meta);
-	platform_assert_notnull(pxbuf);
+	ouster_assert_notnull(field);
+	ouster_assert_notnull(meta);
+	ouster_assert_notnull(pxbuf);
 	// Row major - each row is continuous memory
 	char *data = field->data;
 	ouster_extract_t * extract = meta->extract + field->quantity;
@@ -31,16 +31,16 @@ void field_copy(ouster_field_t *field, ouster_meta_t *meta, int mid, char const 
 	int rows = meta->pixels_per_column;
 	int mid0 = meta->mid0;
 	int mid1 = meta->mid1;
-	platform_assert(mid <= mid1, "");
+	ouster_assert(mid <= mid1, "");
 	char *dst = data + (mid - mid0) * field->depth;
 	pxcpy(dst, rowsize, pxbuf + offset, meta->channel_data_size, rows, depth);
 }
 
 void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char const *buf, ouster_field_t *fields, int fcount)
 {
-	platform_assert_notnull(lidar);
-	platform_assert_notnull(buf);
-	platform_assert_notnull(fields);
+	ouster_assert_notnull(lidar);
+	ouster_assert_notnull(buf);
+	ouster_assert_notnull(fields);
 
 	char const *colbuf = buf + OUSTER_PACKET_HEADER_SIZE;
 	ouster_lidar_header_t header = {0};
@@ -77,9 +77,9 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 
 		for (int j = 0; j < fcount; ++j)
 		{
-			platform_assert(fields[j].cols > 0, "");
-			platform_assert(fields[j].rows > 0, "");
-			platform_assert(fields[j].depth > 0, "");
+			ouster_assert(fields[j].cols > 0, "");
+			ouster_assert(fields[j].rows > 0, "");
+			ouster_assert(fields[j].depth > 0, "");
 			field_copy(fields + j, meta, column.mid, pxbuf);
 			lidar->num_valid_pixels += meta->pixels_per_column;
 		}
@@ -94,9 +94,9 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 
 	for (int j = 0; j < fcount; ++j)
 	{
-		platform_assert_notnull(fields[j].data);
-		platform_assert(fields[j].cols > 0, "");
-		platform_assert(fields[j].rows > 0, "");
-		platform_assert(fields[j].depth > 0, "");
+		ouster_assert_notnull(fields[j].data);
+		ouster_assert(fields[j].cols > 0, "");
+		ouster_assert(fields[j].rows > 0, "");
+		ouster_assert(fields[j].depth > 0, "");
 	}
 }

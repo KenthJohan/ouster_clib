@@ -7,17 +7,14 @@
 		"public": true
 	},
 	"lang.c": {
-		"defines": [
-			"_GNU_SOURCE"
-		],
+		"defines": ["OUSTER_USE_CURL"],
 		"export-symbols": true,
 		"static": true,
 		"cflags": [
 			"-Werror",
 			"-Wall",
 			"-Wpedantic",
-			"-Wextra",
-			"-Wno-error=unused-variable"
+			"-Wextra"
 		],
 		"lib": [
 			"curl",

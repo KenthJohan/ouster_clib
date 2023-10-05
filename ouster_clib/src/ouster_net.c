@@ -113,6 +113,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 
 	// https://gist.github.com/hostilefork/f7cae3dc33e7416f2dd25a402857b6c6
 	if (desc->group) {
+#ifdef _GNU_SOURCE
 		int rc;
 		struct ip_mreq mreq; // IPv4
 		rc = inet_pton(AF_INET, desc->group, &(mreq.imr_multiaddr.s_addr));
@@ -131,6 +132,8 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 			goto error;
 		}
 		ouster_log("IP_ADD_MEMBERSHIP(): %s\n", desc->group);
+#endif
+		ouster_log("ip_mreq requires #define _GNU_SOURCE. Compile with -D_GNU_SOURCE or --std=gnu99\n");
 	}
 
 	if (desc->flags & NET_FLAGS_NONBLOCK) {

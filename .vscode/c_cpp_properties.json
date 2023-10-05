@@ -9,6 +9,7 @@
                 "/usr/include/opencv4"
             ],
             "defines": [
+				"OUSTER_USE_CURL",
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",

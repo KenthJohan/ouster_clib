@@ -168,10 +168,9 @@ struct addrinfo *get_addrinfo(net_sock_desc_t *desc)
 	ouster_assert_notnull(desc);
 
 	char hint_service_buf[128];
-	char const * hint_service = desc->hint_service;
-	
-	if(hint_service == NULL)
-	{
+	char const *hint_service = desc->hint_service;
+
+	if (hint_service == NULL) {
 		snprintf(hint_service_buf, 128, "%i", desc->port);
 		hint_service = hint_service_buf;
 	}
@@ -274,6 +273,16 @@ int64_t net_read(int sock, char *buf, int len)
 	int64_t bytes_read = recv(sock, (char *)buf, len, 0);
 	return bytes_read;
 }
+
+int64_t net_write(int sock, char *buf, int len)
+{
+	ouster_assert(sock >= 0, "");
+	ouster_assert_notnull(buf);
+
+	int64_t bytes_read = recv(sock, (char *)buf, len, 0);
+	return bytes_read;
+}
+
 
 /*
 https://stackoverflow.com/questions/5647503/with-a-single-file-descriptor-is-there-any-performance-difference-between-selec

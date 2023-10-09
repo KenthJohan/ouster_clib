@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
 			char *buf = app.cap_lidar->buf;
 			int64_t n = net_read(app.socks[SOCK_INDEX_LIDAR], buf, NET_UDP_MAX_SIZE);
 
+			app.cap_lidar->size = n;
 			int64_t write_size = sizeof(ouster_udpcap_t) + n;
 			int rc = fwrite((void*)app.cap_lidar, write_size, 1, app.write_file);
 
@@ -106,7 +107,6 @@ int main(int argc, char *argv[])
 				if (app.lidar.last_mid == app.meta.mid1) {
 					printf("LIDAR size=%ji, mid_loss=%ji, rc=%i\n", (intmax_t)n, (intmax_t)app.lidar.mid_loss, rc);
 				}
-				app.cap_lidar->size = n;
 			} else {
 				printf("LIDAR size=%ji, lidar_packet_size=%ji, rc=%i\n", (intmax_t)n, (intmax_t)app.meta.lidar_packet_size, rc);
 			}

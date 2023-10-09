@@ -167,6 +167,15 @@ struct addrinfo *get_addrinfo(net_sock_desc_t *desc)
 {
 	ouster_assert_notnull(desc);
 
+	char hint_service_buf[128];
+	char const * hint_service = desc->hint_service;
+	
+	if(hint_service == NULL)
+	{
+		snprintf(hint_service_buf, 128, "%i", desc->port);
+		hint_service = hint_service_buf;
+	}
+
 	struct addrinfo *info = NULL;
 	struct addrinfo hints;
 	memset(&hints, 0, sizeof(hints));
@@ -185,10 +194,10 @@ struct addrinfo *get_addrinfo(net_sock_desc_t *desc)
 		hints.ai_socktype = SOCK_STREAM;
 		hints.ai_flags = AI_NUMERICHOST;
 	}
-	int ret = getaddrinfo(desc->hint_name, desc->hint_service, &hints, &info);
+	int ret = getaddrinfo(desc->hint_name, hint_service, &hints, &info);
 	if (ret != 0) {
 		hints.ai_flags = 0;
-		ret = getaddrinfo(desc->hint_name, desc->hint_service, &hints, &info);
+		ret = getaddrinfo(desc->hint_name, hint_service, &hints, &info);
 		if (ret != 0) {
 			ouster_log("getaddrinfo(): %s\n", gai_strerror(ret));
 			goto error;

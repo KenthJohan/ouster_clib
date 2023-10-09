@@ -22,6 +22,7 @@ typedef struct
 {
     int flags;
     int rcvbuf_size;
+	int port;
     char const * hint_service;
     char const * hint_name;
     int rcvtimeout_sec;

@@ -6,6 +6,16 @@
 	"terminal.integrated.fontSize": 14,
 	"window.zoomLevel": 1.3,
 	"files.associations": {
+		"ouster_log.h": "c",
+		"string.h": "c",
+		"types.h": "c",
+		"ouster_ser.h": "c",
+		"endian.h": "c",
+		"client.h": "c",
+		"sock.h": "c",
+		"array": "c",
+		"string_view": "c",
+		"initializer_list": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

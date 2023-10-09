@@ -88,8 +88,8 @@ int main(int argc, char *argv[])
 	}
 
 	int socks[2];
-	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
-	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu("7503");
+	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(7502);
+	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(7503);
 
 	ouster_field_t fields[FIELD_COUNT] = {
 	    [FIELD_RANGE] = {.quantity = OUSTER_QUANTITY_RANGE, .depth = 4}};

@@ -17,6 +17,9 @@ typedef struct
 
 typedef struct
 {
+	int udp_port_lidar;
+	int udp_port_imu;
+
 	// This will not change when configuring azimuth window:
 	int columns_per_frame;
 	int columns_per_packet;

@@ -165,6 +165,8 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	ouster_assert(tokens[0].type == JSMN_OBJECT, "Expected JSMN_OBJECT");
 
 	int column_window[2];
+	json_parse_value(json, tokens, (char const *[]){"config_params", "udp_port_lidar", NULL}, &out->udp_port_lidar, JSON_TYPE_INT);
+	json_parse_value(json, tokens, (char const *[]){"config_params", "udp_port_imu", NULL}, &out->udp_port_imu, JSON_TYPE_INT);
 	json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "columns_per_frame", NULL}, &out->columns_per_frame, JSON_TYPE_INT);
 	json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "columns_per_packet", NULL}, &out->columns_per_packet, JSON_TYPE_INT);
 	json_parse_value(json, tokens, (char const *[]){"lidar_data_format", "pixels_per_column", NULL}, &out->pixels_per_column, JSON_TYPE_INT);

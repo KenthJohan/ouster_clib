@@ -4,29 +4,27 @@
 #include "ouster_clib/ouster_net.h"
 #include <stddef.h>
 
-int ouster_sock_create_udp_lidar(char const *hint_service)
+int ouster_sock_create_udp_lidar(int port)
 {
-	ouster_assert_notnull(hint_service);
-
 	net_sock_desc_t desc = {0};
 	desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
 	desc.hint_name = NULL;
 	desc.rcvbuf_size = 1024 * 1024;
-	desc.hint_service = hint_service;
+	desc.hint_service = NULL;
+	desc.port = port;
 	// desc.group = "239.201.201.201";
 	// desc.group = "239.255.255.250";
 	return net_create(&desc);
 }
 
-int ouster_sock_create_udp_imu(char const *hint_service)
+int ouster_sock_create_udp_imu(int port)
 {
-	ouster_assert_notnull(hint_service);
-
 	net_sock_desc_t desc = {0};
 	desc.flags = NET_FLAGS_UDP | NET_FLAGS_NONBLOCK | NET_FLAGS_REUSE | NET_FLAGS_BIND;
 	desc.hint_name = NULL;
 	desc.rcvbuf_size = 1024 * 1024;
-	desc.hint_service = hint_service;
+	desc.hint_service = NULL;
+	desc.port = port;
 	return net_create(&desc);
 }
 

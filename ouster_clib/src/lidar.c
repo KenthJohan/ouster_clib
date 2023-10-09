@@ -39,7 +39,7 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 {
 	ouster_assert_notnull(lidar);
 	ouster_assert_notnull(buf);
-	ouster_assert_notnull(fields);
+	ouster_assert(fields || ((fields == NULL) && (fcount == 0)), "");
 
 	char const *colbuf = buf + OUSTER_PACKET_HEADER_SIZE;
 	ouster_lidar_header_t header = {0};
@@ -58,13 +58,13 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 	}
 
 	int mid_delta = column.mid - lidar->last_mid;
-	// ouster_log("mid_delta %i\n", mid_delta);
+	//ouster_log("mid_delta %i\n", mid_delta);
 	lidar->mid_loss += (mid_delta - 1);
 
 	// col_size = 1584
 	for (int icol = 0; icol < meta->columns_per_packet; icol++, colbuf += meta->col_size) {
 		ouster_column_get(colbuf, &column);
-		// ouster_column_log(&column);
+		//ouster_column_log(&column);
 
 		if ((column.status & 0x01) == 0) {
 			continue;

@@ -78,10 +78,8 @@
 			"environment": [],
 			"program": "${workspaceFolder}/tools/ouster_monitor/bin/x64-Linux-debug/ouster_monitor",
 			"args": [
-				//"~/Downloads/OS1_Captures_128/a.json",
-				//"~/OS16_RNG15_RFL8_NIR8.json",
-				"~/OS16_RNG19_RFL8_SIG16_NIR16.json",
-				"column"
+				"~/Downloads/OS1_caps/OS1-128/a.json",
+				"loss"
 			],
 			"osx": {
 				"MIMode": "lldb",
@@ -116,16 +114,16 @@
 			}
 		},
 		{
-			"name": "Launch ouster_replay",
+			"name": "Launch ouster_capture1",
 			"type": "cppdbg",
 			"request": "launch",
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/tools/ouster_replay",
+			"cwd": "${workspaceFolder}/tools/ouster_capture1",
 			"environment": [],
-			"program": "${workspaceFolder}/tools/ouster_replay/bin/x64-Linux-debug/ouster_replay",
+			"program": "${workspaceFolder}/tools/ouster_capture1/bin/x64-Linux-debug/ouster_capture1",
 			"args": [
-				"~/Downloads/nowcap/a.pcap"
-				//"/home/johan/Downloads/OS1_Captures_128/a.pcap"
+				"~/Downloads/OS1_caps/OS1-128/a.json",
+				"~/Downloads/OS1_caps/OS1-128/a.udpcap"
 			],
 			"osx": {
 				"MIMode": "lldb",

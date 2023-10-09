@@ -15,7 +15,8 @@
 		"sock.h": "c",
 		"array": "c",
 		"string_view": "c",
-		"initializer_list": "c"
+		"initializer_list": "c",
+		"ouster_fs.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

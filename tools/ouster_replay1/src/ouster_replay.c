@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 #include <ouster_clib/client.h>
 #include <ouster_clib/field.h>
@@ -21,26 +22,22 @@
 #include <ouster_clib/sock.h>
 #include <ouster_clib/types.h>
 
-#include <tigr/tigr.h>
-#include <tigr/tigr_mouse.h>
 
-typedef enum {
-	SOCK_INDEX_LIDAR,
-	SOCK_INDEX_IMU,
-	SOCK_INDEX_COUNT
-} sock_index_t;
+
+#include <netdb.h>
+#include <stdio.h>
 
 typedef struct
 {
 	char const *read_filename;
 	FILE *read_file;
 	ouster_meta_t meta;
-	int socks[SOCK_INDEX_COUNT];
 } app_t;
 
 int main(int argc, char *argv[])
 {
 	printf("===================================================================\n");
+	printf("%s %s %s %s\n", argv[0], argv[1], argv[2], argv[3]);
 	fs_pwd();
 
 	app_t app = {
@@ -61,8 +58,14 @@ int main(int argc, char *argv[])
 
 	printf("Column window: %i %i\n", app.meta.mid0, app.meta.mid1);
 
-	app.socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(app.meta.udp_port_lidar);
-	app.socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(app.meta.udp_port_imu);
+	net_sock_desc_t desc = {
+		.flags = NET_FLAGS_UDP
+	};
+	int sock = net_create(&desc);
+
+	struct sockaddr_in server;
+	server.sin_family      = AF_INET;
+	server.sin_addr.s_addr = inet_addr(argv[3]);
 
 	ouster_udpcap_t * cap = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
 	while (1) {
@@ -71,8 +74,11 @@ int main(int argc, char *argv[])
 		cap->size = le32toh(cap->size);
 		cap->port = le32toh(cap->port);
 		rc = fread(cap->buf, cap->size, 1, app.read_file);
-		
-		
+
+		server.sin_port = htons(cap->port);
+		ssize_t rcc = sendto(sock, cap->buf, cap->size, 0,(struct sockaddr *)&server, sizeof(server));
+		printf("rcc %ji\n", (intmax_t)rcc);
+		getchar();
 	}
 
 	return 0;

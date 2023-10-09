@@ -18,7 +18,8 @@
 			"-Wall",
 			"-Wpedantic",
 			"-Wextra",
-			"-Wno-error=unused-variable"
+			"-Wno-error=unused-variable",
+			"-Wno-error=unused-but-set-variable"
 		]
 	}
 }

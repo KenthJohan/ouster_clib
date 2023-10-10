@@ -1,6 +1,9 @@
 #pragma once
 #include <stdint.h>
 
+//#define INET6_ADDRSTRLEN 46
+#define NET_ADDRSTRLEN 46
+
 #define NET_UDP_MAX_SIZE 65535
 
 #define NET_FLAGS_NONBLOCK 0x0001

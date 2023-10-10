@@ -2,8 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <sys/socket.h>
-#include <netinet/in.h>
+
 
 
 
@@ -17,6 +16,6 @@ typedef struct
 
 
 void ouster_udpcap_read(ouster_udpcap_t * cap, FILE * f);
-void ouster_udpcap_sendto(ouster_udpcap_t * cap, int sock, struct sockaddr_in * addr);
+void ouster_udpcap_sendto(ouster_udpcap_t * cap, int sock, void * addr);
 
 

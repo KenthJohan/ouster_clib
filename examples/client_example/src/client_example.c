@@ -62,8 +62,8 @@ int main(int argc, char *argv[])
 	}
 
 	int socks[2];
-	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar("7502");
-	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu("7503");
+	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(meta.udp_port_lidar);
+	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(meta.udp_port_imu);
 	// int sock_tcp = ouster_sock_create_tcp("192.168.1.137");
 
 	ouster_field_t fields[FIELD_COUNT] = {

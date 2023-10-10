@@ -1,5 +1,7 @@
 #define _DEFAULT_SOURCE
 #include <endian.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #include "ouster_clib/ouster_ser.h"
 #include "ouster_clib/ouster_log.h"
@@ -37,11 +39,12 @@ void ouster_udpcap_read(ouster_udpcap_t * cap, FILE * f)
 }
 
 
-void ouster_udpcap_sendto(ouster_udpcap_t * cap, int sock, struct sockaddr_in * addr)
+void ouster_udpcap_sendto(ouster_udpcap_t * cap, int sock, void * addr)
 {
 	// Send UDP content to the the same port as the capture
+	struct sockaddr_in * addr4 = addr;
 	ssize_t rc;
-	addr->sin_port = htons(cap->port);
+	addr4->sin_port = htons(cap->port);
 	rc = sendto(sock, cap->buf, cap->size, 0,(struct sockaddr *)addr, sizeof(struct sockaddr_in));
 	printf("rc %ji\n", (intmax_t)rc);
 }

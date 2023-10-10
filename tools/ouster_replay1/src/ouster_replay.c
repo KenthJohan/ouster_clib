@@ -1,26 +1,17 @@
-#define _DEFAULT_SOURCE
 
-#include <endian.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#include <ouster_clib/client.h>
-#include <ouster_clib/field.h>
-#include <ouster_clib/lidar.h>
-#include <ouster_clib/lidar_column.h>
-#include <ouster_clib/lidar_header.h>
-#include <ouster_clib/lut.h>
-#include <ouster_clib/meta.h>
+#include <ouster_clib/ouster_ser.h>
 #include <ouster_clib/ouster_assert.h>
 #include <ouster_clib/ouster_fs.h>
 #include <ouster_clib/ouster_log.h>
 #include <ouster_clib/ouster_net.h>
-#include <ouster_clib/ouster_ser.h>
-#include <ouster_clib/sock.h>
-#include <ouster_clib/types.h>
+#include <ouster_clib/meta.h>
 
 
 
@@ -69,15 +60,9 @@ int main(int argc, char *argv[])
 
 	ouster_udpcap_t * cap = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
 	while (1) {
-		size_t rc;
-		rc = fread(cap, sizeof(ouster_udpcap_t), 1, app.read_file);
-		cap->size = le32toh(cap->size);
-		cap->port = le32toh(cap->port);
-		rc = fread(cap->buf, cap->size, 1, app.read_file);
 
-		server.sin_port = htons(cap->port);
-		ssize_t rcc = sendto(sock, cap->buf, cap->size, 0,(struct sockaddr *)&server, sizeof(server));
-		printf("rcc %ji\n", (intmax_t)rcc);
+		ouster_udpcap_read(cap, app.read_file);
+		ouster_udpcap_sendto(cap, sock, &server);
 		getchar();
 	}
 

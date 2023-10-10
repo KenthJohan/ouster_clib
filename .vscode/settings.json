@@ -16,7 +16,12 @@
 		"array": "c",
 		"string_view": "c",
 		"initializer_list": "c",
-		"ouster_fs.h": "c"
+		"ouster_fs.h": "c",
+		"ouster_net.h": "c",
+		"stdio.h": "c",
+		"in.h": "c",
+		"cmath": "c",
+		"complex": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

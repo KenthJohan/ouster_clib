@@ -6,6 +6,9 @@
 
 void ouster_abort()
 {
+	printf("\n");
+	fflush(stdout);
+	fflush(stderr);
 	abort();
 }
 

@@ -78,7 +78,7 @@
 			"environment": [],
 			"program": "${workspaceFolder}/tools/ouster_monitor/bin/x64-Linux-debug/ouster_monitor",
 			"args": [
-				"~/Downloads/OS1_caps/OS1-128/a.json",
+				"~/Downloads/OS1_caps/OS1-16/a.json",
 				"loss"
 			],
 			"osx": {

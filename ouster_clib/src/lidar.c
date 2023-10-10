@@ -30,7 +30,7 @@ void field_copy(ouster_field_t *field, ouster_meta_t *meta, int mid, char const 
 	int rows = meta->pixels_per_column;
 	int mid0 = meta->mid0;
 	int mid1 = meta->mid1;
-	ouster_assert(mid <= mid1, "");
+	ouster_assert(mid <= mid1, "Incorrect mid=%i (Column Measurement Id) not in range %i to %i", mid, mid0, mid1);
 	char *dst = data + (mid - mid0) * field->depth;
 	pxcpy(dst, rowsize, pxbuf + offset, meta->channel_data_size, rows, depth);
 }

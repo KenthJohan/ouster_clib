@@ -1,22 +1,19 @@
 
 
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <netdb.h>
 #include <time.h>
+#include <unistd.h>
 
-#include <ouster_clib/ouster_udpcap.h>
+#include <ouster_clib/meta.h>
 #include <ouster_clib/ouster_assert.h>
 #include <ouster_clib/ouster_fs.h>
 #include <ouster_clib/ouster_log.h>
 #include <ouster_clib/ouster_net.h>
-#include <ouster_clib/meta.h>
-
-
-
+#include <ouster_clib/ouster_udpcap.h>
 
 typedef struct
 {
@@ -26,7 +23,6 @@ typedef struct
 	FILE *read_file;
 	ouster_meta_t meta;
 } app_t;
-
 
 void print_help(int argc, char *argv[])
 {
@@ -43,32 +39,23 @@ void print_help(int argc, char *argv[])
 	printf("\t$ %s %s %s\n", argv[0], "meta.json", "capture.udpcap");
 }
 
-
 int main(int argc, char *argv[])
 {
 	printf("==================ouster_replay1================================\n");
 	fs_pwd();
 
 	app_t app = {0};
-		
-	if(argc == 3)
-	{
+
+	if (argc == 3) {
 		app.ip_dst = "127.0.0.1";
-	}
-	else if(argc == 4)
-	{
+	} else if (argc == 4) {
 		app.metafile = argv[1];
 		app.read_filename = argv[2];
 		app.ip_dst = argv[3];
 		printf("Command: %s %s %s %s\n", argv[0], argv[1], argv[2], argv[3]);
-	}
-	else
-	{
+	} else {
 		print_help(argc, argv);
 	}
-
-
-
 
 	ouster_log("Opening file '%s'\n", app.read_filename);
 	app.read_file = fopen(app.read_filename, "r");
@@ -86,26 +73,23 @@ int main(int argc, char *argv[])
 	printf("Column window: %i %i\n", app.meta.mid0, app.meta.mid1);
 
 	net_sock_desc_t desc = {
-		.flags = NET_FLAGS_UDP
-	};
+	    .flags = NET_FLAGS_UDP};
 	int sock = net_create(&desc);
-
 
 	net_addr_t dst = {0};
 	net_addr_set_ip4(&dst, app.ip_dst);
-	
+
 	uint32_t packet_id = 0;
-	ouster_udpcap_t * cap = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
+	ouster_udpcap_t *cap = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
 	while (1) {
 
 		ouster_udpcap_read(cap, app.read_file);
 		int rc = ouster_udpcap_sendto(cap, sock, &dst);
 		packet_id++;
-		if(rc == (int)cap->size)
-		{
+		if (rc == (int)cap->size) {
 		}
 		printf("%ju : ip=%s:%ji, sent=%ji of %ji\n", (uintmax_t)packet_id, app.ip_dst, (intmax_t)cap->port, (intmax_t)rc, (intmax_t)cap->size);
-		//getchar();
+		// getchar();
 		nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
 	}
 

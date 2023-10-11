@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define COLOR_ASSERT "\033[38;2;255;50;50m"
+#define COLOR_RST "\033[0m"
+
 void ouster_abort()
 {
 	printf("\n");
@@ -20,6 +23,7 @@ int ouster_assert_(
     const char *fmt,
     ...)
 {
+	printf(COLOR_ASSERT"ASSERT: "COLOR_RST"%s: ", expr);
 	va_list args;
 	va_start(args, fmt);
 	int r = vprintf(fmt, args);

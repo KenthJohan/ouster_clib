@@ -37,6 +37,7 @@ typedef enum {
 
 typedef struct
 {
+	char const *metafile;
 	char const *write_filename;
 	FILE *write_file;
 	ouster_meta_t meta;
@@ -47,20 +48,47 @@ typedef struct
 	ouster_udpcap_t *cap_imu;
 } app_t;
 
+
+
+void print_help(int argc, char *argv[])
+{
+	printf("Hello welcome to %s!\n", "ouster_capture1");
+	printf("This tool captures custom UDP capture file.\n");
+	printf("Arguments:\n");
+	printf("\targ1: The meta file that correspond to the LiDAR sensor configuration\n");
+	printf("\targ2: The capture file to destination\n");
+	printf("Examples:\n");
+	printf("\t$ %s <%s> <%s>\n", argv[0], "arg1", "arg2");
+	printf("\t$ %s <%s> <%s>\n", argv[0], "matafile", "capturefile");
+	printf("\t$ %s %s %s\n", argv[0], "meta.json", "capture.udpcap");
+}
+
 int main(int argc, char *argv[])
 {
 	printf("===================================================================\n");
 	fs_pwd();
 
-	app_t app = {
-	    .write_filename = argv[2]};
+	app_t app = {0};
+	if(argc == 3)
+	{
+		app.metafile = argv[1];
+		app.write_filename = argv[2];
+	}
+	else
+	{
+		print_help(argc, argv);
+		return 0;
+	}
+
+	ouster_assert_notnull(app.metafile);
+	ouster_assert_notnull(app.write_filename);
 
 	ouster_log("Opening file '%s'\n", app.write_filename);
 	app.write_file = fopen(app.write_filename, "w");
 	ouster_assert_notnull(app.write_file);
 
 	{
-		char *content = fs_readfile(argv[1]);
+		char *content = fs_readfile(app.metafile);
 		if (content == NULL) {
 			return 0;
 		}

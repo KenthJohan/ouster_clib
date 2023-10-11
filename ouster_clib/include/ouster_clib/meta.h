@@ -1,5 +1,6 @@
 #pragma once
 #include "ouster_clib/types.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -57,6 +58,8 @@ typedef struct
 } ouster_meta_t;
 
 void ouster_meta_parse(char const *jsonstr, ouster_meta_t *out_meta);
+
+void ouster_meta_dump(ouster_meta_t *meta, FILE * f);
 
 #ifdef __cplusplus
 }

@@ -1,17 +1,10 @@
-#define _DEFAULT_SOURCE
-
-#include <endian.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <ouster_clib/client.h>
 #include <ouster_clib/field.h>
 #include <ouster_clib/lidar.h>
-#include <ouster_clib/lidar_column.h>
-#include <ouster_clib/lidar_header.h>
-#include <ouster_clib/lut.h>
 #include <ouster_clib/meta.h>
 #include <ouster_clib/ouster_assert.h>
 #include <ouster_clib/ouster_fs.h>
@@ -35,21 +28,6 @@ typedef enum {
 	FIELD_COUNT
 } field_t;
 
-typedef struct
-{
-	char const *metafile;
-	char const *write_filename;
-	FILE *write_file;
-	ouster_meta_t meta;
-	ouster_lut_t lut;
-	int socks[SOCK_INDEX_COUNT];
-	ouster_lidar_t lidar;
-	ouster_udpcap_t *cap_lidar;
-	ouster_udpcap_t *cap_imu;
-} app_t;
-
-
-
 void print_help(int argc, char *argv[])
 {
 	printf("Hello welcome to %s!\n", "ouster_capture1");
@@ -68,54 +46,52 @@ int main(int argc, char *argv[])
 	printf("===================================================================\n");
 	fs_pwd();
 
-	app_t app = {0};
-	if(argc == 3)
-	{
-		app.metafile = argv[1];
-		app.write_filename = argv[2];
-	}
-	else
-	{
+	char const *metafile = NULL;
+	char const *write_filename = NULL;
+	FILE *write_file = NULL;
+	ouster_udpcap_t *cap_lidar = NULL;
+	ouster_udpcap_t *cap_imu = NULL;
+	ouster_meta_t meta = {0};
+	int socks[SOCK_INDEX_COUNT];
+	ouster_lidar_t lidar;
+
+	if (argc == 3) {
+		metafile = argv[1];
+		write_filename = argv[2];
+	} else {
 		print_help(argc, argv);
 		return 0;
 	}
 
-	ouster_assert_notnull(app.metafile);
-	ouster_assert_notnull(app.write_filename);
-
-	ouster_log("Opening file '%s'\n", app.write_filename);
-	app.write_file = fopen(app.write_filename, "w");
-	ouster_assert_notnull(app.write_file);
+	ouster_assert_notnull(write_filename);
+	ouster_log("Opening file '%s'\n", write_filename);
+	write_file = fopen(write_filename, "w");
+	ouster_assert_notnull(write_file);
 
 	{
-		char *content = fs_readfile(app.metafile);
+		ouster_assert_notnull(metafile);
+		char *content = fs_readfile(metafile);
 		if (content == NULL) {
 			return 0;
 		}
-		ouster_meta_parse(content, &app.meta);
+		ouster_meta_parse(content, &meta);
 		free(content);
+		ouster_meta_dump(&meta, stdout);
 	}
 
-	ouster_lut_init(&app.lut, &app.meta);
-	printf("Column window: %i %i\n", app.meta.mid0, app.meta.mid1);
 
-	app.socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(app.meta.udp_port_lidar);
-	app.socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(app.meta.udp_port_imu);
+	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(meta.udp_port_lidar);
+	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(meta.udp_port_imu);
 
-	app.cap_lidar = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
-	app.cap_imu = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
-	app.cap_lidar->port = htole32(app.meta.udp_port_lidar);
-	app.cap_imu->port = htole32(app.meta.udp_port_imu);
-
-	ouster_field_t fields[FIELD_COUNT] = {
-	    [FIELD_RANGE] = {.quantity = OUSTER_QUANTITY_RANGE, .depth = 4}};
-
-	ouster_field_init(fields, FIELD_COUNT, &app.meta);
+	cap_lidar = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
+	cap_imu = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
+	ouster_udpcap_set_port(cap_lidar, meta.udp_port_lidar);
+	ouster_udpcap_set_port(cap_imu, meta.udp_port_imu);
 
 	while (1) {
 		int timeout_sec = 1;
 		int timeout_usec = 0;
-		uint64_t a = net_select(app.socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
+		uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
 
 		if (a == 0) {
 			ouster_log("Timeout\n");
@@ -123,30 +99,21 @@ int main(int argc, char *argv[])
 		}
 
 		if (a & (1 << SOCK_INDEX_LIDAR)) {
-			char *buf = app.cap_lidar->buf;
-			int64_t n = net_read(app.socks[SOCK_INDEX_LIDAR], buf, NET_UDP_MAX_SIZE);
+			ouster_udpcap_sock_to_file(cap_lidar, socks[SOCK_INDEX_LIDAR], write_file);
+			ouster_assert(
+			    cap_lidar->size == (uint32_t)meta.lidar_packet_size,
+			    "Received incorrect UDP size %ji of %ji",
+			    (intmax_t)cap_lidar->size,
+			    (intmax_t)meta.lidar_packet_size);
 
-			app.cap_lidar->size = n;
-			int64_t write_size = sizeof(ouster_udpcap_t) + n;
-			int rc = fwrite((void*)app.cap_lidar, write_size, 1, app.write_file);
-
-			if (n == app.meta.lidar_packet_size) {
-				ouster_lidar_get_fields(&app.lidar, &app.meta, buf, fields, FIELD_COUNT);
-				if (app.lidar.last_mid == app.meta.mid1) {
-					printf("LIDAR size=%ji, mid_loss=%ji, rc=%i\n", (intmax_t)n, (intmax_t)app.lidar.mid_loss, rc);
-				}
-			} else {
-				printf("LIDAR size=%ji, lidar_packet_size=%ji, rc=%i\n", (intmax_t)n, (intmax_t)app.meta.lidar_packet_size, rc);
+			ouster_lidar_get_fields(&lidar, &meta, cap_lidar->buf, NULL, 0);
+			if (lidar.last_mid == meta.mid1) {
+				printf("mid_loss=%ji\n", (intmax_t)lidar.mid_loss);
 			}
-
 		}
 
 		if (a & (1 << SOCK_INDEX_IMU)) {
-			char *buf = app.cap_imu->buf;
-			int64_t n = net_read(app.socks[SOCK_INDEX_IMU], buf, NET_UDP_MAX_SIZE);
-			if (n > 0) {
-				//printf("IMU size=%ji\n", (intmax_t)n);
-			}
+			ouster_udpcap_sock_to_file(cap_imu, socks[SOCK_INDEX_IMU], write_file);
 		}
 	}
 

@@ -25,10 +25,28 @@ void net_addr_set_ip4(net_addr_t * addr, char const * ip)
 	addr4->sin_addr.s_addr = inet_addr(ip);
 }
 
+void net_addr_set_ip6(net_addr_t * addr, char const * ip)
+{
+	struct sockaddr_in6 * addr6 = (void*)addr;
+	addr6->sin6_family = AF_INET6;
+	// TODO: Set ip
+}
+
 void net_addr_set_port(net_addr_t * addr, int port)
 {
-	struct sockaddr_in * addr4 = (void*)addr;
-	addr4->sin_port = htons(port);
+	struct sockaddr * sa = (void*)addr;
+	switch (sa->sa_family)
+	{
+	case AF_INET:{
+		struct sockaddr_in * addr4 = (void*)addr;
+		addr4->sin_port = htons(port);
+		break;}
+	
+	case AF_INET6:{
+		struct sockaddr_in6 * addr6 = (void*)addr;
+		addr6->sin6_port = htons(port);
+		break;}
+	}
 }
 
 int net_sendto(int sock, char * buf, int size, int flags, net_addr_t * addr)
@@ -70,6 +88,7 @@ int32_t net_get_port(int sock)
 void inet_ntop_addrinfo(struct addrinfo *ai, char *buf, socklen_t len)
 {
 	ouster_assert_notnull(ai);
+	ouster_assert_notnull(buf);
 
 	void *addr = NULL;
 	switch (ai->ai_family) {

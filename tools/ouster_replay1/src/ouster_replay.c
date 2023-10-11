@@ -8,7 +8,7 @@
 #include <netdb.h>
 #include <time.h>
 
-#include <ouster_clib/ouster_ser.h>
+#include <ouster_clib/ouster_udpcap.h>
 #include <ouster_clib/ouster_assert.h>
 #include <ouster_clib/ouster_fs.h>
 #include <ouster_clib/ouster_log.h>
@@ -90,21 +90,21 @@ int main(int argc, char *argv[])
 	};
 	int sock = net_create(&desc);
 
-	struct sockaddr_in server = {0};
-	server.sin_family      = AF_INET;
-	server.sin_addr.s_addr = inet_addr(app.ip_dst);
+
+	net_addr_t dst = {0};
+	net_addr_set_ip4(&dst, app.ip_dst);
 	
 	uint32_t packet_id = 0;
 	ouster_udpcap_t * cap = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
 	while (1) {
 
 		ouster_udpcap_read(cap, app.read_file);
-		int rc = ouster_udpcap_sendto(cap, sock, &server);
+		int rc = ouster_udpcap_sendto(cap, sock, &dst);
 		packet_id++;
 		if(rc == (int)cap->size)
 		{
 		}
-		printf("%ji : ip=%s:%ji, size=%ji\n", (uintmax_t)packet_id, app.ip_dst, (uintmax_t)cap->port, (uintmax_t)cap->size);
+		printf("%ju : ip=%s:%ji, sent=%ji of %ji\n", (uintmax_t)packet_id, app.ip_dst, (intmax_t)cap->port, (intmax_t)rc, (intmax_t)cap->size);
 		//getchar();
 		nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
 	}

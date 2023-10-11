@@ -1,0 +1,6 @@
+UseTab: ForIndentation
+IndentWidth: 4
+TabWidth: 4
+BreakBeforeBraces: Linux
+AlignOperands: true
+ColumnLimit: 0

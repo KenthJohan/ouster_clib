@@ -5,19 +5,48 @@
 #include "ouster_clib/ouster_log.h"
 
 #include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
+#include <sys/socket.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <unistd.h>
+
+void net_addr_set_ip4(net_addr_t * addr, char const * ip)
+{
+	struct sockaddr_in * addr4 = (void*)addr;
+	addr4->sin_family = AF_INET;
+	addr4->sin_addr.s_addr = inet_addr(ip);
+}
+
+void net_addr_set_port(net_addr_t * addr, int port)
+{
+	struct sockaddr_in * addr4 = (void*)addr;
+	addr4->sin_port = htons(port);
+}
+
+int net_sendto(int sock, char * buf, int size, int flags, net_addr_t * addr)
+{
+	struct sockaddr * sa = (void*)addr;
+	ssize_t rc;
+	switch (sa->sa_family)
+	{
+	case AF_INET:
+		rc = sendto(sock, buf, size, flags, sa, sizeof(struct sockaddr_in));
+		break;
+	
+	case AF_INET6:
+		rc = sendto(sock, buf, size, flags, sa, sizeof(struct sockaddr_in6));
+		break;
+	}
+	return rc;
+}
 
 int32_t net_get_port(int sock)
 {
@@ -282,7 +311,6 @@ int64_t net_write(int sock, char *buf, int len)
 	int64_t bytes_read = recv(sock, (char *)buf, len, 0);
 	return bytes_read;
 }
-
 
 /*
 https://stackoverflow.com/questions/5647503/with-a-single-file-descriptor-is-there-any-performance-difference-between-selec

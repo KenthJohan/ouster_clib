@@ -3,7 +3,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "ouster_clib/ouster_ser.h"
+#include "ouster_clib/ouster_net.h"
+#include "ouster_clib/ouster_udpcap.h"
 #include "ouster_clib/ouster_log.h"
 #include "ouster_clib/ouster_assert.h"
 
@@ -39,13 +40,12 @@ void ouster_udpcap_read(ouster_udpcap_t * cap, FILE * f)
 }
 
 
-int ouster_udpcap_sendto(ouster_udpcap_t * cap, int sock, void * addr)
+int ouster_udpcap_sendto(ouster_udpcap_t * cap, int sock, net_addr_t * addr)
 {
-	// Send UDP content to the the same port as the capture
-	struct sockaddr_in * addr4 = addr;
 	ssize_t rc;
-	addr4->sin_port = htons(cap->port);
-	rc = sendto(sock, cap->buf, cap->size, 0,(struct sockaddr *)addr, sizeof(struct sockaddr_in));
+	// Send UDP content to the the same port as the capture
+	net_addr_set_port(addr, cap->port);
+	rc = net_sendto(sock, cap->buf, cap->size, 0, addr);
 	//printf("rc %ji\n", (intmax_t)rc);
 	return rc;
 }

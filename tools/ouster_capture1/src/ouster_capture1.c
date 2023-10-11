@@ -17,7 +17,7 @@
 #include <ouster_clib/ouster_fs.h>
 #include <ouster_clib/ouster_log.h>
 #include <ouster_clib/ouster_net.h>
-#include <ouster_clib/ouster_ser.h>
+#include <ouster_clib/ouster_udpcap.h>
 #include <ouster_clib/sock.h>
 #include <ouster_clib/types.h>
 

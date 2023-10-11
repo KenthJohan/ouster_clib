@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "ouster_clib/ouster_net.h"
 
 
 
@@ -15,7 +16,8 @@ typedef struct
 
 
 
+
 void ouster_udpcap_read(ouster_udpcap_t * cap, FILE * f);
-int ouster_udpcap_sendto(ouster_udpcap_t * cap, int sock, void * addr);
+int ouster_udpcap_sendto(ouster_udpcap_t * cap, int sock, net_addr_t * addr);
 
 

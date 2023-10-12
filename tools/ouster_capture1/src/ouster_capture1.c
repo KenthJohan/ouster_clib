@@ -63,15 +63,13 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	ouster_assert_notnull(write_filename);
-	ouster_log("Opening file '%s'\n", write_filename);
-	write_file = fopen(write_filename, "w");
-	ouster_assert_notnull(write_file);
-
 	{
-		ouster_assert_notnull(!metafile);
+		ouster_assert_notnull(metafile);
 		char *content = fs_readfile(metafile);
 		if (content == NULL) {
+			char buf[1024];
+			fs_readfile_failed_reason(metafile, buf, sizeof(buf));
+			printf("%s\n", buf);
 			return 0;
 		}
 		ouster_meta_parse(content, &meta);
@@ -79,6 +77,10 @@ int main(int argc, char *argv[])
 		ouster_meta_dump(&meta, stdout);
 	}
 
+	ouster_assert_notnull(write_filename);
+	ouster_log("Opening file '%s'\n", write_filename);
+	write_file = fopen(write_filename, "w");
+	ouster_assert_notnull(write_file);
 
 	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(meta.udp_port_lidar);
 	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(meta.udp_port_imu);

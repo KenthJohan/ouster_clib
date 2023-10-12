@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x #echo on
 
-bake -r --cfg release tools
+bake rebuild -r --cfg release tools
 sudo cp /home/johan/bake/x64-Linux/release/bin/ouster_capture1 /usr/local/bin/
 sudo cp /home/johan/bake/x64-Linux/release/bin/ouster_replay1 /usr/local/bin/
 sudo cp /home/johan/bake/x64-Linux/release/bin/ouster_snapshot /usr/local/bin/

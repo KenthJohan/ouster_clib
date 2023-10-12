@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 	ouster_assert_notnull(write_file);
 
 	{
-		ouster_assert_notnull(metafile);
+		ouster_assert_notnull(!metafile);
 		char *content = fs_readfile(metafile);
 		if (content == NULL) {
 			return 0;

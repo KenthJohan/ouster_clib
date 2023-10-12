@@ -156,5 +156,26 @@
 				"externalConsole": false,
 			}
 		},
+		{
+			"name": "Launch ouster_view",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/tools/ouster_view",
+			"environment": [],
+			"program": "${workspaceFolder}/tools/ouster_view/bin/x64-Linux-debug/ouster_view",
+			"args": [
+				"~/Downloads/OS1_caps/OS1-16/a.json",
+				"destagger",
+			],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
 	]
 }

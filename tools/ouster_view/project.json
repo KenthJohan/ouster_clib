@@ -1,0 +1,26 @@
+{
+	"id": "ouster_view",
+	"type": "application",
+	"value": {
+		"language": "c",
+		"public": true,
+		"use": [
+			"ouster_clib"
+		]
+	},
+	"lang.c": {
+		"lib": [
+			"ouster_clib",
+			"m",
+			"X11",
+			"GL"
+		],
+		"cflags": [
+			"-Werror",
+			"-Wall",
+			"-Wpedantic",
+			"-Wextra",
+			"-Wno-error=unused-variable"
+		]
+	}
+}

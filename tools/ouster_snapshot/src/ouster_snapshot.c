@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 	printf("===================================================================\n");
 	fs_pwd();
 
-	if (argc <= 3) {
+	if (argc <= 4) {
 		print_help(argc, argv);
 		return 0;
 	}
@@ -117,26 +117,25 @@ int main(int argc, char *argv[])
 		if (a & (1 << SOCK_INDEX_LIDAR)) {
 			char buf[NET_UDP_MAX_SIZE];
 			int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-			ouster_log("%-10s %5ji, mid = %04ji\n", "SOCK_LIDAR", (intmax_t)n, (intmax_t)lidar.last_mid);
+			//ouster_log("%-10s %5ji, mid = %04ji\n", "SOCK_LIDAR", (intmax_t)n, (intmax_t)lidar.last_mid);
 			ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
 			if (lidar.last_mid == meta.mid1) {
 				if (mode == SNAPSHOT_MODE_RAW) {
-					printf("save_png SNAPSHOT_MODE_RAW\n");
 					image_saver_save(&saver, fields[FIELD_RANGE].data);
 				}
 				if (mode == SNAPSHOT_MODE_DESTAGGER) {
-					printf("save_png SNAPSHOT_MODE_DESTAGGER\n");
 					ouster_field_destagger(fields, FIELD_COUNT, &meta);
 					image_saver_save(&saver, fields[FIELD_RANGE].data);
 				}
+				printf("save_png frame=%i\n", lidar.frame_id);
 				ouster_field_zero(fields, FIELD_COUNT);
 			}
 		}
 
 		if (a & (1 << SOCK_INDEX_IMU)) {
-			char buf[NET_UDP_MAX_SIZE];
-			int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
-			ouster_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
+			//char buf[NET_UDP_MAX_SIZE];
+			//int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
+			//ouster_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
 		}
 	}
 

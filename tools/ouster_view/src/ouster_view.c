@@ -60,12 +60,28 @@ void print_help(int argc, char *argv[])
 	printf("\t$ %s <%s> %s %s\n", argv[0], "meta.json", "destagger", "destaggered.png");
 }
 
+void cpy(uint32_t *src, Tigr *bmp, int w, int h)
+{
+	remap(src, src, w * h);
+	TPixel *td = bmp->pix;
+	for (int y = 0; y < h; ++y, td += w, src += w) {
+		for (int x = 0; x < w; ++x) {
+			uint32_t a = src[x];
+			td[x].a = 0xFF;
+			td[x].r = a;
+			td[x].g = a;
+			td[x].b = a;
+		}
+	}
+}
+
 typedef struct
 {
 	monitor_mode_t mode;
 	char const *metafile;
 	ouster_meta_t meta;
 	pthread_mutex_t lock;
+	Tigr *bmp;
 } app_t;
 
 void *rec(void *ptr)
@@ -83,6 +99,9 @@ void *rec(void *ptr)
 	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(7503);
 
 	ouster_lidar_t lidar = {0};
+
+	int w = app->meta.midw;
+	int h = app->meta.pixels_per_column;
 
 	while (1) {
 		int timeout_sec = 1;
@@ -105,6 +124,7 @@ void *rec(void *ptr)
 				if (app->mode == SNAPSHOT_MODE_DESTAGGER) {
 					printf("save_png SNAPSHOT_MODE_DESTAGGER\n");
 					ouster_field_destagger(fields, FIELD_COUNT, meta);
+					cpy(fields[FIELD_RANGE].data, app->bmp, w, h);
 					// image_saver_save(&saver, fields[FIELD_RANGE].data);
 				}
 				ouster_field_zero(fields, FIELD_COUNT);
@@ -151,20 +171,25 @@ int main(int argc, char *argv[])
 		printf("Column window: %i %i\n", app.meta.mid0, app.meta.mid1);
 	}
 
+
+
+	int w = app.meta.midw;
+	int h = app.meta.pixels_per_column;
+
+	app.bmp = tigrBitmap(w, h);
+
 	{
 		pthread_t thread1;
 		int rc = pthread_create(&thread1, NULL, rec, (void *)&app);
 		ouster_assert(rc == 0, "");
 	}
 
-	int w = app.meta.midw;
-	int h = app.meta.pixels_per_column;
-
 	Tigr *screen = tigrWindow(w, h, "ouster_view", TIGR_AUTO);
 	while (!tigrClosed(screen)) {
-		pthread_mutex_lock(&app.lock);
-		pthread_mutex_unlock(&app.lock);
 		tigrClear(screen, tigrRGB(0x80, 0x90, 0xa0));
+		pthread_mutex_lock(&app.lock);
+		tigrBlit(screen, app.bmp, 0, 0, 0, 0, w, h);
+		pthread_mutex_unlock(&app.lock);
 		tigrUpdate(screen);
 	}
 	tigrFree(screen);

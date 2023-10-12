@@ -18,7 +18,7 @@ void minmax(uint32_t *data, int n, uint64_t *out_min, uint64_t *out_max)
 	out_max[0] = max;
 }
 
-void remap(uint8_t *dst, uint32_t *src, int n)
+void remap(uint32_t *dst, uint32_t *src, int n)
 {
 	uint64_t min;
 	uint64_t max;
@@ -31,14 +31,3 @@ void remap(uint8_t *dst, uint32_t *src, int n)
 	}
 }
 
-void image_saver_init(image_saver_t *s)
-{
-	s->comp = 1;
-	s->n = s->w * s->h;
-	s->image = (uint8_t *)malloc(s->n * s->comp);
-}
-
-void image_saver_save(image_saver_t *s, uint32_t *lidar_image)
-{
-	remap(s->image, lidar_image, s->n);
-}

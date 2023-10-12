@@ -16,6 +16,7 @@
 			"GL"
 		],
 		"cflags": [
+			"-pthread",
 			"-Werror",
 			"-Wall",
 			"-Wpedantic",

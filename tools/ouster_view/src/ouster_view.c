@@ -4,12 +4,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <ouster_clib/client.h>
 #include <ouster_clib/field.h>
 #include <ouster_clib/lidar.h>
-#include <ouster_clib/lidar_column.h>
-#include <ouster_clib/lidar_header.h>
-#include <ouster_clib/lut.h>
 #include <ouster_clib/meta.h>
 #include <ouster_clib/ouster_assert.h>
 #include <ouster_clib/ouster_fs.h>
@@ -18,7 +14,7 @@
 #include <ouster_clib/sock.h>
 #include <ouster_clib/types.h>
 
-#include "draw.h"
+#include "convert.h"
 #include "tigr.h"
 
 typedef enum {
@@ -55,25 +51,18 @@ void print_help(int argc, char *argv[])
 	printf("Hello welcome to %s!!\n", argv[0]);
 	printf("This tool takes snapshots from LiDAR sensor and saves it as PNG image.\n");
 	printf("To use this tool you will have to provide the meta file that correspond to the LiDAR sensor configuration\n");
-	printf("\t$ %s <%s> <%s> <%s>\n", argv[0], "meta.json", "mode", "output_filename");
-	printf("\t$ %s <%s> %s %s\n", argv[0], "meta.json", "raw", "raw.png");
-	printf("\t$ %s <%s> %s %s\n", argv[0], "meta.json", "destagger", "destaggered.png");
+	printf("Arguments:\n");
+	printf("\targ1: The meta file that correspond to the LiDAR sensor configuration\n");
+	printf("\targ2: View mode\n");
+	printf("\t\topt1: raw\n");
+	printf("\t\topt2: destagger\n");
+	printf("Examples:\n");
+	printf("\t$ %s <%s> <%s>\n", argv[0], "meta.json", "mode");
+	printf("\t$ %s <%s> %s\n", argv[0], "meta.json", "raw");
+	printf("\t$ %s <%s> %s\n", argv[0], "meta.json", "destagger");
 }
 
-void cpy(uint32_t *src, Tigr *bmp, int w, int h)
-{
-	remap(src, src, w * h);
-	TPixel *td = bmp->pix;
-	for (int y = 0; y < h; ++y, td += w, src += w) {
-		for (int x = 0; x < w; ++x) {
-			uint32_t a = src[x];
-			td[x].a = 0xFF;
-			td[x].r = a;
-			td[x].g = a;
-			td[x].b = a;
-		}
-	}
-}
+
 
 typedef struct
 {
@@ -117,17 +106,13 @@ void *rec(void *ptr)
 			int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
 			ouster_lidar_get_fields(&lidar, meta, buf, fields, FIELD_COUNT);
 			if (lidar.last_mid == meta->mid1) {
-				if (app->mode == SNAPSHOT_MODE_RAW) {
-					printf("save_png SNAPSHOT_MODE_RAW\n");
-					// image_saver_save(&saver, fields[FIELD_RANGE].data);
-				}
+				if (app->mode == SNAPSHOT_MODE_RAW) {}
 				if (app->mode == SNAPSHOT_MODE_DESTAGGER) {
-					printf("save_png SNAPSHOT_MODE_DESTAGGER\n");
 					ouster_field_destagger(fields, FIELD_COUNT, meta);
-					cpy(fields[FIELD_RANGE].data, app->bmp, w, h);
-					// image_saver_save(&saver, fields[FIELD_RANGE].data);
 				}
+				convert_u32_to_bmp(fields[FIELD_RANGE].data, app->bmp, w, h);
 				ouster_field_zero(fields, FIELD_COUNT);
+				printf("frame=%i\n", lidar.frame_id);
 			}
 		}
 
@@ -195,7 +180,7 @@ again:
 	screen = tigrWindow(w, h, "ouster_view", flags|TIGR_AUTO);
 	while (!tigrClosed(screen)) {
 		int c = tigrReadChar(screen);
-		printf("c: %i\n", c);
+		//printf("c: %i\n", c);
 		switch (c)
 		{
 		case '1':

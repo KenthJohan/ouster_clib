@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 	uint32_t packet_id = 0;
 	ouster_udpcap_t *cap = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
 	while (1) {
-
+		cap->size = NET_UDP_MAX_SIZE;
 		ouster_udpcap_read(cap, app.read_file);
 		int rc = ouster_udpcap_sendto(cap, sock, &dst);
 		packet_id++;

@@ -103,7 +103,6 @@ void ouster_field_zero(ouster_field_t fields[], int count)
 {
 	ouster_assert_notnull(fields);
 	for (int i = 0; i < count; ++i, ++fields) {
-		;
 		memset(fields->data, 0, fields->size);
 	}
 }

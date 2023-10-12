@@ -22,8 +22,10 @@ void ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f)
 {
 	ouster_assert_notnull(cap);
 	ouster_assert_notnull(f);
+	
 
 	{
+		uint32_t maxsize = cap->size;
 		// First get the header info
 		size_t rc;
 		rc = fread(cap, sizeof(ouster_udpcap_t), 1, f);
@@ -31,7 +33,9 @@ void ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f)
 		// Convert to little endian to host
 		cap->size = le32toh(cap->size);
 		cap->port = le32toh(cap->port);
+		ouster_assert(cap->size <= maxsize, "");
 	}
+
 
 	{
 		// Read the UDP content

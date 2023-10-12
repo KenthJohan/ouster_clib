@@ -1,4 +1,4 @@
-#include "draw.h"
+#include "convert.h"
 #include <stdlib.h>
 
 void minmax(uint32_t *data, int n, uint64_t *out_min, uint64_t *out_max)
@@ -31,3 +31,18 @@ void remap(uint32_t *dst, uint32_t *src, int n)
 	}
 }
 
+
+void convert_u32_to_bmp(uint32_t *src, Tigr *dst, int w, int h)
+{
+	remap(src, src, w * h);
+	TPixel *td = dst->pix;
+	for (int y = 0; y < h; ++y, td += w, src += w) {
+		for (int x = 0; x < w; ++x) {
+			uint32_t a = src[x];
+			td[x].a = 0xFF;
+			td[x].r = a;
+			td[x].g = a;
+			td[x].b = a;
+		}
+	}
+}

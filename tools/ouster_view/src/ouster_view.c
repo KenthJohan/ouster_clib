@@ -184,8 +184,39 @@ int main(int argc, char *argv[])
 		ouster_assert(rc == 0, "");
 	}
 
-	Tigr *screen = tigrWindow(w, h, "ouster_view", TIGR_AUTO);
+	int flags = 0;
+	Tigr *screen = NULL;
+
+again:
+	if(screen)
+	{
+		tigrFree(screen);
+	}
+	screen = tigrWindow(w, h, "ouster_view", flags|TIGR_AUTO);
 	while (!tigrClosed(screen)) {
+		int c = tigrReadChar(screen);
+		printf("c: %i\n", c);
+		switch (c)
+		{
+		case '1':
+			flags &= ~(TIGR_2X | TIGR_3X | TIGR_4X);
+			goto again;
+		case '2':
+			flags &= ~(TIGR_2X | TIGR_3X | TIGR_4X);
+			flags |= TIGR_2X;
+			goto again;
+		case '3':
+			flags &= ~(TIGR_2X | TIGR_3X | TIGR_4X);
+			flags |= TIGR_3X;
+			goto again;
+		case '4':
+			flags &= ~(TIGR_2X | TIGR_3X | TIGR_4X);
+			flags |= TIGR_4X;
+			goto again;
+		
+		default:
+			break;
+		}
 		tigrClear(screen, tigrRGB(0x80, 0x90, 0xa0));
 		pthread_mutex_lock(&app.lock);
 		tigrBlit(screen, app.bmp, 0, 0, 0, 0, w, h);

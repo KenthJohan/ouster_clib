@@ -9,17 +9,21 @@
 #include <string.h>
 #include <unistd.h>
 
-#define COLOR_FILENAME "\033[38;2;255;150;50m" // Orange
-#define COLOR_CWD "\033[38;2;255;150;50m" // Orange
-#define COLOR_ERROR "\033[38;2;255;50;50m" // Red
+#define COLOR_FILENAME "\033[38;2;150;150;255m" // Blue
+#define COLOR_CWD "\033[38;2;150;150;255m"      // Blue
+#define COLOR_ERROR "\033[38;2;255;50;50m"      // Red
 #define COLOR_RST "\033[0m"
 
-int fs_readfile_failed_reason(char const * filename, char * buf, int len)
+int fs_readfile_failed_reason(char const *filename, char *buf, int len)
 {
-	char const * e = strerror(errno);
+	char const *e = strerror(errno);
 	char cwd[1024] = {0};
 	char *rc = getcwd(cwd, sizeof(cwd));
-	int n = snprintf(buf, len, "cwd:"COLOR_CWD"%s " COLOR_RST "path:"COLOR_FILENAME"%s " COLOR_ERROR"%s"COLOR_RST, rc?rc:"", filename, e);
+	rc = rc ? rc : "";
+	int n = snprintf(buf, len, "cwd:%s%s%s path:%s%s%s error:%s%s%s",
+	                 COLOR_CWD, rc, COLOR_RST,
+	                 COLOR_FILENAME, filename, COLOR_RST,
+	                 COLOR_ERROR, e, COLOR_RST);
 	return n;
 }
 
@@ -31,7 +35,7 @@ void fs_pwd()
 		ouster_log("getcwd error: %s\n", strerror(errno));
 		return;
 	}
-	printf("Current working directory: %s%s%s\n", "\033[38;2;100;100;255m", cwd, "\033[0m");
+	printf("Current working directory: %s%s%s\n", COLOR_CWD, cwd, COLOR_RST);
 }
 
 char *fs_readfile(char const *path)

@@ -101,6 +101,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (a & (1 << SOCK_INDEX_LIDAR)) {
+			cap_lidar->size = NET_UDP_MAX_SIZE;
 			ouster_udpcap_sock_to_file(cap_lidar, socks[SOCK_INDEX_LIDAR], write_file);
 			ouster_assert(
 			    cap_lidar->size == (uint32_t)meta.lidar_packet_size,
@@ -115,6 +116,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (a & (1 << SOCK_INDEX_IMU)) {
+			cap_imu->size = NET_UDP_MAX_SIZE;
 			ouster_udpcap_sock_to_file(cap_imu, socks[SOCK_INDEX_IMU], write_file);
 		}
 	}

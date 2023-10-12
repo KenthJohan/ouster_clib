@@ -47,7 +47,10 @@ int main(int argc, char *argv[])
 	app_t app = {0};
 
 	if (argc == 3) {
+		app.metafile = argv[1];
+		app.read_filename = argv[2];
 		app.ip_dst = "127.0.0.1";
+		printf("Command: %s %s %s\n", argv[0], argv[1], argv[2]);
 	} else if (argc == 4) {
 		app.metafile = argv[1];
 		app.read_filename = argv[2];

@@ -14,8 +14,6 @@
 #include <ouster_clib/sock.h>
 #include <ouster_clib/types.h>
 
-#include <tigr/tigr.h>
-#include <tigr/tigr_mouse.h>
 
 typedef enum {
 	SOCK_INDEX_LIDAR,

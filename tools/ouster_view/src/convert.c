@@ -26,7 +26,9 @@ void remap(uint32_t *dst, uint32_t *src, int n)
 	for (int i = 0; i < n; ++i) {
 		uint64_t a = src[i];
 		uint64_t b = a - min;
-		b = (b * 255) / ((max - min));
+		uint64_t d = max - min;
+		d = (d == 0) ? 1 : d;
+		b = (b * 255) / d;
 		dst[i] = b;
 	}
 }

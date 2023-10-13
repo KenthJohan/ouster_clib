@@ -1,7 +1,7 @@
 //////// Start of inlined file: tigr_amalgamated.c ////////
 
 
-#include "tigr/tigr.h"
+#include "tigr.h"
 
 //////// Start of inlined file: tigr_internal.h ////////
 

@@ -1,4 +1,4 @@
-#include "tigr/tigr_mouse.h"
+#include "tigr_mouse.h"
 
 void tigr_mouse_get(Tigr *screen, tigr_mouse_t *mouse)
 {

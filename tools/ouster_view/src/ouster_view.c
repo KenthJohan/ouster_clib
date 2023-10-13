@@ -112,7 +112,7 @@ void *rec(void *ptr)
 				}
 				convert_u32_to_bmp(fields[FIELD_RANGE].data, app->bmp, w, h);
 				ouster_field_zero(fields, FIELD_COUNT);
-				printf("frame=%i\n", lidar.frame_id);
+				printf("frame=%i, mid_loss=%i\n", lidar.frame_id, lidar.mid_loss);
 			}
 		}
 

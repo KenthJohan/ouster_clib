@@ -113,6 +113,4 @@ $ ldd examples/client_example/bin/x64-Linux-debug/client_example
         libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fc8b3e00000)
         /lib64/ld-linux-x86-64.so.2 (0x00007fc8b41b1000)
 ```
-</details>
-
 

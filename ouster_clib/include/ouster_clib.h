@@ -1,5 +1,46 @@
+/**
+ * @file ouster_clib.h
+ * @brief Ouster public API.
+ *
+ * This file contains the public API for ouster_clib.
+ */
+
 #ifndef OUSTER_CLIB_H
 #define OUSTER_CLIB_H
+
+/**
+ * @defgroup c C API
+ * 
+ * @{
+ * @}
+ */
+
+
+/**
+ * @defgroup core Core
+ * @brief Core ECS functionality (entities, storage, queries).
+ * 
+ * \ingroup c
+ * @{
+ */
+
+
+/**
+ * @defgroup options API defines
+ * @brief Defines for customizing compile time features.
+ * @{
+ */
+
+
+/** \def OUSTER_DEBUG
+ * Used for input parameter checking and cheap sanity checks. There are lots of 
+ * asserts in every part of the code, so this will slow down applications. 
+ */
+
+#define OUSTER_DEBUG
+
+/** @} */
+
 
 #include <stdint.h>
 
@@ -248,6 +289,7 @@ typedef struct
 	ouster_quantity_t q[OUSTER_QUANTITY_CHAN_FIELD_MAX];
 } ouster_field_desc_t;
 
+/** @} */
 
 #include "ouster_clib/ouster_assert.h"
 #include "ouster_clib/ouster_fs.h"

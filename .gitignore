@@ -5,3 +5,5 @@
 *.a
 *.o
 *.png
+bin
+.bake_cache

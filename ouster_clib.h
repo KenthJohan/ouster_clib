@@ -1,7 +1,48 @@
 // Comment out this line when using as DLL
 #define ouster_clib_STATIC
+/**
+ * @file ouster_clib.h
+ * @brief Ouster public API.
+ *
+ * This file contains the public API for ouster_clib.
+ */
+
 #ifndef OUSTER_CLIB_H
 #define OUSTER_CLIB_H
+
+/**
+ * @defgroup c C API
+ * 
+ * @{
+ * @}
+ */
+
+
+/**
+ * @defgroup core Core
+ * @brief Core Ouster API functionality
+ * 
+ * \ingroup c
+ * @{
+ */
+
+
+/**
+ * @defgroup options API defines
+ * @brief Defines for customizing compile time features.
+ * @{
+ */
+
+
+/** \def OUSTER_DEBUG
+ * Used for input parameter checking and cheap sanity checks. There are lots of 
+ * asserts in every part of the code, so this will slow down applications. 
+ */
+
+#define OUSTER_DEBUG
+
+/** @} */ // end of options
+
 
 #include <stdint.h>
 
@@ -10,32 +51,46 @@
 typedef float ouster_f32_t;
 typedef double ouster_f64_t;
 
-// Packet Header [256 bits]
 
-// Identifies lidar data vs. other packets in stream. Packet Type is 0x1 for Lidar packets.
+
+/** Identifies lidar data vs. other packets in stream. 
+ * Packet Type is 0x1 for Lidar packets. */
 typedef uint16_t ouster_packet_type_t;
 
-// Index of the lidar scan, increments every time the sensor completes a rotation, crossing the zero azimuth angle.
+/** Index of the lidar scan, increments every time the sensor completes a rotation, crossing the zero azimuth angle. */
 typedef uint16_t ouster_frame_id_t;
 
-// Initialization ID. Updates on every reinit, which may be triggered by the user or an error, and every reboot. 
-// This value may also be obtained by running the HTTP command GET /api/v1
+/** Initialization ID. 
+ * Updates on every reinit, which may be triggered by the user or an error, and every reboot.
+ * This value may also be obtained by running the HTTP command GET /api/v1 */
 typedef uint32_t ouster_init_id_t;
 
-// Serial number of the sensor. This value is unique to each sensor and can be found on a sticker affixed to the top of the sensor. 
-// In addition, this information is also available on the Sensor Web UI and by reading the field prod_sn from get_sensor_info.
+
+/** Serial number of the sensor.
+ * This value is unique to each sensor and can be found on a sticker affixed to the top of the sensor. 
+ * In addition, this information is also available on the Sensor Web UI and by reading the field prod_sn from get_sensor_info.
+ */
 typedef uint64_t ouster_prod_sn_t;
 
-// Indicates the shot limiting status of the sensor. Different codes indicates whether the sensor is in Normal Operation or in Shot Limiting. Please refer to Shot Limiting section for more details.
+/** Indicates the shot limiting status of the sensor.
+ * Different codes indicates whether the sensor is in Normal Operation or in Shot Limiting. 
+ * Please refer to Shot Limiting section for more details.
+ */
 typedef uint8_t ouster_shot_limiting_t;
 
-// Indicates whether thermal shutdown is imminent. Please refer to Shot Limiting section for more details.
+/** Indicates whether thermal shutdown is imminent.
+ * Please refer to Shot Limiting section for more details.
+ */
 typedef uint8_t ouster_thermal_shutdown_t;
 
-// Countdown from 30s to indicate when shot limiting is imminent. Please refer to Shot Limiting section for more details.
+/** Countdown from 30s to indicate when shot limiting is imminent.
+ * Please refer to Shot Limiting section for more details. 
+ */
 typedef uint8_t ouster_countdown_shot_limiting_t;
 
-// Countdown from 30s to indicate that thermal shutdown is imminent. Please refer to Shot Limiting section for more details.
+/** Countdown from 30s to indicate that thermal shutdown is imminent.
+ * Please refer to Shot Limiting section for more details.
+ */
 typedef uint8_t ouster_countdown_thermal_shutdown_t;
 
 // Column header
@@ -128,7 +183,10 @@ typedef enum
 	OUSTER_QUANTITY_CHAN_FIELD_MAX = 64, // max which allows us to introduce future fields
 } ouster_quantity_t;
 
+
+
 /*
+ Packet Header [256 bits]
   https://github.com/ouster-lidar/ouster_example/blob/9d0971107f6f9c95e16afd727fa2534d01a0fe4e/ouster_client/src/parsing.cpp#L155
 
   packet_header_size = legacy ? 0 : 32;
@@ -250,6 +308,7 @@ typedef struct
 	ouster_quantity_t q[OUSTER_QUANTITY_CHAN_FIELD_MAX];
 } ouster_field_desc_t;
 
+/** @} */ // end of core
 
 #ifndef OUSTER_ASSERT_H
 #define OUSTER_ASSERT_H
@@ -399,36 +458,8 @@ double *ouster_lut_alloc(ouster_lut_t const *lut);
 #include <stdint.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
-
-/*
-typedef struct
-{
-	int rows;
-	int cols;
-	int column0;
-	int num_valid_pixels;
-} ouster_frame_t;
-
-typedef struct
-{
-	ouster_quantity_t quantity;
-	uint32_t mask;
-	int offset;
-	int depth;
-	int rowsize;
-} ouster_field1_t;
-
-typedef struct
-{
-	void * data[3];
-} ouster_field3_t;
-*/
-
-
-
 
 void ouster_destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[]);
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta);
@@ -437,11 +468,9 @@ void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta);
 void ouster_field_zero(ouster_field_t fields[], int count);
 void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count);
 
-
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif // OUSTER_FIELD_H
 #ifndef OUSTER_LIDAR_H
@@ -476,7 +505,7 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
  * @defgroup udpcap UDP Capture
  * @brief This captures UDP packets
  * 
- * \ingroup ouster_udpcap
+ * \ingroup c
  * @{
  */
 

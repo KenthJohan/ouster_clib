@@ -18,7 +18,7 @@
 
 /**
  * @defgroup core Core
- * @brief Core ECS functionality (entities, storage, queries).
+ * @brief Core Ouster API functionality
  * 
  * \ingroup c
  * @{
@@ -39,7 +39,7 @@
 
 #define OUSTER_DEBUG
 
-/** @} */
+/** @} */ // end of options
 
 
 #include <stdint.h>
@@ -49,32 +49,46 @@
 typedef float ouster_f32_t;
 typedef double ouster_f64_t;
 
-// Packet Header [256 bits]
 
-// Identifies lidar data vs. other packets in stream. Packet Type is 0x1 for Lidar packets.
+
+/** Identifies lidar data vs. other packets in stream. 
+ * Packet Type is 0x1 for Lidar packets. */
 typedef uint16_t ouster_packet_type_t;
 
-// Index of the lidar scan, increments every time the sensor completes a rotation, crossing the zero azimuth angle.
+/** Index of the lidar scan, increments every time the sensor completes a rotation, crossing the zero azimuth angle. */
 typedef uint16_t ouster_frame_id_t;
 
-// Initialization ID. Updates on every reinit, which may be triggered by the user or an error, and every reboot. 
-// This value may also be obtained by running the HTTP command GET /api/v1
+/** Initialization ID. 
+ * Updates on every reinit, which may be triggered by the user or an error, and every reboot.
+ * This value may also be obtained by running the HTTP command GET /api/v1 */
 typedef uint32_t ouster_init_id_t;
 
-// Serial number of the sensor. This value is unique to each sensor and can be found on a sticker affixed to the top of the sensor. 
-// In addition, this information is also available on the Sensor Web UI and by reading the field prod_sn from get_sensor_info.
+
+/** Serial number of the sensor.
+ * This value is unique to each sensor and can be found on a sticker affixed to the top of the sensor. 
+ * In addition, this information is also available on the Sensor Web UI and by reading the field prod_sn from get_sensor_info.
+ */
 typedef uint64_t ouster_prod_sn_t;
 
-// Indicates the shot limiting status of the sensor. Different codes indicates whether the sensor is in Normal Operation or in Shot Limiting. Please refer to Shot Limiting section for more details.
+/** Indicates the shot limiting status of the sensor.
+ * Different codes indicates whether the sensor is in Normal Operation or in Shot Limiting. 
+ * Please refer to Shot Limiting section for more details.
+ */
 typedef uint8_t ouster_shot_limiting_t;
 
-// Indicates whether thermal shutdown is imminent. Please refer to Shot Limiting section for more details.
+/** Indicates whether thermal shutdown is imminent.
+ * Please refer to Shot Limiting section for more details.
+ */
 typedef uint8_t ouster_thermal_shutdown_t;
 
-// Countdown from 30s to indicate when shot limiting is imminent. Please refer to Shot Limiting section for more details.
+/** Countdown from 30s to indicate when shot limiting is imminent.
+ * Please refer to Shot Limiting section for more details. 
+ */
 typedef uint8_t ouster_countdown_shot_limiting_t;
 
-// Countdown from 30s to indicate that thermal shutdown is imminent. Please refer to Shot Limiting section for more details.
+/** Countdown from 30s to indicate that thermal shutdown is imminent.
+ * Please refer to Shot Limiting section for more details.
+ */
 typedef uint8_t ouster_countdown_thermal_shutdown_t;
 
 // Column header
@@ -167,7 +181,10 @@ typedef enum
 	OUSTER_QUANTITY_CHAN_FIELD_MAX = 64, // max which allows us to introduce future fields
 } ouster_quantity_t;
 
+
+
 /*
+ Packet Header [256 bits]
   https://github.com/ouster-lidar/ouster_example/blob/9d0971107f6f9c95e16afd727fa2534d01a0fe4e/ouster_client/src/parsing.cpp#L155
 
   packet_header_size = legacy ? 0 : 32;
@@ -289,7 +306,7 @@ typedef struct
 	ouster_quantity_t q[OUSTER_QUANTITY_CHAN_FIELD_MAX];
 } ouster_field_desc_t;
 
-/** @} */
+/** @} */ // end of core
 
 #include "ouster_clib/ouster_assert.h"
 #include "ouster_clib/ouster_fs.h"

@@ -12,4 +12,4 @@ jobs:
         - name: Doxygen
           uses: mattnotmitt/doxygen-action@v1.9.5
           with:
-            doxyfile-path: 'docs/cfg/Doxyfile'
+            doxyfile-path: 'Doxyfile'

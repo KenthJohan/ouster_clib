@@ -36,7 +36,7 @@ void print_help(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 	printf("==================ouster_replay1================================\n");
-	fs_pwd();
+	ouster_fs_pwd();
 
 	app_t app = {0};
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	ouster_assert_notnull(app.read_file);
 
 	{
-		char *content = fs_readfile(app.metafile);
+		char *content = ouster_fs_readfile(app.metafile);
 		if (content == NULL) {
 			return 0;
 		}

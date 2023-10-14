@@ -33,7 +33,7 @@ void print_help(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 	printf("===================================================================\n");
-	fs_pwd();
+	ouster_fs_pwd();
 
 	char const *metafile = NULL;
 	char const *write_filename = NULL;
@@ -54,10 +54,10 @@ int main(int argc, char *argv[])
 
 	{
 		ouster_assert_notnull(metafile);
-		char *content = fs_readfile(metafile);
+		char *content = ouster_fs_readfile(metafile);
 		if (content == NULL) {
 			char buf[1024];
-			fs_readfile_failed_reason(metafile, buf, sizeof(buf));
+			ouster_fs_readfile_failed_reason(metafile, buf, sizeof(buf));
 			printf("%s\n", buf);
 			return 0;
 		}

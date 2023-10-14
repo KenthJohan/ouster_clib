@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 
 	ouster_meta_t meta = {0};
 	if (argc > 1) {
-		char const *content = fs_readfile(argv[1]);
+		char const *content = ouster_fs_readfile(argv[1]);
 		if (content == NULL) {
 			return 0;
 		}

@@ -120,7 +120,7 @@ void *rec(void *ptr)
 int main(int argc, char *argv[])
 {
 	printf("===================================================================\n");
-	fs_pwd();
+	ouster_fs_pwd();
 
 	if (argc != 3) {
 		print_help(argc, argv);
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 	}
 
 	{
-		char *content = fs_readfile(app.metafile);
+		char *content = ouster_fs_readfile(app.metafile);
 		if (content == NULL) {
 			return 0;
 		}

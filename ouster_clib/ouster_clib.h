@@ -282,9 +282,9 @@ int ouster_assert_(
 extern "C" {
 #endif
 
-int fs_readfile_failed_reason(char const * filename, char * buf, int len);
-void fs_pwd();
-char * fs_readfile(char const * path);
+int ouster_fs_readfile_failed_reason(char const * filename, char * buf, int len);
+void ouster_fs_pwd();
+char * ouster_fs_readfile(char const * path);
 
 #ifdef __cplusplus
 }
@@ -473,10 +473,10 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 
 #endif // OUSTER_LIDAR_H
 /**
- * @defgroup c_addons_monitor Monitor
- * @brief The monitor addon periodically tracks statistics for the world and systems.
+ * @defgroup udpcap UDP Capture
+ * @brief This captures UDP packets
  * 
- * \ingroup c_addons
+ * \ingroup ouster_udpcap
  * @{
  */
 
@@ -501,10 +501,29 @@ typedef struct
 
 void ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f);
 
+/** Send the capture buffer from sock to addr
+ * 
+ * @param cap The capture buffer.
+ * @param sock The source socket filedescriptor
+ * @param addr The destination address
+ * @return Returns the number sent, or -1 for errors.
+*/
 int ouster_udpcap_sendto(ouster_udpcap_t *cap, int sock, ouster_net_addr_t *addr);
 
+/** Find header in request. 
+ * 
+ * @param cap The capture buffer.
+ * @param sock The socket filedescriptor
+ * @param f Destination file
+ * @return Returns the number sent, or -1 for errors.
+*/
 void ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f);
 
+/** Set the UDP port of the capture buffer.
+ * 
+ * @param cap The capture buffer.
+ * @param port The port
+*/
 void ouster_udpcap_set_port(ouster_udpcap_t *cap, int port);
 
 #ifdef __cplusplus
@@ -528,7 +547,16 @@ void ouster_log(char const *format, ...);
 #endif
 
 #endif // OUSTER_LOG_H
-#pragma once
+/**
+ * @defgroup sock UDP Capture
+ * @brief This creates sockets
+ * 
+ * \ingroup ouster_sock
+ * @{
+ */
+
+#ifndef OUSTER_SOCK_H
+#define OUSTER_SOCK_H
 
 #ifdef __cplusplus
 extern "C"
@@ -544,6 +572,10 @@ int ouster_sock_create_tcp(char const *hint_name);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // OUSTER_SOCK_H
+
+/** @} */
 #ifndef OUSTER_CLIENT_H
 #define OUSTER_CLIENT_H
 

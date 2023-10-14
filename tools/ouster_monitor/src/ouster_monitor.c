@@ -66,7 +66,7 @@ void print_help(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 	printf("===================================================================\n");
-	fs_pwd();
+	ouster_fs_pwd();
 
 	if (argc <= 2) {
 		print_help(argc, argv);
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 	ouster_lut_t lut = {0};
 
 	{
-		char *content = fs_readfile(argv[1]);
+		char *content = ouster_fs_readfile(argv[1]);
 		if (content == NULL) {
 			return 0;
 		}

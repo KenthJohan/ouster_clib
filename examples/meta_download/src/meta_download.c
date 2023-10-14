@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-	fs_pwd();
+	ouster_fs_pwd();
 
 	if (argc <= 1)
 	{

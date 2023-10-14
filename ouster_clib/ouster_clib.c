@@ -940,7 +940,7 @@ int ouster_assert_(
 #define COLOR_ERROR "\033[38;2;255;50;50m"      // Red
 #define COLOR_RST "\033[0m"
 
-int fs_readfile_failed_reason(char const *filename, char *buf, int len)
+int ouster_fs_readfile_failed_reason(char const *filename, char *buf, int len)
 {
 	char const *e = strerror(errno);
 	char cwd[1024] = {0};
@@ -953,7 +953,7 @@ int fs_readfile_failed_reason(char const *filename, char *buf, int len)
 	return n;
 }
 
-void fs_pwd()
+void ouster_fs_pwd()
 {
 	char cwd[1024] = {0};
 	char *rc = getcwd(cwd, sizeof(cwd));
@@ -964,7 +964,7 @@ void fs_pwd()
 	printf("Current working directory: %s%s%s\n", COLOR_CWD, cwd, COLOR_RST);
 }
 
-char *fs_readfile(char const *path)
+char *ouster_fs_readfile(char const *path)
 {
 	ouster_assert_notnull(path);
 	char *content = NULL;

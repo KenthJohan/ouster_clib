@@ -7,9 +7,9 @@
 extern "C" {
 #endif
 
-int fs_readfile_failed_reason(char const * filename, char * buf, int len);
-void fs_pwd();
-char * fs_readfile(char const * path);
+int ouster_fs_readfile_failed_reason(char const * filename, char * buf, int len);
+void ouster_fs_pwd();
+char * ouster_fs_readfile(char const * path);
 
 #ifdef __cplusplus
 }

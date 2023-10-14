@@ -49,7 +49,7 @@ void print_help(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 	printf("===================================================================\n");
-	fs_pwd();
+	ouster_fs_pwd();
 
 	if (argc <= 4) {
 		print_help(argc, argv);
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	ouster_meta_t meta = {0};
 
 	{
-		char *content = fs_readfile(argv[1]);
+		char *content = ouster_fs_readfile(argv[1]);
 		if (content == NULL) {
 			return 0;
 		}

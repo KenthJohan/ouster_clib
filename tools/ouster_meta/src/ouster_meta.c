@@ -8,7 +8,7 @@
 int main(int argc, char *argv[])
 {
 	printf("===================================================================\n");
-	fs_pwd();
+	ouster_fs_pwd();
 
 	if (argc <= 2) {
 		printf("Hello welcome to %s!\n", argv[0]);

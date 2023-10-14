@@ -20,7 +20,7 @@ typedef enum
 
 int main(int argc, char *argv[])
 {
-	fs_pwd();
+	ouster_fs_pwd();
 
 	if (argc <= 1)
 	{
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	ouster_lut_t lut = {0};
 
 	{
-		char *content = fs_readfile(argv[1]);
+		char *content = ouster_fs_readfile(argv[1]);
 		if (content == NULL)
 		{
 			return 0;

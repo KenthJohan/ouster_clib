@@ -1,8 +1,8 @@
 /**
- * @defgroup c_addons_monitor Monitor
- * @brief The monitor addon periodically tracks statistics for the world and systems.
+ * @defgroup udpcap UDP Capture
+ * @brief This captures UDP packets
  * 
- * \ingroup c_addons
+ * \ingroup ouster_udpcap
  * @{
  */
 
@@ -28,10 +28,29 @@ typedef struct
 
 void ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f);
 
+/** Send the capture buffer from sock to addr
+ * 
+ * @param cap The capture buffer.
+ * @param sock The source socket filedescriptor
+ * @param addr The destination address
+ * @return Returns the number sent, or -1 for errors.
+*/
 int ouster_udpcap_sendto(ouster_udpcap_t *cap, int sock, ouster_net_addr_t *addr);
 
+/** Find header in request. 
+ * 
+ * @param cap The capture buffer.
+ * @param sock The socket filedescriptor
+ * @param f Destination file
+ * @return Returns the number sent, or -1 for errors.
+*/
 void ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f);
 
+/** Set the UDP port of the capture buffer.
+ * 
+ * @param cap The capture buffer.
+ * @param port The port
+*/
 void ouster_udpcap_set_port(ouster_udpcap_t *cap, int port);
 
 #ifdef __cplusplus

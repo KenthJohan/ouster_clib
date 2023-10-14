@@ -146,9 +146,12 @@ RRRR Y0SS NN00
 */
 typedef enum {
 	OUSTER_PROFILE_LIDAR_LEGACY = 1,
-	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL = 2, // Dual Return Profile
-	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16 = 3,      // Single Return Profile
-	OUSTER_PROFILE_RNG15_RFL8_NIR8 = 4,             // Low Data Rate Profile
+	/** Dual Return Profile */
+	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL = 2,
+	/** Single Return Profile */
+	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16 = 3,
+	/** Low Data Rate Profile */
+	OUSTER_PROFILE_RNG15_RFL8_NIR8 = 4,
 	OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL = 5,
 	OUSTER_PROFILE_COUNT
 } ouster_profile_t;

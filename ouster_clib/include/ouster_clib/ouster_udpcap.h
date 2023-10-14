@@ -2,7 +2,7 @@
  * @defgroup udpcap UDP Capture
  * @brief This captures UDP packets
  * 
- * \ingroup ouster_udpcap
+ * \ingroup c
  * @{
  */
 

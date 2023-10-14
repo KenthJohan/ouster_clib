@@ -3,10 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <ouster_clib/client.h>
-#include <ouster_clib/ouster_net.h>
-#include <ouster_clib/ouster_log.h>
-#include <ouster_clib/ouster_fs.h>
+#include <ouster_clib.h>
 
 int main(int argc, char *argv[])
 {

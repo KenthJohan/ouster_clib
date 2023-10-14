@@ -1,4 +1,5 @@
-#pragma once
+#ifndef OUSTER_CLIENT_H
+#define OUSTER_CLIENT_H
 
 #ifdef __cplusplus
 extern "C"
@@ -26,3 +27,5 @@ void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
 #ifdef __cplusplus
 }
 #endif
+
+#endif // OUSTER_CLIENT_H

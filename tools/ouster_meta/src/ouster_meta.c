@@ -3,18 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <ouster_clib/client.h>
-#include <ouster_clib/field.h>
-#include <ouster_clib/lidar.h>
-#include <ouster_clib/lidar_column.h>
-#include <ouster_clib/lidar_header.h>
-#include <ouster_clib/lut.h>
-#include <ouster_clib/meta.h>
-#include <ouster_clib/ouster_fs.h>
-#include <ouster_clib/ouster_log.h>
-#include <ouster_clib/ouster_net.h>
-#include <ouster_clib/sock.h>
-#include <ouster_clib/types.h>
+#include <ouster_clib.h>
 
 int main(int argc, char *argv[])
 {

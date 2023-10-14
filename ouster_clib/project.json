@@ -4,7 +4,8 @@
 	"value": {
 		"use": [],
 		"language": "c",
-		"public": true
+		"public": true,
+		"amalgamate": true
 	},
 	"lang.c": {
 		"defines": ["OUSTER_USE_CURL"],

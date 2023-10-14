@@ -1,4 +1,6 @@
-#pragma once
+#ifndef OUSTER_FS_H
+#define OUSTER_FS_H
+
 
 
 #ifdef __cplusplus
@@ -12,3 +14,5 @@ char * fs_readfile(char const * path);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // OUSTER_FS_H

@@ -3,19 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <ouster_clib/ouster_fs.h>
-#include <ouster_clib/ouster_log.h>
-#include <ouster_clib/ouster_net.h>
-
-#include <ouster_clib/client.h>
-#include <ouster_clib/field.h>
-#include <ouster_clib/lidar.h>
-#include <ouster_clib/lidar_column.h>
-#include <ouster_clib/lidar_header.h>
-#include <ouster_clib/lut.h>
-#include <ouster_clib/meta.h>
-#include <ouster_clib/sock.h>
-#include <ouster_clib/types.h>
+#include <ouster_clib.h>
 
 #include "image_saver.h"
 
@@ -108,15 +96,15 @@ int main(int argc, char *argv[])
 	while (1) {
 		int timeout_sec = 1;
 		int timeout_usec = 0;
-		uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
+		uint64_t a = ouster_net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
 
 		if (a == 0) {
 			ouster_log("Timeout\n");
 		}
 
 		if (a & (1 << SOCK_INDEX_LIDAR)) {
-			char buf[NET_UDP_MAX_SIZE];
-			int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
+			char buf[OUSTER_NET_UDP_MAX_SIZE];
+			int64_t n = ouster_net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
 			//ouster_log("%-10s %5ji, mid = %04ji\n", "SOCK_LIDAR", (intmax_t)n, (intmax_t)lidar.last_mid);
 			ouster_lidar_get_fields(&lidar, &meta, buf, fields, FIELD_COUNT);
 			if (lidar.last_mid == meta.mid1) {
@@ -131,8 +119,8 @@ int main(int argc, char *argv[])
 		}
 
 		if (a & (1 << SOCK_INDEX_IMU)) {
-			//char buf[NET_UDP_MAX_SIZE];
-			//int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
+			//char buf[OUSTER_NET_UDP_MAX_SIZE];
+			//int64_t n = ouster_net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
 			//ouster_log("%-10s %5ji:  \n", "SOCK_IMU", (intmax_t)n);
 		}
 	}

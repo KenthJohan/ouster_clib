@@ -45,14 +45,14 @@ void ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f)
 	}
 }
 
-int ouster_udpcap_sendto(ouster_udpcap_t *cap, int sock, net_addr_t *addr)
+int ouster_udpcap_sendto(ouster_udpcap_t *cap, int sock, ouster_net_addr_t *addr)
 {
 	ouster_assert_notnull(cap);
 
 	ssize_t rc;
 	// Send UDP content to the the same port as the capture
-	net_addr_set_port(addr, cap->port);
-	rc = net_sendto(sock, cap->buf, cap->size, 0, addr);
+	ouster_net_addr_set_port(addr, cap->port);
+	rc = ouster_net_sendto(sock, cap->buf, cap->size, 0, addr);
 	// printf("rc %ji\n", (intmax_t)rc);
 	return rc;
 }
@@ -72,7 +72,7 @@ void ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f)
 	int64_t write_size;
 
 	{
-		int64_t n = net_read(sock, cap->buf, cap->size);
+		int64_t n = ouster_net_read(sock, cap->buf, cap->size);
 		ouster_assert(n >= 0, "");
 		ouster_assert(n <= cap->size, "");
 		cap->size = htole32(n);

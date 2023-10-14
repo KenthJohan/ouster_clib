@@ -3,16 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <ouster_clib/field.h>
-#include <ouster_clib/lidar.h>
-#include <ouster_clib/meta.h>
-#include <ouster_clib/ouster_assert.h>
-#include <ouster_clib/ouster_fs.h>
-#include <ouster_clib/ouster_log.h>
-#include <ouster_clib/ouster_net.h>
-#include <ouster_clib/ouster_udpcap.h>
-#include <ouster_clib/sock.h>
-#include <ouster_clib/types.h>
+#include <ouster_clib.h>
 
 
 typedef enum {
@@ -83,15 +74,15 @@ int main(int argc, char *argv[])
 	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(meta.udp_port_lidar);
 	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(meta.udp_port_imu);
 
-	cap_lidar = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
-	cap_imu = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
+	cap_lidar = calloc(1, sizeof(ouster_udpcap_t) + OUSTER_NET_UDP_MAX_SIZE);
+	cap_imu = calloc(1, sizeof(ouster_udpcap_t) + OUSTER_NET_UDP_MAX_SIZE);
 	ouster_udpcap_set_port(cap_lidar, meta.udp_port_lidar);
 	ouster_udpcap_set_port(cap_imu, meta.udp_port_imu);
 
 	while (1) {
 		int timeout_sec = 1;
 		int timeout_usec = 0;
-		uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
+		uint64_t a = ouster_net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
 
 		if (a == 0) {
 			ouster_log("Timeout\n");
@@ -99,7 +90,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (a & (1 << SOCK_INDEX_LIDAR)) {
-			cap_lidar->size = NET_UDP_MAX_SIZE;
+			cap_lidar->size = OUSTER_NET_UDP_MAX_SIZE;
 			ouster_udpcap_sock_to_file(cap_lidar, socks[SOCK_INDEX_LIDAR], write_file);
 			ouster_assert(
 			    cap_lidar->size == (uint32_t)meta.lidar_packet_size,
@@ -114,7 +105,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (a & (1 << SOCK_INDEX_IMU)) {
-			cap_imu->size = NET_UDP_MAX_SIZE;
+			cap_imu->size = OUSTER_NET_UDP_MAX_SIZE;
 			ouster_udpcap_sock_to_file(cap_imu, socks[SOCK_INDEX_IMU], write_file);
 		}
 	}

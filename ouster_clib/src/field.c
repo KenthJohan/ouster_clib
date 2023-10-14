@@ -1,4 +1,4 @@
-#include "ouster_clib/field.h"
+#include "ouster_clib/ouster_field.h"
 #include "ouster_clib/ouster_assert.h"
 #include <stdlib.h>
 #include <string.h>

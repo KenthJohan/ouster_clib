@@ -18,21 +18,21 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void net_addr_set_ip4(net_addr_t * addr, char const * ip)
+void ouster_net_addr_set_ip4(ouster_net_addr_t * addr, char const * ip)
 {
 	struct sockaddr_in * addr4 = (void*)addr;
 	addr4->sin_family = AF_INET;
 	addr4->sin_addr.s_addr = inet_addr(ip);
 }
 
-void net_addr_set_ip6(net_addr_t * addr, char const * ip)
+void net_addr_set_ip6(ouster_net_addr_t * addr, char const * ip)
 {
 	struct sockaddr_in6 * addr6 = (void*)addr;
 	addr6->sin6_family = AF_INET6;
 	// TODO: Set ip
 }
 
-void net_addr_set_port(net_addr_t * addr, int port)
+void ouster_net_addr_set_port(ouster_net_addr_t * addr, int port)
 {
 	struct sockaddr * sa = (void*)addr;
 	switch (sa->sa_family)
@@ -49,7 +49,7 @@ void net_addr_set_port(net_addr_t * addr, int port)
 	}
 }
 
-int net_sendto(int sock, char * buf, int size, int flags, net_addr_t * addr)
+int ouster_net_sendto(int sock, char * buf, int size, int flags, ouster_net_addr_t * addr)
 {
 	struct sockaddr * sa = (void*)addr;
 	ssize_t rc;
@@ -66,7 +66,7 @@ int net_sendto(int sock, char * buf, int size, int flags, net_addr_t * addr)
 	return rc;
 }
 
-int32_t net_get_port(int sock)
+int32_t ouster_net_get_port(int sock)
 {
 	ouster_assert(sock >= 0, "Socket not in range");
 
@@ -102,7 +102,7 @@ void inet_ntop_addrinfo(struct addrinfo *ai, char *buf, socklen_t len)
 	inet_ntop(ai->ai_family, addr, buf, len);
 }
 
-int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
+int try_create_socket(ouster_net_sock_desc_t *desc, struct addrinfo *ai)
 {
 	ouster_assert_notnull(desc);
 	ouster_assert_notnull(ai);
@@ -113,7 +113,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		goto error;
 	}
 
-	if (desc->flags & NET_FLAGS_CONNECT) {
+	if (desc->flags & OUSTER_NET_FLAGS_CONNECT) {
 		int rc = connect(s, ai->ai_addr, (socklen_t)ai->ai_addrlen);
 		if (rc) {
 			ouster_log("connect(): error: %s\n", strerror(errno));
@@ -132,7 +132,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		}
 	}
 
-	if (desc->flags & NET_FLAGS_IPV6ONLY) {
+	if (desc->flags & OUSTER_NET_FLAGS_IPV6ONLY) {
 		int off = 0;
 		int rc = setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&off, sizeof(off));
 		if (rc) {
@@ -141,7 +141,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		}
 	}
 
-	if (desc->flags & NET_FLAGS_REUSE) {
+	if (desc->flags & OUSTER_NET_FLAGS_REUSE) {
 		int option = 1;
 		int rc = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&option, sizeof(option));
 		if (rc) {
@@ -150,7 +150,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		}
 	}
 
-	if (desc->flags & NET_FLAGS_BIND) {
+	if (desc->flags & OUSTER_NET_FLAGS_BIND) {
 
 		int rc = bind(s, ai->ai_addr, (socklen_t)ai->ai_addrlen);
 		if (rc) {
@@ -184,7 +184,7 @@ int try_create_socket(net_sock_desc_t *desc, struct addrinfo *ai)
 		ouster_log("ip_mreq requires #define _GNU_SOURCE. Compile with -D_GNU_SOURCE or --std=gnu99\n");
 	}
 
-	if (desc->flags & NET_FLAGS_NONBLOCK) {
+	if (desc->flags & OUSTER_NET_FLAGS_NONBLOCK) {
 		int flags = fcntl(s, F_GETFL, 0);
 		if (flags == -1) {
 			ouster_log("fcntl(): error\n");
@@ -211,7 +211,7 @@ error:
 	return -1;
 }
 
-struct addrinfo *get_addrinfo(net_sock_desc_t *desc)
+struct addrinfo *get_addrinfo(ouster_net_sock_desc_t *desc)
 {
 	ouster_assert_notnull(desc);
 
@@ -227,17 +227,17 @@ struct addrinfo *get_addrinfo(net_sock_desc_t *desc)
 	struct addrinfo hints;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
-	if (desc->flags & NET_FLAGS_IPV4) {
+	if (desc->flags & OUSTER_NET_FLAGS_IPV4) {
 		hints.ai_family = AF_INET;
 	}
-	if (desc->flags & NET_FLAGS_IPV6) {
+	if (desc->flags & OUSTER_NET_FLAGS_IPV6) {
 		hints.ai_family = AF_INET6;
 	}
-	if (desc->flags & NET_FLAGS_UDP) {
+	if (desc->flags & OUSTER_NET_FLAGS_UDP) {
 		hints.ai_socktype = SOCK_DGRAM;
 		hints.ai_flags = AI_PASSIVE;
 	}
-	if (desc->flags & NET_FLAGS_TCP) {
+	if (desc->flags & OUSTER_NET_FLAGS_TCP) {
 		hints.ai_socktype = SOCK_STREAM;
 		hints.ai_flags = AI_NUMERICHOST;
 	}
@@ -264,7 +264,7 @@ error:
 	return NULL;
 }
 
-int net_create(net_sock_desc_t *desc)
+int ouster_net_create(ouster_net_sock_desc_t *desc)
 {
 	ouster_assert_notnull(desc);
 
@@ -284,9 +284,9 @@ int net_create(net_sock_desc_t *desc)
 		char buf[INET6_ADDRSTRLEN];
 		inet_ntop_addrinfo(ai, buf, INET6_ADDRSTRLEN);
 		s = try_create_socket(desc, ai);
-		ouster_log("try_create_socket: %s:%i %s%s, socket=%i\n", buf, net_get_port(s),
-		           (desc->flags & NET_FLAGS_TCP) ? "TCP" : "",
-		           (desc->flags & NET_FLAGS_UDP) ? "UDP" : "",
+		ouster_log("try_create_socket: %s:%i %s%s, socket=%i\n", buf, ouster_net_get_port(s),
+		           (desc->flags & OUSTER_NET_FLAGS_TCP) ? "TCP" : "",
+		           (desc->flags & OUSTER_NET_FLAGS_UDP) ? "UDP" : "",
 		           s);
 		if (s >= 0) {
 			break;
@@ -313,7 +313,7 @@ error:
 	return -1;
 }
 
-int64_t net_read(int sock, char *buf, int len)
+int64_t ouster_net_read(int sock, char *buf, int len)
 {
 	ouster_assert(sock >= 0, "");
 	ouster_assert_notnull(buf);
@@ -334,7 +334,7 @@ int64_t net_write(int sock, char *buf, int len)
 /*
 https://stackoverflow.com/questions/5647503/with-a-single-file-descriptor-is-there-any-performance-difference-between-selec
 */
-uint64_t net_select(int socks[], int n, const int timeout_sec, const int timeout_usec)
+uint64_t ouster_net_select(int socks[], int n, const int timeout_sec, const int timeout_usec)
 {
 	ouster_assert_notnull(socks);
 

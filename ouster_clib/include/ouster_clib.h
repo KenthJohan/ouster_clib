@@ -1,10 +1,7 @@
-#pragma once
-#include <stdint.h>
+#ifndef OUSTER_CLIB_H
+#define OUSTER_CLIB_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+#include <stdint.h>
 
 #define ouster_id(T) OUSTER_ID##T##ID_
 
@@ -19,10 +16,12 @@ typedef uint16_t ouster_packet_type_t;
 // Index of the lidar scan, increments every time the sensor completes a rotation, crossing the zero azimuth angle.
 typedef uint16_t ouster_frame_id_t;
 
-// Initialization ID. Updates on every reinit, which may be triggered by the user or an error, and every reboot. This value may also be obtained by running the HTTP command GET /api/v1
+// Initialization ID. Updates on every reinit, which may be triggered by the user or an error, and every reboot. 
+// This value may also be obtained by running the HTTP command GET /api/v1
 typedef uint32_t ouster_init_id_t;
 
-// Serial number of the sensor. This value is unique to each sensor and can be found on a sticker affixed to the top of the sensor. In addition, this information is also available on the Sensor Web UI and by reading the field prod_sn from get_sensor_info.
+// Serial number of the sensor. This value is unique to each sensor and can be found on a sticker affixed to the top of the sensor. 
+// In addition, this information is also available on the Sensor Web UI and by reading the field prod_sn from get_sensor_info.
 typedef uint64_t ouster_prod_sn_t;
 
 // Indicates the shot limiting status of the sensor. Different codes indicates whether the sensor is in Normal Operation or in Shot Limiting. Please refer to Shot Limiting section for more details.
@@ -146,6 +145,121 @@ typedef enum
 #define OUSTER_COLUMN_HEADER_SIZE 12
 #define OUSTER_COLUMN_FOOTER_SIZE 0
 
-#ifdef __cplusplus
-}
-#endif
+
+#define OUSTER_MAX_ROWS 128
+
+typedef struct
+{
+	uint32_t mask;
+	int offset;
+	int depth;
+} ouster_extract_t;
+
+
+typedef struct
+{
+	int udp_port_lidar;
+	int udp_port_imu;
+
+	// This will not change when configuring azimuth window:
+	int columns_per_frame;
+	int columns_per_packet;
+
+	// This is number of rows:
+	int pixels_per_column;
+
+	// This is the pixel format:
+	ouster_profile_t profile;
+	int channel_data_size;
+
+	int col_size;
+
+	int lidar_packet_size;
+
+	// This is used to destagg hightmap range image from LiDAR:
+	int pixel_shift_by_row[OUSTER_MAX_ROWS];
+
+	// These are parameters to convert a hightmap range image from LiDAR to 3D points:
+	double beam_altitude_angles[OUSTER_MAX_ROWS];
+	double beam_azimuth_angles[OUSTER_MAX_ROWS];
+	double beam_to_lidar_transform[16];
+	double lidar_origin_to_beam_origin_mm;
+	double lidar_to_sensor_transform[16];
+
+	// This will change when configuring azimuth window.
+	// The (mid0) is the start of azimuth window.
+	// The (mid1) is the end of azimuth window.
+	// The (midw) is the width of azimuth window.
+	int mid0;
+	int mid1;
+	int midw;
+
+	ouster_extract_t extract[OUSTER_QUANTITY_CHAN_FIELD_MAX];
+} ouster_meta_t;
+
+typedef struct
+{
+	int w;
+	int h;
+	double *direction;
+	double *offset;
+} ouster_lut_t;
+
+typedef struct
+{
+	ouster_timestamp_t ts;
+	ouster_status_t status;
+	ouster_measurment_id_t mid;
+} ouster_column_t;
+
+typedef struct
+{
+	ouster_frame_id_t frame_id;
+	ouster_packet_type_t packet_type;
+	ouster_init_id_t init_id;
+	ouster_prod_sn_t prod_sn;
+	ouster_countdown_thermal_shutdown_t countdown_thermal_shutdown;
+	ouster_countdown_shot_limiting_t countdown_shot_limiting;
+	ouster_thermal_shutdown_t thermal_shutdown;
+	ouster_shot_limiting_t shot_limiting;
+} ouster_lidar_header_t;
+
+typedef struct
+{
+	int frame_id;
+	int last_mid;
+	int mid_loss;
+	int num_valid_pixels;
+} ouster_lidar_t;
+
+typedef struct
+{
+	ouster_quantity_t quantity;
+	int rows;
+	int cols;
+	int depth;
+	int rowsize;
+	int size;
+	void *data;
+} ouster_field_t;
+
+typedef struct
+{
+	ouster_quantity_t q[OUSTER_QUANTITY_CHAN_FIELD_MAX];
+} ouster_field_desc_t;
+
+
+#include "ouster_clib/ouster_assert.h"
+#include "ouster_clib/ouster_fs.h"
+#include "ouster_clib/ouster_net.h"
+#include "ouster_clib/ouster_meta.h"
+#include "ouster_clib/ouster_lut.h"
+#include "ouster_clib/ouster_field.h"
+#include "ouster_clib/ouster_lidar.h"
+#include "ouster_clib/ouster_udpcap.h"
+#include "ouster_clib/ouster_log.h"
+#include "ouster_clib/ouster_sock.h"
+#include "ouster_clib/ouster_client.h"
+
+
+#endif // OUSTER_CLIB_H

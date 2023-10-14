@@ -1,7 +1,8 @@
-#pragma once
+#ifndef OUSTER_FIELD_H
+#define OUSTER_FIELD_H
+
 #include <stdint.h>
-#include "ouster_clib/types.h"
-#include "ouster_clib/meta.h"
+#include "ouster_clib.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -32,21 +33,7 @@ typedef struct
 } ouster_field3_t;
 */
 
-typedef struct
-{
-	ouster_quantity_t quantity;
-	int rows;
-	int cols;
-	int depth;
-	int rowsize;
-	int size;
-	void *data;
-} ouster_field_t;
 
-typedef struct
-{
-	ouster_quantity_t q[OUSTER_QUANTITY_CHAN_FIELD_MAX];
-} ouster_field_desc_t;
 
 
 void ouster_destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[]);
@@ -60,3 +47,6 @@ void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count);
 #ifdef __cplusplus
 }
 #endif
+
+
+#endif // OUSTER_FIELD_H

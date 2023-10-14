@@ -1,8 +1,7 @@
-#include "ouster_clib/meta.h"
-#include "ouster_basics.h"
+#include "ouster_clib/ouster_meta.h"
 #include "ouster_clib/ouster_assert.h"
 #include "ouster_clib/ouster_log.h"
-#include "ouster_clib/types.h"
+#include "ouster_clib.h"
 
 #define JSMN_HEADER
 #include "jsmn.h"
@@ -11,6 +10,10 @@
 #include <string.h>
 
 #define TOK_COUNT 1024
+
+
+#define MAX(a, b) (((a) > (b)) ? a : b)
+#define MIN(a, b) (((a) < (b)) ? a : b)
 
 char *jsmn_strerror(int r)
 {

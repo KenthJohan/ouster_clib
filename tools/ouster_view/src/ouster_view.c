@@ -4,15 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <ouster_clib/field.h>
-#include <ouster_clib/lidar.h>
-#include <ouster_clib/meta.h>
-#include <ouster_clib/ouster_assert.h>
-#include <ouster_clib/ouster_fs.h>
-#include <ouster_clib/ouster_log.h>
-#include <ouster_clib/ouster_net.h>
-#include <ouster_clib/sock.h>
-#include <ouster_clib/types.h>
+#include <ouster_clib.h>
 
 #include "convert.h"
 #include "tigr.h"
@@ -95,15 +87,15 @@ void *rec(void *ptr)
 	while (1) {
 		int timeout_sec = 1;
 		int timeout_usec = 0;
-		uint64_t a = net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
+		uint64_t a = ouster_net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
 
 		if (a == 0) {
 			ouster_log("Timeout\n");
 		}
 
 		if (a & (1 << SOCK_INDEX_LIDAR)) {
-			char buf[NET_UDP_MAX_SIZE];
-			int64_t n = net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
+			char buf[OUSTER_NET_UDP_MAX_SIZE];
+			int64_t n = ouster_net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
 			ouster_lidar_get_fields(&lidar, meta, buf, fields, FIELD_COUNT);
 			if (lidar.last_mid == meta->mid1) {
 				if (app->mode == SNAPSHOT_MODE_RAW) {}
@@ -117,8 +109,8 @@ void *rec(void *ptr)
 		}
 
 		if (a & (1 << SOCK_INDEX_IMU)) {
-			// char buf[NET_UDP_MAX_SIZE];
-			// int64_t n = net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
+			// char buf[OUSTER_NET_UDP_MAX_SIZE];
+			// int64_t n = ouster_net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
 		}
 	}
 

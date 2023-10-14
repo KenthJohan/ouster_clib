@@ -1,4 +1,4 @@
-#include "ouster_clib/client.h"
+#include "ouster_clib/ouster_client.h"
 #include "ouster_clib/ouster_assert.h"
 #include "ouster_clib/ouster_log.h"
 

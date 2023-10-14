@@ -8,13 +8,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <ouster_clib/meta.h>
-#include <ouster_clib/ouster_assert.h>
-#include <ouster_clib/ouster_fs.h>
-#include <ouster_clib/ouster_log.h>
-#include <ouster_clib/ouster_net.h>
-#include <ouster_clib/ouster_udpcap.h>
-
+#include <ouster_clib.h>
 typedef struct
 {
 	char const *metafile;
@@ -75,17 +69,17 @@ int main(int argc, char *argv[])
 
 	printf("Column window: %i %i\n", app.meta.mid0, app.meta.mid1);
 
-	net_sock_desc_t desc = {
-	    .flags = NET_FLAGS_UDP};
-	int sock = net_create(&desc);
+	ouster_net_sock_desc_t desc = {
+	    .flags = OUSTER_NET_FLAGS_UDP};
+	int sock = ouster_net_create(&desc);
 
-	net_addr_t dst = {0};
-	net_addr_set_ip4(&dst, app.ip_dst);
+	ouster_net_addr_t dst = {0};
+	ouster_net_addr_set_ip4(&dst, app.ip_dst);
 
 	uint32_t packet_id = 0;
-	ouster_udpcap_t *cap = calloc(1, sizeof(ouster_udpcap_t) + NET_UDP_MAX_SIZE);
+	ouster_udpcap_t *cap = calloc(1, sizeof(ouster_udpcap_t) + OUSTER_NET_UDP_MAX_SIZE);
 	while (1) {
-		cap->size = NET_UDP_MAX_SIZE;
+		cap->size = OUSTER_NET_UDP_MAX_SIZE;
 		ouster_udpcap_read(cap, app.read_file);
 		int rc = ouster_udpcap_sendto(cap, sock, &dst);
 		packet_id++;

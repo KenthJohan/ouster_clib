@@ -1,4 +1,4 @@
-#include "ouster_clib/lut.h"
+#include "ouster_clib/ouster_lut.h"
 #include "ouster_clib/ouster_assert.h"
 #include "ouster_math.h"
 

@@ -1,253 +1,4 @@
 #include "ouster_clib.h"
-
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef OUSTER_USE_CURL
-#include <curl/curl.h>
-
-void ouster_buffer_init(ouster_buffer_t *b, int cap)
-{
-	ouster_assert_notnull(b);
-	b->size = 0;
-	b->cap = cap;
-	b->data = calloc(1, b->cap);
-}
-
-void ouster_buffer_fini(ouster_buffer_t *b)
-{
-	ouster_assert_notnull(b);
-	free(b->data);
-	b->size = 0;
-	b->cap = 0;
-	b->data = NULL;
-}
-
-size_t write_memory_callback(void *contents, size_t element_size, size_t elements_count, void *user_pointer)
-{
-	ouster_assert_notnull(contents);
-	ouster_assert_notnull(user_pointer);
-
-	size_t size_increment = element_size * elements_count;
-	ouster_buffer_t *b = user_pointer;
-	int new_size = b->size + size_increment;
-	if (new_size > b->cap) {
-		b->data = realloc(b->data, new_size);
-		if (b->data == NULL) {
-			ouster_log("realloc(): error\n");
-			return 0;
-		}
-		b->cap = new_size;
-	}
-	printf("contents:\n");
-	fwrite(contents, size_increment, 1, stdout);
-	printf("\n");
-	memcpy(b->data + b->size, contents, size_increment);
-	b->size += size_increment;
-	return size_increment;
-}
-
-// http://192.168.1.137/api/v1/sensor/cmd/set_udp_dest_auto
-// http://192.168.1.137/api/v1/sensor/cmd/set_udp_dest_auto
-void req_get(ouster_client_t *client, char const *ip)
-{
-	ouster_assert_notnull(client);
-	ouster_assert_notnull(ip);
-
-	{
-		char url[1024];
-		snprintf(url, 1024, "http://%s/%s", client->host, ip);
-		ouster_log("\033[4;34m"
-		           "GET"
-		           "\033[0m"
-		           " %s\n",
-		           url);
-		curl_easy_setopt(client->curl, CURLOPT_URL, url);
-	}
-
-	curl_easy_setopt(client->curl, CURLOPT_HTTPGET, 1L);
-	curl_easy_setopt(client->curl, CURLOPT_WRITEFUNCTION, write_memory_callback);
-
-	client->buf.size = 0;
-	curl_easy_setopt(client->curl, CURLOPT_WRITEDATA, &client->buf);
-
-	CURLcode res = curl_easy_perform(client->curl);
-	ouster_log("curl_easy_perform() %i, %s\n", res, curl_easy_strerror(res));
-
-	if (res == CURLE_SEND_ERROR) {
-		// Specific versions of curl does't play well with the sensor http
-		// server. When CURLE_SEND_ERROR happens for the first time silently
-		// re-attempting the http request resolves the problem.
-		res = curl_easy_perform(client->curl);
-	}
-
-	if (res != CURLE_OK) {
-		ouster_log("curl_easy_perform() failed\n");
-		return;
-	}
-
-	long http_code = 0;
-	curl_easy_getinfo(client->curl, CURLINFO_RESPONSE_CODE, &http_code);
-
-	if (http_code != 200) {
-		ouster_log("http_code error: %i\n", http_code);
-	}
-}
-
-#define URLAPI_METADATA "api/v1/sensor/metadata"
-#define URLAPI_FIRMWARE "api/v1/system/firmware"
-
-void ouster_client_init(ouster_client_t *client)
-{
-	ouster_assert_notnull(client);
-	assert(client->host);
-	curl_global_init(CURL_GLOBAL_ALL);
-	client->curl = curl_easy_init();
-	ouster_buffer_init(&client->buf, 1024 * 10);
-	req_get(client, URLAPI_FIRMWARE);
-}
-
-void ouster_client_fini(ouster_client_t *client)
-{
-	ouster_assert_notnull(client);
-	curl_easy_cleanup(client->curl);
-	client->curl = NULL;
-	ouster_buffer_fini(&client->buf);
-}
-
-void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
-{
-	ouster_assert_notnull(client);
-	ouster_assert_notnull(path);
-	ouster_log("Downloading meta to %s\n", path);
-	req_get(client, URLAPI_METADATA);
-	FILE *f = fopen(path, "w+");
-	fwrite(client->buf.data, client->buf.size, 1, f);
-	fclose(f);
-}
-#else
-void ouster_client_init(ouster_client_t *client)
-{
-	ouster_log("ouster_client_init not implemented\n");
-}
-void ouster_client_fini(ouster_client_t *client)
-{
-	ouster_log("ouster_client_fini not implemented\n");
-}
-void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
-{
-	ouster_log("ouster_client_download_meta_file not implemented\n");
-}
-#endif
-#include <stdlib.h>
-#include <string.h>
-
-void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
-{
-	ouster_assert_notnull(fields);
-	ouster_assert_notnull(meta);
-	ouster_field_t *f = fields;
-	for (int i = 0; i < count; ++i, f++) {
-		ouster_assert(f->depth > 0, "");
-		f->rows = meta->pixels_per_column;
-		f->cols = meta->midw;
-		f->rowsize = f->cols * f->depth;
-		f->size = f->rows * f->cols * f->depth;
-		f->data = calloc(1, fields->size);
-	}
-}
-
-void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count)
-{
-	ouster_assert_notnull(dst);
-	ouster_assert_notnull(src);
-	// memcpy(dst, src, sizeof(ouster_field_t) * count);
-	for (int i = 0; i < count; ++i, ++dst, ++src) {
-		memcpy(dst->data, src->data, src->size);
-	}
-}
-
-/*
-template <typename T>
-inline img_t<T> destagger(const Eigen::Ref<const img_t<T>>& img,
-                          const std::vector<int>& pixel_shift_by_row,
-                          bool inverse) {
-    const size_t h = img.rows();
-    const size_t w = img.cols();
-
-    if (pixel_shift_by_row.size() != h)
-        throw std::invalid_argument{"image height does not match shifts size"};
-
-    img_t<T> destaggered{h, w};
-    for (size_t u = 0; u < h; u++) {
-        const std::ptrdiff_t offset =
-            ((inverse ? -1 : 1) * pixel_shift_by_row[u] + w) % w;
-
-        destaggered.row(u).segment(offset, w - offset) =
-            img.row(u).segment(0, w - offset);
-        destaggered.row(u).segment(0, offset) =
-            img.row(u).segment(w - offset, offset);
-    }
-    return destaggered;
-}
-*/
-
-/*
-https://static.ouster.dev/sdk-docs/reference/lidar-scan.html#staggering-and-destaggering
-*/
-void ouster_destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[])
-{
-	ouster_assert_notnull(data);
-	ouster_assert_notnull(pixel_shift_by_row);
-	char *row = data;
-	for (int irow = 0; irow < rows; ++irow, row += rowsize) {
-		int offset = (pixel_shift_by_row[irow] + cols) % cols;
-		memmove(row + depth * offset, row, depth * (cols - offset));
-		memmove(row, row + depth * (cols - offset), depth * offset);
-	}
-}
-
-void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *meta)
-{
-	ouster_assert_notnull(fields);
-	ouster_assert_notnull(meta);
-	for (int i = 0; i < count; ++i, ++fields) {
-		ouster_destagger(fields->data, fields->cols, fields->rows, fields->depth, fields->rowsize, meta->pixel_shift_by_row);
-	}
-}
-
-void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta)
-{
-	ouster_assert_notnull(field);
-	ouster_assert_notnull(meta);
-	ouster_extract_t *extract = meta->extract + field->quantity;
-	uint32_t mask = extract->mask;
-	if (mask == 0xFFFFFFFF) {
-		return;
-	}
-
-	ouster_assert(field->depth == 4, "Destination data depth other than 4 is not supported");
-	if (field->depth == 4) {
-		uint32_t *data32 = (uint32_t *)field->data;
-		int rows = field->rows;
-		int cols = field->cols;
-		int cells = rows * cols;
-		for (int i = 0; i < cells; ++i) {
-			data32[i] &= mask;
-		}
-	}
-}
-
-void ouster_field_zero(ouster_field_t fields[], int count)
-{
-	ouster_assert_notnull(fields);
-	for (int i = 0; i < count; ++i, ++fields) {
-		memset(fields->data, 0, fields->size);
-	}
-}
-
 #pragma once
 
 /*
@@ -927,6 +678,135 @@ int ouster_assert_(
 	fflush(stderr);
 	return r;
 }
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+#include <curl/curl.h>
+
+void ouster_buffer_init(ouster_buffer_t *b, int cap)
+{
+	ouster_assert_notnull(b);
+	b->size = 0;
+	b->cap = cap;
+	b->data = calloc(1, b->cap);
+}
+
+void ouster_buffer_fini(ouster_buffer_t *b)
+{
+	ouster_assert_notnull(b);
+	free(b->data);
+	b->size = 0;
+	b->cap = 0;
+	b->data = NULL;
+}
+
+size_t write_memory_callback(void *contents, size_t element_size, size_t elements_count, void *user_pointer)
+{
+	ouster_assert_notnull(contents);
+	ouster_assert_notnull(user_pointer);
+
+	size_t size_increment = element_size * elements_count;
+	ouster_buffer_t *b = user_pointer;
+	int new_size = b->size + size_increment;
+	if (new_size > b->cap) {
+		b->data = realloc(b->data, new_size);
+		if (b->data == NULL) {
+			ouster_log("realloc(): error\n");
+			return 0;
+		}
+		b->cap = new_size;
+	}
+	printf("contents:\n");
+	fwrite(contents, size_increment, 1, stdout);
+	printf("\n");
+	memcpy(b->data + b->size, contents, size_increment);
+	b->size += size_increment;
+	return size_increment;
+}
+
+// http://192.168.1.137/api/v1/sensor/cmd/set_udp_dest_auto
+// http://192.168.1.137/api/v1/sensor/cmd/set_udp_dest_auto
+void req_get(ouster_client_t *client, char const *ip)
+{
+	ouster_assert_notnull(client);
+	ouster_assert_notnull(ip);
+
+	{
+		char url[1024];
+		snprintf(url, 1024, "http://%s/%s", client->host, ip);
+		ouster_log("\033[4;34m"
+		           "GET"
+		           "\033[0m"
+		           " %s\n",
+		           url);
+		curl_easy_setopt(client->curl, CURLOPT_URL, url);
+	}
+
+	curl_easy_setopt(client->curl, CURLOPT_HTTPGET, 1L);
+	curl_easy_setopt(client->curl, CURLOPT_WRITEFUNCTION, write_memory_callback);
+
+	client->buf.size = 0;
+	curl_easy_setopt(client->curl, CURLOPT_WRITEDATA, &client->buf);
+
+	CURLcode res = curl_easy_perform(client->curl);
+	ouster_log("curl_easy_perform() %i, %s\n", res, curl_easy_strerror(res));
+
+	if (res == CURLE_SEND_ERROR) {
+		// Specific versions of curl does't play well with the sensor http
+		// server. When CURLE_SEND_ERROR happens for the first time silently
+		// re-attempting the http request resolves the problem.
+		res = curl_easy_perform(client->curl);
+	}
+
+	if (res != CURLE_OK) {
+		ouster_log("curl_easy_perform() failed\n");
+		return;
+	}
+
+	long http_code = 0;
+	curl_easy_getinfo(client->curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+	if (http_code != 200) {
+		ouster_log("http_code error: %i\n", http_code);
+	}
+}
+
+#define URLAPI_METADATA "api/v1/sensor/metadata"
+#define URLAPI_FIRMWARE "api/v1/system/firmware"
+
+void ouster_client_init(ouster_client_t *client)
+{
+	ouster_assert_notnull(client);
+	assert(client->host);
+	curl_global_init(CURL_GLOBAL_ALL);
+	client->curl = curl_easy_init();
+	ouster_buffer_init(&client->buf, 1024 * 10);
+	req_get(client, URLAPI_FIRMWARE);
+}
+
+void ouster_client_fini(ouster_client_t *client)
+{
+	ouster_assert_notnull(client);
+	curl_easy_cleanup(client->curl);
+	client->curl = NULL;
+	ouster_buffer_fini(&client->buf);
+}
+
+void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
+{
+	ouster_assert_notnull(client);
+	ouster_assert_notnull(path);
+	ouster_log("Downloading meta to %s\n", path);
+	req_get(client, URLAPI_METADATA);
+	FILE *f = fopen(path, "w+");
+	fwrite(client->buf.data, client->buf.size, 1, f);
+	fclose(f);
+}
+
 #include <string.h>
 
 void ouster_dump_lidar_header(FILE *f, ouster_lidar_header_t const *p)
@@ -970,6 +850,113 @@ void ouster_dump_meta(FILE * f, ouster_meta_t const *meta)
 	fprintf(f, "%40s: %iB\n", "col_size", meta->col_size);
 	fprintf(f, "%40s: %iB\n", "lidar_packet_size", meta->lidar_packet_size);
 } 
+#include <stdlib.h>
+#include <string.h>
+
+void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
+{
+	ouster_assert_notnull(fields);
+	ouster_assert_notnull(meta);
+	ouster_field_t *f = fields;
+	for (int i = 0; i < count; ++i, f++) {
+		ouster_assert(f->depth > 0, "");
+		f->rows = meta->pixels_per_column;
+		f->cols = meta->midw;
+		f->rowsize = f->cols * f->depth;
+		f->size = f->rows * f->cols * f->depth;
+		f->data = calloc(1, fields->size);
+	}
+}
+
+void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count)
+{
+	ouster_assert_notnull(dst);
+	ouster_assert_notnull(src);
+	// memcpy(dst, src, sizeof(ouster_field_t) * count);
+	for (int i = 0; i < count; ++i, ++dst, ++src) {
+		memcpy(dst->data, src->data, src->size);
+	}
+}
+
+/*
+template <typename T>
+inline img_t<T> destagger(const Eigen::Ref<const img_t<T>>& img,
+                          const std::vector<int>& pixel_shift_by_row,
+                          bool inverse) {
+    const size_t h = img.rows();
+    const size_t w = img.cols();
+
+    if (pixel_shift_by_row.size() != h)
+        throw std::invalid_argument{"image height does not match shifts size"};
+
+    img_t<T> destaggered{h, w};
+    for (size_t u = 0; u < h; u++) {
+        const std::ptrdiff_t offset =
+            ((inverse ? -1 : 1) * pixel_shift_by_row[u] + w) % w;
+
+        destaggered.row(u).segment(offset, w - offset) =
+            img.row(u).segment(0, w - offset);
+        destaggered.row(u).segment(0, offset) =
+            img.row(u).segment(w - offset, offset);
+    }
+    return destaggered;
+}
+*/
+
+/*
+https://static.ouster.dev/sdk-docs/reference/lidar-scan.html#staggering-and-destaggering
+*/
+void ouster_destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[])
+{
+	ouster_assert_notnull(data);
+	ouster_assert_notnull(pixel_shift_by_row);
+	char *row = data;
+	for (int irow = 0; irow < rows; ++irow, row += rowsize) {
+		int offset = (pixel_shift_by_row[irow] + cols) % cols;
+		memmove(row + depth * offset, row, depth * (cols - offset));
+		memmove(row, row + depth * (cols - offset), depth * offset);
+	}
+}
+
+void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *meta)
+{
+	ouster_assert_notnull(fields);
+	ouster_assert_notnull(meta);
+	for (int i = 0; i < count; ++i, ++fields) {
+		ouster_destagger(fields->data, fields->cols, fields->rows, fields->depth, fields->rowsize, meta->pixel_shift_by_row);
+	}
+}
+
+void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta)
+{
+	ouster_assert_notnull(field);
+	ouster_assert_notnull(meta);
+	ouster_extract_t *extract = meta->extract + field->quantity;
+	uint32_t mask = extract->mask;
+	if (mask == 0xFFFFFFFF) {
+		return;
+	}
+
+	ouster_assert(field->depth == 4, "Destination data depth other than 4 is not supported");
+	if (field->depth == 4) {
+		uint32_t *data32 = (uint32_t *)field->data;
+		int rows = field->rows;
+		int cols = field->cols;
+		int cells = rows * cols;
+		for (int i = 0; i < cells; ++i) {
+			data32[i] &= mask;
+		}
+	}
+}
+
+void ouster_field_zero(ouster_field_t fields[], int count)
+{
+	ouster_assert_notnull(fields);
+	for (int i = 0; i < count; ++i, ++fields) {
+		memset(fields->data, 0, fields->size);
+	}
+}
+
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>

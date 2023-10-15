@@ -96,15 +96,22 @@ void *rec(void *ptr)
 		if (a & (1 << SOCK_INDEX_LIDAR)) {
 			char buf[OUSTER_NET_UDP_MAX_SIZE];
 			int64_t n = ouster_net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-			ouster_lidar_get_fields(&lidar, meta, buf, fields, FIELD_COUNT);
-			if (lidar.last_mid == meta->mid1) {
-				if (app->mode == SNAPSHOT_MODE_RAW) {}
-				if (app->mode == SNAPSHOT_MODE_DESTAGGER) {
-					ouster_field_destagger(fields, FIELD_COUNT, meta);
+			if(n == meta->lidar_packet_size)
+			{
+				ouster_lidar_get_fields(&lidar, meta, buf, fields, FIELD_COUNT);
+				if (lidar.last_mid == meta->mid1) {
+					if (app->mode == SNAPSHOT_MODE_RAW) {}
+					if (app->mode == SNAPSHOT_MODE_DESTAGGER) {
+						ouster_field_destagger(fields, FIELD_COUNT, meta);
+					}
+					convert_u32_to_bmp(fields[FIELD_RANGE].data, app->bmp, w, h);
+					ouster_field_zero(fields, FIELD_COUNT);
+					printf("frame=%i, mid_loss=%i\n", lidar.frame_id, lidar.mid_loss);
 				}
-				convert_u32_to_bmp(fields[FIELD_RANGE].data, app->bmp, w, h);
-				ouster_field_zero(fields, FIELD_COUNT);
-				printf("frame=%i, mid_loss=%i\n", lidar.frame_id, lidar.mid_loss);
+			}
+			else
+			{
+				printf("Bytes received (%ji) does not match lidar_packet_size (%ji)\n", (intmax_t)n, (intmax_t)app->meta.lidar_packet_size);
 			}
 		}
 

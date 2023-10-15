@@ -351,7 +351,6 @@ typedef struct
 /** @} */ // end of core
 
 #include "ouster_clib/ouster_assert.h"
-#include "ouster_clib/ouster_client.h"
 #include "ouster_clib/ouster_field.h"
 #include "ouster_clib/ouster_fs.h"
 #include "ouster_clib/ouster_lidar.h"
@@ -364,6 +363,10 @@ typedef struct
 
 #ifdef OUSTER_USE_DUMP
 #include "ouster_clib/ouster_dump.h"
+#endif
+
+#ifdef OUSTER_USE_CURL
+#include "ouster_clib/ouster_client.h"
 #endif
 
 #endif // OUSTER_CLIB_H

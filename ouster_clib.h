@@ -402,37 +402,6 @@ int ouster_assert_(
 #endif // OUSTER_ASSERT_H
 
 /** @} */
-#ifndef OUSTER_CLIENT_H
-#define OUSTER_CLIENT_H
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-typedef struct
-{
-	char *data;
-	int size;
-	int cap;
-} ouster_buffer_t;
-
-typedef struct
-{
-	void *curl;
-	char const *host;
-	ouster_buffer_t buf;
-} ouster_client_t;
-
-void ouster_client_init(ouster_client_t *client);
-void ouster_client_fini(ouster_client_t *client);
-void ouster_client_download_meta_file(ouster_client_t *client, char const *path);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // OUSTER_CLIENT_H
 /**
  * @defgroup field Fields and destagger
  * @brief Provides network functionality
@@ -857,6 +826,40 @@ void ouster_dump_meta(FILE *f, ouster_meta_t const *meta);
 #endif // OUSTER_DUMP_H
 
 /** @} */
+#endif
+
+#ifdef OUSTER_USE_CURL
+#ifndef OUSTER_CLIENT_H
+#define OUSTER_CLIENT_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+typedef struct
+{
+	char *data;
+	int size;
+	int cap;
+} ouster_buffer_t;
+
+typedef struct
+{
+	void *curl;
+	char const *host;
+	ouster_buffer_t buf;
+} ouster_client_t;
+
+void ouster_client_init(ouster_client_t *client);
+void ouster_client_fini(ouster_client_t *client);
+void ouster_client_download_meta_file(ouster_client_t *client, char const *path);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // OUSTER_CLIENT_H
 #endif
 
 #endif // OUSTER_CLIB_H

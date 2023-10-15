@@ -8,6 +8,7 @@
 		"amalgamate": true
 	},
 	"lang.c": {
+		"c-standard" : "c99",
 		"defines": ["OUSTER_USE_CURL"],
 		"export-symbols": true,
 		"static": true,

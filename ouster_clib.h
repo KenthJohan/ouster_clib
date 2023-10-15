@@ -148,9 +148,12 @@ RRRR Y0SS NN00
 */
 typedef enum {
 	OUSTER_PROFILE_LIDAR_LEGACY = 1,
-	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL = 2, // Dual Return Profile
-	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16 = 3,      // Single Return Profile
-	OUSTER_PROFILE_RNG15_RFL8_NIR8 = 4,             // Low Data Rate Profile
+	/** Dual Return Profile */
+	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL = 2,
+	/** Single Return Profile */
+	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16 = 3,
+	/** Low Data Rate Profile */
+	OUSTER_PROFILE_RNG15_RFL8_NIR8 = 4,
 	OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL = 5,
 	OUSTER_PROFILE_COUNT
 } ouster_profile_t;
@@ -465,6 +468,14 @@ void ouster_log(char const *format, ...);
 #endif
 
 #endif // OUSTER_LOG_H
+/**
+ * @defgroup lut XYZ vector field lookup table
+ * @brief Provides a vector field that converts image to pointcloud
+ *
+ * \ingroup c
+ * @{
+ */
+
 #ifndef OUSTER_LUT_H
 #define OUSTER_LUT_H
 
@@ -474,7 +485,11 @@ extern "C" {
 #endif
 
 
-
+/** Inits a xyz lut table from meta configuration
+ *
+ * @param lut The xyz lut table
+ * @param meta meta configuration
+ */
 void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta);
 void ouster_lut_fini(ouster_lut_t *lut);
 
@@ -485,8 +500,19 @@ void ouster_lut_fini(ouster_lut_t *lut);
  * @param xyz Output Image pointcloud
  */
 void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, void *out, int out_stride);
+
+/** Converts 2D hightmap to pointcloud
+ *
+ * @param lut Input LUT unit vector direction field
+ * @param range Input Raw LiDAR Sensor RANGE field 2D hightmap
+ * @param xyz Output Image pointcloud
+ */
 void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, void *out, int out_stride);
 
+/** Allocates size for xyz pointcloud
+ *
+ * @param lut Input LUT unit vector direction field
+ */
 double *ouster_lut_alloc(ouster_lut_t const *lut);
 
 #ifdef __cplusplus
@@ -494,6 +520,8 @@ double *ouster_lut_alloc(ouster_lut_t const *lut);
 #endif
 
 #endif // OUSTER_LUT_H
+
+/** @} */
 #ifndef OUSTER_META_H
 #define OUSTER_META_H
 

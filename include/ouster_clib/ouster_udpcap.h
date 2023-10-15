@@ -18,6 +18,15 @@ extern "C" {
 
 #include "ouster_clib/ouster_net.h"
 
+typedef enum
+{
+	OUSTER_UDPCAP_OK,
+	OUSTER_UDPCAP_ERROR_RECV,
+	OUSTER_UDPCAP_ERROR_FREAD,
+	OUSTER_UDPCAP_ERROR_FWRITE,
+	OUSTER_UDPCAP_ERROR_BUFFER_TOO_SMALL,
+} ouster_udpcap_error_t;
+
 typedef struct
 {
 	uint32_t port;
@@ -29,15 +38,16 @@ typedef struct
  *
  * @param cap The capture buffer.
  * @param f Source file
+ * @return Returns 0 on ok otherwise error code
  */
-void ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f);
+int ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f);
 
 /** Send the capture buffer from sock to addr
  *
  * @param cap The capture buffer.
  * @param sock The source socket filedescriptor
  * @param addr The destination address
- * @return Returns the number sent, or -1 for errors.
+ * @return Returns the number sent, or -1 for errors
  */
 int ouster_udpcap_sendto(ouster_udpcap_t *cap, int sock, ouster_net_addr_t *addr);
 
@@ -46,9 +56,9 @@ int ouster_udpcap_sendto(ouster_udpcap_t *cap, int sock, ouster_net_addr_t *addr
  * @param cap The capture buffer.
  * @param sock The socket filedescriptor
  * @param f Destination file
- * @return Returns the number sent, or -1 for errors.
+ * @return Returns 0 on ok otherwise error code
  */
-void ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f);
+int ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f);
 
 /** Set the UDP port of the capture buffer.
  *

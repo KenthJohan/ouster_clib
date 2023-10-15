@@ -1,3 +1,12 @@
+/**
+ * @defgroup field Fields and destagger
+ * @brief Provides network functionality
+ *
+ * \ingroup c
+ * @{
+ */
+
+
 #ifndef OUSTER_FIELD_H
 #define OUSTER_FIELD_H
 
@@ -20,3 +29,5 @@ void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count);
 #endif
 
 #endif // OUSTER_FIELD_H
+
+/** @} */

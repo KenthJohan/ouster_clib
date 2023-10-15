@@ -2203,7 +2203,7 @@ void ouster_ser_i32(char data[4], int32_t value)
 }
 */
 
-void ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f)
+int ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f)
 {
 	ouster_assert_notnull(cap);
 	ouster_assert_notnull(f);
@@ -2214,11 +2214,17 @@ void ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f)
 		// First get the header info
 		size_t rc;
 		rc = fread(cap, sizeof(ouster_udpcap_t), 1, f);
-		ouster_assert(rc == 1, "");
+		if(rc != 1)
+		{
+			return -1;
+		}
 		// Convert to little endian to host
 		cap->size = le32toh(cap->size);
 		cap->port = le32toh(cap->port);
-		ouster_assert(cap->size <= maxsize, "");
+		if(cap->size <= maxsize)
+		{
+			return -1;
+		}
 	}
 
 
@@ -2226,8 +2232,13 @@ void ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f)
 		// Read the UDP content
 		size_t rc;
 		rc = fread(cap->buf, cap->size, 1, f);
-		ouster_assert(rc == 1, "");
+		if(rc != 1)
+		{
+			return -1;
+		}
 	}
+
+	return 0;
 }
 
 int ouster_udpcap_sendto(ouster_udpcap_t *cap, int sock, ouster_net_addr_t *addr)

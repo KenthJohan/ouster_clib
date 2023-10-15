@@ -337,6 +337,8 @@ typedef struct
 #ifndef OUSTER_ASSERT_H
 #define OUSTER_ASSERT_H
 
+#ifdef OUSTER_DEBUG
+
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -349,11 +351,12 @@ int ouster_assert_(
 	...
 	);
 
-
-
-
 #define ouster_assert(expr, ...) ((expr) ? (void)0: (void)(ouster_assert_(#expr, __FILE__, __LINE__, __func__, __VA_ARGS__), abort()))
 #define ouster_assert_notnull(expr) ouster_assert(expr, "%s", "Should not be NULL")
+#else
+#define ouster_assert(expr, ...)
+#define ouster_assert_notnull(expr)
+#endif // OUSTER_DEBUG
 
 #endif // OUSTER_ASSERT_H
 #ifndef OUSTER_CLIENT_H
@@ -655,7 +658,7 @@ typedef struct
  * @param cap The capture buffer.
  * @param f Source file
  */
-void ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f);
+int ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f);
 
 /** Send the capture buffer from sock to addr
  *

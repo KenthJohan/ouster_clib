@@ -1,3 +1,11 @@
+/**
+ * @defgroup net Network and sockets
+ * @brief Provides network functionality
+ *
+ * \ingroup c
+ * @{
+ */
+
 #ifndef OUSTER_NET_H
 #define OUSTER_NET_H
 
@@ -36,8 +44,30 @@ typedef struct
 	char data[OUSTER_NET_ADDRSTRLEN];
 } ouster_net_addr_t;
 
+/** Set a IPv4 address
+ *
+ * @param addr The address
+ * @param ip The IPv4 address
+ */
 void ouster_net_addr_set_ip4(ouster_net_addr_t *addr, char const *ip);
+
+/** Set a port
+ *
+ * @param addr The address
+ * @param ip The port
+ */
 void ouster_net_addr_set_port(ouster_net_addr_t *addr, int port);
+
+/**
+ * @brief Send data from a socket to a network address
+ * 
+ * @param sock The source socket filedescriptor
+ * @param buf Data to send
+ * @param size Data size to send
+ * @param flags 
+ * @param addr Destinationnetwork address
+ * @return Returns the number sent, or -1 for errors.
+ */
 int ouster_net_sendto(int sock, char *buf, int size, int flags, ouster_net_addr_t *addr);
 
 int ouster_net_create(ouster_net_sock_desc_t *desc);
@@ -53,3 +83,5 @@ int32_t ouster_net_get_port(int sock);
 #endif
 
 #endif // OUSTER_NET_H
+
+/** @} */

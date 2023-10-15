@@ -21,7 +21,9 @@
 		"stdio.h": "c",
 		"in.h": "c",
 		"cmath": "c",
-		"complex": "c"
+		"complex": "c",
+		"ouster_assert.h": "c",
+		"ouster_udpcap.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

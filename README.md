@@ -1,14 +1,14 @@
 This is a non official SDK for Ouster LiDAR sensors.<br>
+The ouster_clib is meant to be simplistic and use zero dependencies. Easy to debug, modify and extend. 
+Dependency on `libcurl` is optional and is only used to download meta file.
+<br><br>
 The official SDK can be found at https://github.com/ouster-lidar/ouster_example. <br>
-The `ouster_clib` is meant to be simplistic and use zero dependencies. Easy to debug, modify and extend.
-`libcurl` is currently used to get meta data but its not required to receive LiDAR frames.
-
 
 ## Features
-* Portable zero dependency C99 API
+* Simple and portable with no dependencies [C99 API](https://kenthjohan.github.io/ouster_clib/group__c.html)
 * Short build time
-* C++ compatible.
-* Easy to integrate with OpenCV or Eigen
+* C++ compatible
+* Easy to integrate with [OpenCV](examples/opencv_example/src/opencv_example.cpp) or Eigen
 * Debug friendly
 * Meta file parser
 * Meta file downloader is optional. Requires dependency libcurl.
@@ -19,9 +19,12 @@ The `ouster_clib` is meant to be simplistic and use zero dependencies. Easy to d
 * No hidden state
 * No Windows support
 
+## Supported devices
+* OS1-16
+* OS1-128
+
 ## Documentation
 - [All Documentation](https://kenthjohan.github.io/ouster_clib/md_docs_Docs.html)
-
 
 
 ## TODO
@@ -33,12 +36,6 @@ The `ouster_clib` is meant to be simplistic and use zero dependencies. Easy to d
 
 ## Build tools supported
 * https://github.com/SanderMertens/bake
-
-
-
-
-
-
 
 
 

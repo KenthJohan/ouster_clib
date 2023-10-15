@@ -9,7 +9,7 @@
 	},
 	"lang.c": {
 		"c-standard" : "c99",
-		"defines": ["OUSTER_USE_CURL"],
+		"defines": [],
 		"export-symbols": true,
 		"static": true,
 		"cflags": [

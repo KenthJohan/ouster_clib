@@ -35,8 +35,26 @@
  * Used for input parameter checking and cheap sanity checks. There are lots of
  * asserts in every part of the code, so this will slow down applications.
  */
-
 #define OUSTER_DEBUG
+
+/** \def OUSTER_USE_CURL
+ * Used to download meta file from Ouster Sensor HTTP server
+ */
+#define OUSTER_USE_CURL
+
+
+/** \def OUSTER_USE_DUMP
+ * Include dump or print struct functionality
+ */
+#define OUSTER_USE_DUMP
+
+/** \def OUSTER_ENABLE_LOG
+ * Enable logging
+ */
+#define OUSTER_ENABLE_LOG
+
+
+
 
 /** @} */ // end of options
 
@@ -493,12 +511,8 @@ char *ouster_fs_readfile(char const *path);
 
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
-
-
-void ouster_lidar_header_log(ouster_lidar_header_t *p);
 
 void ouster_lidar_header_get(char const *buf, ouster_lidar_header_t *dst);
 
@@ -506,30 +520,44 @@ void ouster_column_get1(char const *colbuf, void *dst, int type);
 
 void ouster_column_get(char const *colbuf, ouster_column_t *dst);
 
-void ouster_column_log(ouster_column_t const *column);
-
 void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char const *buf, ouster_field_t *fields, int fcount);
 
 #ifdef __cplusplus
 }
 #endif
 
-
 #endif // OUSTER_LIDAR_H
+/**
+ * @defgroup assert Assertion
+ * @brief Functionality for sanity checks
+ *
+ * \ingroup c
+ * @{
+ */
+
 #ifndef OUSTER_LOG_H
 #define OUSTER_LOG_H
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void ouster_log(char const *format, ...);
+/** Logging */
+#ifdef OUSTER_ENABLE_LOG
+void ouster_log_(char const *fmt, ...);
+#define ouster_log(...) ouster_log_(__VA_ARGS__)
+#else
+#define ouster_log(...)
+#endif
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif // OUSTER_LOG_H
+
+/** @} */
 /**
  * @defgroup lut XYZ vector field lookup table
  * @brief Provides a vector field that converts image to pointcloud
@@ -599,8 +627,6 @@ extern "C" {
 #endif
 
 void ouster_meta_parse(char const *jsonstr, ouster_meta_t *out_meta);
-
-void ouster_meta_dump(ouster_meta_t *meta, FILE *f);
 
 #ifdef __cplusplus
 }
@@ -798,5 +824,39 @@ void ouster_udpcap_set_port(ouster_udpcap_t *cap, int port);
 #endif // OUSTER_UDPCAP_H
 
 /** @} */
+
+#ifdef OUSTER_USE_DUMP
+/**
+ * @defgroup dump Dumps structs
+ * @brief Prints the content of ouster structs
+ *
+ * \ingroup c
+ * @{
+ */
+
+
+#ifndef OUSTER_DUMP_H
+#define OUSTER_DUMP_H
+
+#include <stdio.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void ouster_dump_lidar_header(FILE * f, ouster_lidar_header_t const *p);
+
+void ouster_dump_column(FILE * f, ouster_column_t const *column);
+
+void ouster_dump_meta(FILE *f, ouster_meta_t const *meta);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // OUSTER_DUMP_H
+
+/** @} */
+#endif
 
 #endif // OUSTER_CLIB_H

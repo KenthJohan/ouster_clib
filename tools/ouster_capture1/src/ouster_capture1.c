@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 		}
 		ouster_meta_parse(content, &meta);
 		free(content);
-		ouster_meta_dump(&meta, stdout);
+		ouster_dump_meta(stdout, &meta);
 	}
 
 	ouster_assert_notnull(write_filename);

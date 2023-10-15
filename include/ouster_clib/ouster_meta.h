@@ -10,8 +10,6 @@ extern "C" {
 
 void ouster_meta_parse(char const *jsonstr, ouster_meta_t *out_meta);
 
-void ouster_meta_dump(ouster_meta_t *meta, FILE *f);
-
 #ifdef __cplusplus
 }
 #endif

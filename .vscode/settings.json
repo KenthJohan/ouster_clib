@@ -23,7 +23,10 @@
 		"cmath": "c",
 		"complex": "c",
 		"ouster_assert.h": "c",
-		"ouster_udpcap.h": "c"
+		"ouster_udpcap.h": "c",
+		"ouster_lidar.h": "c",
+		"ouster_dump.h": "c",
+		"ouster_clib.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

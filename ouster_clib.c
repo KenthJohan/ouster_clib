@@ -927,6 +927,49 @@ int ouster_assert_(
 	fflush(stderr);
 	return r;
 }
+#include <string.h>
+
+void ouster_dump_lidar_header(FILE *f, ouster_lidar_header_t const *p)
+{
+	ouster_assert_notnull(f);
+	ouster_assert_notnull(p);
+	fprintf(f, "type=%ji, frame=%ji, init=%ji, prod=%ji, countdown_thermal_shutdown=%ji, countdown_shot_limiting=%ji, thermal_shutdown=%ji, shot_limiting=%ji\n",
+	        (intmax_t)p->packet_type,
+	        (intmax_t)p->frame_id,
+	        (intmax_t)p->init_id,
+	        (intmax_t)p->prod_sn,
+	        (intmax_t)p->countdown_thermal_shutdown,
+	        (intmax_t)p->countdown_shot_limiting,
+	        (intmax_t)p->thermal_shutdown,
+	        (intmax_t)p->shot_limiting);
+}
+
+void ouster_dump_column(FILE *f, ouster_column_t const *column)
+{
+	ouster_assert_notnull(f);
+	ouster_assert_notnull(column);
+	fprintf(f, "ts=%ji, status=%ji, mid=%ji\n", (intmax_t)column->ts, (intmax_t)column->status, (intmax_t)column->mid);
+}
+
+void ouster_dump_meta(FILE * f, ouster_meta_t const *meta)
+{
+	ouster_assert_notnull(f);
+	ouster_assert_notnull(meta);
+	fprintf(f, "ouster_meta_t dump:\n");
+	fprintf(f, "%40s: %i\n", "(Azimuth columns start) mid0", meta->mid0);
+	fprintf(f, "%40s: %i\n", "(Azimuth columns end) mid1", meta->mid1);
+	fprintf(f, "%40s: %i\n", "(Azimuth columns width) midw", meta->midw);
+	fprintf(f, "%40s: %i\n", "udp_port_lidar", meta->udp_port_lidar);
+	fprintf(f, "%40s: %i\n", "udp_port_imu", meta->udp_port_imu);
+	fprintf(f, "%40s: %i\n", "columns_per_frame", meta->columns_per_frame);
+	fprintf(f, "%40s: %i\n", "columns_per_packet", meta->columns_per_packet);
+	fprintf(f, "%40s: %i\n", "pixels_per_column", meta->pixels_per_column);
+	fprintf(f, "%40s: %iB\n", "channel_data_size", meta->channel_data_size);
+	fprintf(f, "%40s: %i\n", "profile", meta->profile);
+	fprintf(f, "%40s: %i\n", "channel_data_size", meta->channel_data_size);
+	fprintf(f, "%40s: %iB\n", "col_size", meta->col_size);
+	fprintf(f, "%40s: %iB\n", "lidar_packet_size", meta->lidar_packet_size);
+} 
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
@@ -1000,19 +1043,6 @@ error:
 }
 #include <string.h>
 
-void ouster_lidar_header_log(ouster_lidar_header_t *p)
-{
-	ouster_assert_notnull(p);
-	ouster_log("type=%ji, frame=%ji, init=%ji, prod=%ji, countdown_thermal_shutdown=%ji, countdown_shot_limiting=%ji, thermal_shutdown=%ji, shot_limiting=%ji\n",
-	           (intmax_t)p->packet_type,
-	           (intmax_t)p->frame_id,
-	           (intmax_t)p->init_id,
-	           (intmax_t)p->prod_sn,
-	           (intmax_t)p->countdown_thermal_shutdown,
-	           (intmax_t)p->countdown_shot_limiting,
-	           (intmax_t)p->thermal_shutdown,
-	           (intmax_t)p->shot_limiting);
-}
 
 void ouster_lidar_header_get1(char const *buf, void *dst, int type)
 {
@@ -1065,11 +1095,7 @@ void ouster_lidar_header_get(char const *buf, ouster_lidar_header_t *dst)
 	ouster_lidar_header_get1(buf, &dst->shot_limiting, ouster_id(ouster_shot_limiting_t));
 }
 
-void ouster_column_log(ouster_column_t const *column)
-{
-	ouster_assert_notnull(column);
-	ouster_log("ts=%ji, status=%ji, mid=%ji\n", (intmax_t)column->ts, (intmax_t)column->status, (intmax_t)column->mid);
-}
+
 
 void ouster_column_get1(char const *colbuf, void *dst, int type)
 {
@@ -1144,7 +1170,7 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 	ouster_lidar_header_t header = {0};
 	ouster_column_t column = {0};
 	ouster_lidar_header_get(buf, &header);
-	// ouster_lidar_header_log(&header);
+	// ouster_lidar_header_dump(&header);
 	ouster_column_get(colbuf, &column);
 
 	if (lidar->frame_id != (int)header.frame_id) {
@@ -1163,7 +1189,7 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 	// col_size = 1584
 	for (int icol = 0; icol < meta->columns_per_packet; icol++, colbuf += meta->col_size) {
 		ouster_column_get(colbuf, &column);
-		//ouster_column_log(&column);
+		//ouster_column_dump(&column);
 
 		if ((column.status & 0x01) == 0) {
 			continue;
@@ -1196,7 +1222,7 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 #include <stdarg.h>
 #include <stdio.h>
 
-void ouster_log(char const *format, ...)
+void ouster_log_(char const *format, ...)
 {
 	assert(format);
 	va_list args;
@@ -1762,23 +1788,7 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 
 
 
-void ouster_meta_dump(ouster_meta_t *meta, FILE * f)
-{
-	fprintf(f, "ouster_meta_t dump:\n");
-	fprintf(f, "%40s: %i\n", "(Azimuth columns start) mid0", meta->mid0);
-	fprintf(f, "%40s: %i\n", "(Azimuth columns end) mid1", meta->mid1);
-	fprintf(f, "%40s: %i\n", "(Azimuth columns width) midw", meta->midw);
-	fprintf(f, "%40s: %i\n", "udp_port_lidar", meta->udp_port_lidar);
-	fprintf(f, "%40s: %i\n", "udp_port_imu", meta->udp_port_imu);
-	fprintf(f, "%40s: %i\n", "columns_per_frame", meta->columns_per_frame);
-	fprintf(f, "%40s: %i\n", "columns_per_packet", meta->columns_per_packet);
-	fprintf(f, "%40s: %i\n", "pixels_per_column", meta->pixels_per_column);
-	fprintf(f, "%40s: %iB\n", "channel_data_size", meta->channel_data_size);
-	fprintf(f, "%40s: %i\n", "profile", meta->profile);
-	fprintf(f, "%40s: %i\n", "channel_data_size", meta->channel_data_size);
-	fprintf(f, "%40s: %iB\n", "col_size", meta->col_size);
-	fprintf(f, "%40s: %iB\n", "lidar_packet_size", meta->lidar_packet_size);
-} 
+
 #define _POSIX_C_SOURCE 200112L
 
 

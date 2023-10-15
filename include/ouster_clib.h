@@ -33,8 +33,26 @@
  * Used for input parameter checking and cheap sanity checks. There are lots of
  * asserts in every part of the code, so this will slow down applications.
  */
-
 #define OUSTER_DEBUG
+
+/** \def OUSTER_USE_CURL
+ * Used to download meta file from Ouster Sensor HTTP server
+ */
+#define OUSTER_USE_CURL
+
+
+/** \def OUSTER_USE_DUMP
+ * Include dump or print struct functionality
+ */
+#define OUSTER_USE_DUMP
+
+/** \def OUSTER_ENABLE_LOG
+ * Enable logging
+ */
+#define OUSTER_ENABLE_LOG
+
+
+
 
 /** @} */ // end of options
 
@@ -343,5 +361,9 @@ typedef struct
 #include "ouster_clib/ouster_net.h"
 #include "ouster_clib/ouster_sock.h"
 #include "ouster_clib/ouster_udpcap.h"
+
+#ifdef OUSTER_USE_DUMP
+#include "ouster_clib/ouster_dump.h"
+#endif
 
 #endif // OUSTER_CLIB_H

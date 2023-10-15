@@ -48,7 +48,7 @@ void print_columns(ouster_meta_t *meta, char const *buf)
 	for (int icol = 0; icol < meta->columns_per_packet; icol++, colbuf += meta->col_size) {
 		ouster_column_t column = {0};
 		ouster_column_get(colbuf, &column);
-		ouster_column_log(&column);
+		ouster_dump_column(stdout, &column);
 	}
 }
 
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 			if (mode == MONITOR_MODE_HEADER) {
 				ouster_lidar_header_t header = {0};
 				ouster_lidar_header_get(buf, &header);
-				ouster_lidar_header_log(&header);
+				ouster_dump_lidar_header(stdout, &header);
 			}
 
 			if (mode == MONITOR_MODE_COLUMN) {

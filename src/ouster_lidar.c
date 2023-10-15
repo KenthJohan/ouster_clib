@@ -3,19 +3,6 @@
 #include "ouster_clib/ouster_log.h"
 #include <string.h>
 
-void ouster_lidar_header_log(ouster_lidar_header_t *p)
-{
-	ouster_assert_notnull(p);
-	ouster_log("type=%ji, frame=%ji, init=%ji, prod=%ji, countdown_thermal_shutdown=%ji, countdown_shot_limiting=%ji, thermal_shutdown=%ji, shot_limiting=%ji\n",
-	           (intmax_t)p->packet_type,
-	           (intmax_t)p->frame_id,
-	           (intmax_t)p->init_id,
-	           (intmax_t)p->prod_sn,
-	           (intmax_t)p->countdown_thermal_shutdown,
-	           (intmax_t)p->countdown_shot_limiting,
-	           (intmax_t)p->thermal_shutdown,
-	           (intmax_t)p->shot_limiting);
-}
 
 void ouster_lidar_header_get1(char const *buf, void *dst, int type)
 {
@@ -68,11 +55,7 @@ void ouster_lidar_header_get(char const *buf, ouster_lidar_header_t *dst)
 	ouster_lidar_header_get1(buf, &dst->shot_limiting, ouster_id(ouster_shot_limiting_t));
 }
 
-void ouster_column_log(ouster_column_t const *column)
-{
-	ouster_assert_notnull(column);
-	ouster_log("ts=%ji, status=%ji, mid=%ji\n", (intmax_t)column->ts, (intmax_t)column->status, (intmax_t)column->mid);
-}
+
 
 void ouster_column_get1(char const *colbuf, void *dst, int type)
 {
@@ -147,7 +130,7 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 	ouster_lidar_header_t header = {0};
 	ouster_column_t column = {0};
 	ouster_lidar_header_get(buf, &header);
-	// ouster_lidar_header_log(&header);
+	// ouster_lidar_header_dump(&header);
 	ouster_column_get(colbuf, &column);
 
 	if (lidar->frame_id != (int)header.frame_id) {
@@ -166,7 +149,7 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 	// col_size = 1584
 	for (int icol = 0; icol < meta->columns_per_packet; icol++, colbuf += meta->col_size) {
 		ouster_column_get(colbuf, &column);
-		//ouster_column_log(&column);
+		//ouster_column_dump(&column);
 
 		if ((column.status & 0x01) == 0) {
 			continue;

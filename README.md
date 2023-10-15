@@ -32,22 +32,25 @@ The official SDK can be found at https://github.com/ouster-lidar/ouster_example.
 * Support all format profiles
 * OS layer abstraction
 * Maybe remove `libcurl` dependency
+* Add meson build system
+* Add cmake build system
 
 
 ## Build tools supported
-* https://github.com/SanderMertens/bake
+* [bake](https://github.com/SanderMertens/bake)
 
 
 
 ## Requirement
-
+libcurl is optional.
 ```bash
 sudo apt update
-sudo apt install git build-essential libcurl4-openssl-dev
+sudo apt install git
+sudo apt install build-essential
+sudo apt install libcurl4-openssl-dev
 ```
 
 ### Install bake
-Currently the only building tool supported is https://github.com/SanderMertens/bake
 ```bash
 cd ~/Downloads
 git clone https://github.com/SanderMertens/bake
@@ -58,7 +61,6 @@ bake/setup.sh
 ```bash
 cd ~/Downloads
 git clone https://github.com/KenthJohan/ouster_clib/
-cd ouster_clib
 bake ouster_clib
 ```
 
@@ -70,40 +72,17 @@ bake ouster_clib
 ## Building
 
 
-
-
-
-### Build all tools
-```bash
-bake tools
-```
-
-
-### Build all examples
-```bash
-bake examples
-```
-
-
 ### VS code
 ```bash
 sudo snap install code --classic
 ```
 
-
-
-
 ## Running examples
-
 
 ```bash
 bake run examples/client_example -a <arg1>
 bake run examples/opencv_example -a <arg1>
 ```
-
-
-
-
 
 
 ## ldd minimal example client_example

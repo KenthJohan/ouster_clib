@@ -2207,43 +2207,40 @@ int ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f)
 {
 	ouster_assert_notnull(cap);
 	ouster_assert_notnull(f);
-	
 
 	{
 		uint32_t maxsize = cap->size;
 		// First get the header info
 		size_t rc;
 		rc = fread(cap, sizeof(ouster_udpcap_t), 1, f);
-		if(rc != 1)
-		{
-			return -1;
+		if (rc != 1) {
+			return OUSTER_UDPCAP_ERROR_FREAD;
 		}
 		// Convert to little endian to host
 		cap->size = le32toh(cap->size);
 		cap->port = le32toh(cap->port);
-		if(cap->size <= maxsize)
-		{
-			return -1;
+		if (cap->size <= maxsize) {
+			return OUSTER_UDPCAP_ERROR_BUFFER_TOO_SMALL;
 		}
 	}
-
 
 	{
 		// Read the UDP content
 		size_t rc;
 		rc = fread(cap->buf, cap->size, 1, f);
-		if(rc != 1)
-		{
-			return -1;
+		if (rc != 1) {
+			return OUSTER_UDPCAP_ERROR_FREAD;
 		}
 	}
 
-	return 0;
+	return OUSTER_UDPCAP_OK;
 }
 
 int ouster_udpcap_sendto(ouster_udpcap_t *cap, int sock, ouster_net_addr_t *addr)
 {
 	ouster_assert_notnull(cap);
+	ouster_assert(sock >= 0, "");
+	ouster_assert_notnull(addr);
 
 	ssize_t rc;
 	// Send UDP content to the the same port as the capture
@@ -2260,23 +2257,32 @@ void ouster_udpcap_set_port(ouster_udpcap_t *cap, int port)
 	cap->port = htole32(port);
 }
 
-void ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f)
+int ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f)
 {
 	ouster_assert_notnull(cap);
+	ouster_assert(sock >= 0, "");
 	ouster_assert_notnull(f);
 
 	int64_t write_size;
 
 	{
 		int64_t n = ouster_net_read(sock, cap->buf, cap->size);
-		ouster_assert(n >= 0, "");
-		ouster_assert(n <= cap->size, "");
+		if (n <= 0) {
+			return OUSTER_UDPCAP_ERROR_RECV;
+		}
+		if (n > cap->size) {
+			return OUSTER_UDPCAP_ERROR_BUFFER_TOO_SMALL;
+		}
 		cap->size = htole32(n);
 		write_size = sizeof(ouster_udpcap_t) + n;
 	}
 
 	{
 		size_t n = fwrite((void *)cap, write_size, 1, f);
-		ouster_assert(n == 1, "");
+		if (n != 1) {
+			return OUSTER_UDPCAP_ERROR_FWRITE;
+		}
 	}
+
+	return OUSTER_UDPCAP_OK;
 }

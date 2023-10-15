@@ -22,6 +22,11 @@ extern "C" {
  * @param meta meta configuration
  */
 void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta);
+
+/** Frees memory of xyz lut table
+ *
+ * @param lut The xyz lut table
+ */
 void ouster_lut_fini(ouster_lut_t *lut);
 
 /** Converts 2D hightmap to pointcloud

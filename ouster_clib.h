@@ -334,8 +334,20 @@ typedef struct
 
 /** @} */ // end of core
 
+/**
+ * @defgroup assert Assertion
+ * @brief Functionality for sanity checks
+ *
+ * \ingroup c
+ * @{
+ */
+
 #ifndef OUSTER_ASSERT_H
 #define OUSTER_ASSERT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef OUSTER_DEBUG
 
@@ -351,14 +363,27 @@ int ouster_assert_(
 	...
 	);
 
+/** Assert. 
+ * Aborts if condition is false, disabled in debug mode. */
 #define ouster_assert(expr, ...) ((expr) ? (void)0: (void)(ouster_assert_(#expr, __FILE__, __LINE__, __func__, __VA_ARGS__), abort()))
+
+/** Assert. 
+ * Aborts if condition is false, disabled in debug mode. */
 #define ouster_assert_notnull(expr) ouster_assert(expr, "%s", "Should not be NULL")
+
+
 #else
 #define ouster_assert(expr, ...)
 #define ouster_assert_notnull(expr)
 #endif // OUSTER_DEBUG
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif // OUSTER_ASSERT_H
+
+/** @} */
 #ifndef OUSTER_CLIENT_H
 #define OUSTER_CLIENT_H
 
@@ -390,6 +415,15 @@ void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
 #endif
 
 #endif // OUSTER_CLIENT_H
+/**
+ * @defgroup field Fields and destagger
+ * @brief Provides network functionality
+ *
+ * \ingroup c
+ * @{
+ */
+
+
 #ifndef OUSTER_FIELD_H
 #define OUSTER_FIELD_H
 
@@ -411,24 +445,49 @@ void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count);
 #endif
 
 #endif // OUSTER_FIELD_H
+
+/** @} */
+/**
+ * @defgroup fs Files
+ * @brief Read files
+ *
+ * \ingroup c
+ * @{
+ */
+
 #ifndef OUSTER_FS_H
 #define OUSTER_FS_H
-
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int ouster_fs_readfile_failed_reason(char const * filename, char * buf, int len);
+/**
+ * @brief Convert fs_readfile error to string
+ *
+ * @param filename filename
+ * @param buf out error buffer string
+ * @param len error buffer string length
+ * @return int the length that got written to buffer string
+ */
+int ouster_fs_readfile_failed_reason(char const *filename, char *buf, int len);
+
+/** Prints current working directory */
 void ouster_fs_pwd();
-char * ouster_fs_readfile(char const * path);
+
+/** Read whole file and allocates memory
+ *
+ * @param path filename to read
+ */
+char *ouster_fs_readfile(char const *path);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif // OUSTER_FS_H
+
+/** @} */
 #ifndef OUSTER_LIDAR_H
 #define OUSTER_LIDAR_H
 
@@ -494,6 +553,11 @@ extern "C" {
  * @param meta meta configuration
  */
 void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta);
+
+/** Frees memory of xyz lut table
+ *
+ * @param lut The xyz lut table
+ */
 void ouster_lut_fini(ouster_lut_t *lut);
 
 /** Converts 2D hightmap to pointcloud
@@ -543,6 +607,14 @@ void ouster_meta_dump(ouster_meta_t *meta, FILE *f);
 #endif
 
 #endif // OUSTER_META_H
+/**
+ * @defgroup net Network and sockets
+ * @brief Provides network functionality
+ *
+ * \ingroup c
+ * @{
+ */
+
 #ifndef OUSTER_NET_H
 #define OUSTER_NET_H
 
@@ -581,8 +653,30 @@ typedef struct
 	char data[OUSTER_NET_ADDRSTRLEN];
 } ouster_net_addr_t;
 
+/** Set a IPv4 address
+ *
+ * @param addr The address
+ * @param ip The IPv4 address
+ */
 void ouster_net_addr_set_ip4(ouster_net_addr_t *addr, char const *ip);
+
+/** Set a port
+ *
+ * @param addr The address
+ * @param ip The port
+ */
 void ouster_net_addr_set_port(ouster_net_addr_t *addr, int port);
+
+/**
+ * @brief Send data from a socket to a network address
+ * 
+ * @param sock The source socket filedescriptor
+ * @param buf Data to send
+ * @param size Data size to send
+ * @param flags 
+ * @param addr Destinationnetwork address
+ * @return Returns the number sent, or -1 for errors.
+ */
 int ouster_net_sendto(int sock, char *buf, int size, int flags, ouster_net_addr_t *addr);
 
 int ouster_net_create(ouster_net_sock_desc_t *desc);
@@ -598,6 +692,8 @@ int32_t ouster_net_get_port(int sock);
 #endif
 
 #endif // OUSTER_NET_H
+
+/** @} */
 /**
  * @defgroup sock UDP Capture
  * @brief This creates sockets
@@ -646,6 +742,15 @@ extern "C" {
 #include <stdio.h>
 
 
+typedef enum
+{
+	OUSTER_UDPCAP_OK,
+	OUSTER_UDPCAP_ERROR_RECV,
+	OUSTER_UDPCAP_ERROR_FREAD,
+	OUSTER_UDPCAP_ERROR_FWRITE,
+	OUSTER_UDPCAP_ERROR_BUFFER_TOO_SMALL,
+} ouster_udpcap_error_t;
+
 typedef struct
 {
 	uint32_t port;
@@ -657,6 +762,7 @@ typedef struct
  *
  * @param cap The capture buffer.
  * @param f Source file
+ * @return Returns 0 on ok otherwise error code
  */
 int ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f);
 
@@ -665,7 +771,7 @@ int ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f);
  * @param cap The capture buffer.
  * @param sock The source socket filedescriptor
  * @param addr The destination address
- * @return Returns the number sent, or -1 for errors.
+ * @return Returns the number sent, or -1 for errors
  */
 int ouster_udpcap_sendto(ouster_udpcap_t *cap, int sock, ouster_net_addr_t *addr);
 
@@ -674,9 +780,9 @@ int ouster_udpcap_sendto(ouster_udpcap_t *cap, int sock, ouster_net_addr_t *addr
  * @param cap The capture buffer.
  * @param sock The socket filedescriptor
  * @param f Destination file
- * @return Returns the number sent, or -1 for errors.
+ * @return Returns 0 on ok otherwise error code
  */
-void ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f);
+int ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f);
 
 /** Set the UDP port of the capture buffer.
  *

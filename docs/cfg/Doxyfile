@@ -899,11 +899,12 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = include/ouster_clib.h \
-INPUT                  = include/ouster_clib/ouster_udpcap.h \
-INPUT                  = include/ouster_clib/ouster_lut.h \
-INPUT                  = include/ouster_clib/ouster_net.h \
-INPUT                  = include/ouster_clib/ouster_assert.h \
-INPUT                  = include/ouster_clib/ouster_field.h \
+                         include/ouster_clib/ouster_udpcap.h \
+                         include/ouster_clib/ouster_lut.h \
+                         include/ouster_clib/ouster_net.h \
+                         include/ouster_clib/ouster_assert.h \
+                         include/ouster_clib/ouster_field.h \
+						 include/ouster_clib/ouster_fs.h \
                          README.md \
                          docs/Docs.md
 

@@ -2216,7 +2216,7 @@ int ouster_udpcap_read(ouster_udpcap_t *cap, FILE *f)
 		// Convert to little endian to host
 		cap->size = le32toh(cap->size);
 		cap->port = le32toh(cap->port);
-		if (cap->size <= maxsize) {
+		if (cap->size >= maxsize) {
 			return OUSTER_UDPCAP_ERROR_BUFFER_TOO_SMALL;
 		}
 	}

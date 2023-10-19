@@ -80,12 +80,21 @@ int main(int argc, char *argv[])
 	ouster_udpcap_t *cap = calloc(1, sizeof(ouster_udpcap_t) + OUSTER_NET_UDP_MAX_SIZE);
 	while (1) {
 		cap->size = OUSTER_NET_UDP_MAX_SIZE;
-		ouster_udpcap_read(cap, app.read_file);
-		int rc = ouster_udpcap_sendto(cap, sock, &dst);
-		packet_id++;
-		if (rc == (int)cap->size) {
+
+		int nread = ouster_udpcap_read(cap, app.read_file);
+		if (nread != OUSTER_UDPCAP_OK) {
+			fprintf(stderr, "error: ouster_udpcap_read: %i\n", nread);
+			return -1;
 		}
-		printf("%ju : ip=%s:%ji, sent=%ji of %ji\n", (uintmax_t)packet_id, app.ip_dst, (intmax_t)cap->port, (intmax_t)rc, (intmax_t)cap->size);
+		int nsend = ouster_udpcap_sendto(cap, sock, &dst);
+		if (nsend != (int)cap->size) {
+
+			fprintf(stderr, "error: ouster_udpcap_sendto: %i\n", nsend);
+			return -1;
+		}
+
+		packet_id++;
+		printf("%ju : ip=%s:%ji, sent=%ji of %ji\n", (uintmax_t)packet_id, app.ip_dst, (intmax_t)cap->port, (intmax_t)nsend, (intmax_t)cap->size);
 		// getchar();
 		nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
 	}

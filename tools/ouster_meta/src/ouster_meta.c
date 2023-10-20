@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 
+
+#define OUSTER_USE_CURL
 #include <ouster_clib.h>
 
 int main(int argc, char *argv[])

@@ -1818,8 +1818,6 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 
 
 
-#define _POSIX_C_SOURCE 200112L
-
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -1835,47 +1833,47 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 #include <sys/types.h>
 #include <unistd.h>
 
-void ouster_net_addr_set_ip4(ouster_net_addr_t * addr, char const * ip)
+void ouster_net_addr_set_ip4(ouster_net_addr_t *addr, char const *ip)
 {
-	struct sockaddr_in * addr4 = (void*)addr;
+	struct sockaddr_in *addr4 = (void *)addr;
 	addr4->sin_family = AF_INET;
 	addr4->sin_addr.s_addr = inet_addr(ip);
 }
 
-void net_addr_set_ip6(ouster_net_addr_t * addr, char const * ip)
+void net_addr_set_ip6(ouster_net_addr_t *addr, char const *ip)
 {
-	struct sockaddr_in6 * addr6 = (void*)addr;
+	struct sockaddr_in6 *addr6 = (void *)addr;
 	addr6->sin6_family = AF_INET6;
 	// TODO: Set ip
 }
 
-void ouster_net_addr_set_port(ouster_net_addr_t * addr, int port)
+void ouster_net_addr_set_port(ouster_net_addr_t *addr, int port)
 {
-	struct sockaddr * sa = (void*)addr;
-	switch (sa->sa_family)
-	{
-	case AF_INET:{
-		struct sockaddr_in * addr4 = (void*)addr;
+	struct sockaddr *sa = (void *)addr;
+	switch (sa->sa_family) {
+	case AF_INET: {
+		struct sockaddr_in *addr4 = (void *)addr;
 		addr4->sin_port = htons(port);
-		break;}
-	
-	case AF_INET6:{
-		struct sockaddr_in6 * addr6 = (void*)addr;
+		break;
+	}
+
+	case AF_INET6: {
+		struct sockaddr_in6 *addr6 = (void *)addr;
 		addr6->sin6_port = htons(port);
-		break;}
+		break;
+	}
 	}
 }
 
-int ouster_net_sendto(int sock, char * buf, int size, int flags, ouster_net_addr_t * addr)
+int ouster_net_sendto(int sock, char *buf, int size, int flags, ouster_net_addr_t *addr)
 {
-	struct sockaddr * sa = (void*)addr;
+	struct sockaddr *sa = (void *)addr;
 	ssize_t rc;
-	switch (sa->sa_family)
-	{
+	switch (sa->sa_family) {
 	case AF_INET:
 		rc = sendto(sock, buf, size, flags, sa, sizeof(struct sockaddr_in));
 		break;
-	
+
 	case AF_INET6:
 		rc = sendto(sock, buf, size, flags, sa, sizeof(struct sockaddr_in6));
 		break;

@@ -11,9 +11,10 @@
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/examples/client_example",
 			"environment": [],
+			"envFile": "${workspaceFolder}/.env",
 			"program": "${workspaceFolder}/examples/client_example/bin/x64-Linux-debug/client_example",
 			"args": [
-				"~/Downloads/OS1_Captures_128/a.json",
+				"${config:OUSTER_META_PATH}",
 			],
 			"osx": {
 				"MIMode": "lldb",
@@ -31,35 +32,11 @@
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/examples/opencv_example",
 			"environment": [],
+			"envFile": "${workspaceFolder}/.env",
 			"program": "${workspaceFolder}/examples/opencv_example/bin/x64-Linux-debug/opencv_example",
 			"args": [
-				//"~/Downloads/OS1_Captures_128/a.json",
-				//"~/OS16_RNG15_RFL8_NIR8.json",
-				"~/OS16_RNG15_RFL8_NIR8.json",
+				"${config:OUSTER_META_PATH}",
 			],
-			"osx": {
-				"MIMode": "lldb",
-				"targetArchitecture": "arm64",
-				"externalConsole": false,
-			},
-			"linux": {
-				"externalConsole": false,
-			}
-		},
-		{
-			"name": "Launch draw_cloud",
-			"type": "cppdbg",
-			"request": "launch",
-			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/examples/draw_cloud",
-			"environment": [
-				{
-					"name": "LD_LIBRARY_PATH",
-					"value": "${workspaceFolder}/bin/x64-Linux-debug:${env:HOME}/bake/x64-Linux/debug/lib/"
-				},
-			],
-			"program": "${workspaceFolder}/examples/draw_cloud/bin/x64-Linux-debug/draw_cloud",
-			"args": [],
 			"osx": {
 				"MIMode": "lldb",
 				"targetArchitecture": "arm64",
@@ -76,9 +53,10 @@
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/tools/ouster_monitor",
 			"environment": [],
+			"envFile": "${workspaceFolder}/.env",
 			"program": "${workspaceFolder}/tools/ouster_monitor/bin/x64-Linux-debug/ouster_monitor",
 			"args": [
-				"~/Downloads/OS1_caps/OS1-16/a.json",
+				"${config:OUSTER_META_PATH}",
 				"loss"
 			],
 			"osx": {
@@ -97,10 +75,10 @@
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/tools/ouster_snapshot",
 			"environment": [],
+			"envFile": "${workspaceFolder}/.env",
 			"program": "${workspaceFolder}/tools/ouster_snapshot/bin/x64-Linux-debug/ouster_snapshot",
 			"args": [
-				"~/OS16_RNG15_RFL8_NIR8.json",
-				//"~/OS16_RNG19_RFL8_SIG16_NIR16.json",
+				"${config:OUSTER_META_PATH}",
 				"raw",
 				"output.png"
 			],
@@ -120,10 +98,11 @@
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/tools/ouster_capture1",
 			"environment": [],
+			"envFile": "${workspaceFolder}/.env",
 			"program": "${workspaceFolder}/tools/ouster_capture1/bin/x64-Linux-debug/ouster_capture1",
 			"args": [
-				"~/Downloads/OS1_caps/OS1-16/a.json",
-				"~/Downloads/OS1_caps/OS1-16/a.udpcap"
+				"${config:OUSTER_META_PATH}",
+				"~/ouster_new_capture.udpcap",
 			],
 			"osx": {
 				"MIMode": "lldb",
@@ -141,12 +120,13 @@
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/tools/ouster_replay1",
 			"environment": [],
+			"envFile": "${workspaceFolder}/.env",
 			"program": "${workspaceFolder}/tools/ouster_replay1/bin/x64-Linux-debug/ouster_replay1",
 			"args": [
 				"-m",
-				"${env:HOME}/Downloads/OS1_caps/20231019_OS1-128/meta1.json",
+				"${config:OUSTER_META_PATH}",
 				"-c",
-				"${env:HOME}/Downloads/OS1_caps/20231019_OS1-128/capture3_1_th_1000mm_1.udpcap",
+				"${config:OUSTER_UDPCAP_PATH}",
 				"-o",
 				"15208"
 			],
@@ -166,9 +146,12 @@
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/tools/ouster_view",
 			"environment": [],
+			"envFile": "${workspaceFolder}/.env",
 			"program": "${workspaceFolder}/tools/ouster_view/bin/x64-Linux-debug/ouster_view",
 			"args": [
-				"~/Downloads/OS1_caps/OS1-16/a.json",
+				"-m",
+				"${config:OUSTER_META_PATH}",
+				"-v",
 				"destagger",
 			],
 			"osx": {

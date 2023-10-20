@@ -9,6 +9,8 @@
 #include "convert.h"
 #include "tigr.h"
 
+#include "argparse.h"
+
 typedef enum {
 	SOCK_INDEX_LIDAR,
 	SOCK_INDEX_IMU,
@@ -38,28 +40,21 @@ mode_t get_mode(char const *str)
 	return SNAPSHOT_MODE_UNKNOWN;
 }
 
-void print_help(int argc, char *argv[])
-{
-	printf("Hello welcome to %s!!\n", argv[0]);
-	printf("This tool takes snapshots from LiDAR sensor and saves it as PNG image.\n");
-	printf("To use this tool you will have to provide the meta file that correspond to the LiDAR sensor configuration\n");
-	printf("Arguments:\n");
-	printf("\targ1: The meta file that correspond to the LiDAR sensor configuration\n");
-	printf("\targ2: View mode\n");
-	printf("\t\topt1: raw\n");
-	printf("\t\topt2: destagger\n");
-	printf("Examples:\n");
-	printf("\t$ %s <%s> <%s>\n", argv[0], "meta.json", "mode");
-	printf("\t$ %s <%s> %s\n", argv[0], "meta.json", "raw");
-	printf("\t$ %s <%s> %s\n", argv[0], "meta.json", "destagger");
-}
+
+
+static const char *const usages[] = {
+    "ouster_view [options] [[--] args]",
+    "ouster_view [options]",
+    NULL,
+};
 
 
 
 typedef struct
 {
-	monitor_mode_t mode;
 	char const *metafile;
+	char const * modestr;
+	monitor_mode_t mode;
 	ouster_meta_t meta;
 	pthread_mutex_t lock;
 	Tigr *bmp;
@@ -96,11 +91,11 @@ void *rec(void *ptr)
 		if (a & (1 << SOCK_INDEX_LIDAR)) {
 			char buf[OUSTER_NET_UDP_MAX_SIZE];
 			int64_t n = ouster_net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-			if(n == meta->lidar_packet_size)
-			{
+			if (n == meta->lidar_packet_size) {
 				ouster_lidar_get_fields(&lidar, meta, buf, fields, FIELD_COUNT);
 				if (lidar.last_mid == meta->mid1) {
-					if (app->mode == SNAPSHOT_MODE_RAW) {}
+					if (app->mode == SNAPSHOT_MODE_RAW) {
+					}
 					if (app->mode == SNAPSHOT_MODE_DESTAGGER) {
 						ouster_field_destagger(fields, FIELD_COUNT, meta);
 					}
@@ -108,9 +103,7 @@ void *rec(void *ptr)
 					ouster_field_zero(fields, FIELD_COUNT);
 					printf("frame=%i, mid_loss=%i\n", lidar.frame_id, lidar.mid_loss);
 				}
-			}
-			else
-			{
+			} else {
 				printf("Bytes received (%ji) does not match lidar_packet_size (%ji)\n", (intmax_t)n, (intmax_t)app->meta.lidar_packet_size);
 			}
 		}
@@ -124,24 +117,43 @@ void *rec(void *ptr)
 	return NULL;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char const *argv[])
 {
-	printf("===================================================================\n");
+	printf("ouster_view==========================\n");
 	ouster_fs_pwd();
-
-	if (argc != 3) {
-		print_help(argc, argv);
-		return 0;
-	}
 
 	app_t app = {
 	    .lock = PTHREAD_MUTEX_INITIALIZER};
-	app.metafile = argv[1];
-	app.mode = get_mode(argv[2]);
+
+
+	struct argparse_option options[] = {
+	    OPT_HELP(),
+	    OPT_GROUP("Basic options"),
+	    OPT_STRING('m', "metafile", &app.metafile, "The meta file that correspond to the LiDAR sensor configuration", NULL, 0, 0),
+	    OPT_STRING('v', "view", &app.modestr, "View mode, raw, destagger", NULL, 0, 0),
+	    OPT_END(),
+	};
+
+	struct argparse argparse;
+	argparse_init(&argparse, options, usages, 0);
+	argparse_describe(&argparse, "\nA brief description of what the program does and how it works.", "\nAdditional description of the program after the description of the arguments.");
+	argc = argparse_parse(&argparse, argc, argv);
+
+	if (app.metafile == NULL) {
+		argparse_usage(&argparse);
+		return -1;
+	}
+
+	if (app.modestr == NULL) {
+		argparse_usage(&argparse);
+		return -1;
+	}
+	
+	app.mode = get_mode(app.modestr);
 
 	if (app.mode == SNAPSHOT_MODE_UNKNOWN) {
-		printf("The mode <%s> does not exist.\n", argv[2]);
-		print_help(argc, argv);
+		printf("The mode <%s> does not exist.\n", app.modestr);
+		argparse_usage(&argparse);
 		return 0;
 	}
 
@@ -154,8 +166,6 @@ int main(int argc, char *argv[])
 		free(content);
 		printf("Column window: %i %i\n", app.meta.mid0, app.meta.mid1);
 	}
-
-
 
 	int w = app.meta.midw;
 	int h = app.meta.pixels_per_column;
@@ -172,16 +182,14 @@ int main(int argc, char *argv[])
 	Tigr *screen = NULL;
 
 again:
-	if(screen)
-	{
+	if (screen) {
 		tigrFree(screen);
 	}
-	screen = tigrWindow(w, h, "ouster_view", flags|TIGR_AUTO);
+	screen = tigrWindow(w, h, "ouster_view", flags | TIGR_AUTO);
 	while (!tigrClosed(screen)) {
 		int c = tigrReadChar(screen);
-		//printf("c: %i\n", c);
-		switch (c)
-		{
+		// printf("c: %i\n", c);
+		switch (c) {
 		case '1':
 			flags &= ~(TIGR_2X | TIGR_3X | TIGR_4X);
 			goto again;
@@ -197,7 +205,7 @@ again:
 			flags &= ~(TIGR_2X | TIGR_3X | TIGR_4X);
 			flags |= TIGR_4X;
 			goto again;
-		
+
 		default:
 			break;
 		}

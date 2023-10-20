@@ -6,30 +6,12 @@
 	"terminal.integrated.fontSize": 14,
 	"window.zoomLevel": 1.3,
 	"files.associations": {
-		"ouster_log.h": "c",
-		"string.h": "c",
-		"types.h": "c",
-		"ouster_ser.h": "c",
-		"endian.h": "c",
-		"client.h": "c",
-		"sock.h": "c",
-		"array": "c",
-		"string_view": "c",
-		"initializer_list": "c",
-		"ouster_fs.h": "c",
-		"ouster_net.h": "c",
-		"stdio.h": "c",
-		"in.h": "c",
-		"cmath": "c",
-		"complex": "c",
-		"ouster_assert.h": "c",
-		"ouster_udpcap.h": "c",
-		"ouster_lidar.h": "c",
-		"ouster_dump.h": "c",
-		"ouster_clib.h": "c",
-		"ouster_meta.h": "c"
+		"argparse.h": "c",
+		"ouster_log.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""
-	}
+	},
+	"OUSTER_UDPCAP_PATH": "~/Downloads/OS1_caps/OS1-128.udpcap",
+	"OUSTER_META_PATH": "~/Downloads/OS1_caps/OS1-128.json",
 }

@@ -9,7 +9,7 @@
 	},
 	"lang.c": {
 		"c-standard" : "c99",
-		"defines": [],
+		"defines": ["_DEFAULT_SOURCE"],
 		"export-symbols": true,
 		"static": true,
 		"cflags": [

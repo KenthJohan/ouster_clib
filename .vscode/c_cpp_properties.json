@@ -5,7 +5,6 @@
             "includePath": [
                 "${HOME}/bake/include",
                 "/usr/include/eigen3",
-                "/usr/include/jsoncpp",
                 "/usr/include/opencv4"
             ],
             "defines": [
@@ -13,7 +12,7 @@
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "_GNU_SOURCE"
+                "_DEFAULT_SOURCE"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",

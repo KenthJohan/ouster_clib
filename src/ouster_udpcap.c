@@ -1,4 +1,3 @@
-#define _DEFAULT_SOURCE
 #include <endian.h>
 #include <netinet/in.h>
 #include <sys/socket.h>

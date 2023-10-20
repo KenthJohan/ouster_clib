@@ -2224,7 +2224,6 @@ int ouster_sock_create_tcp(char const *hint_name)
 	return ouster_net_create(&desc);
 }
 
-#define _DEFAULT_SOURCE
 #include <endian.h>
 #include <netinet/in.h>
 #include <sys/socket.h>

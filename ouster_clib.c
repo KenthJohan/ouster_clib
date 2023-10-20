@@ -699,13 +699,13 @@ int ouster_assert_(
 	return r;
 }
 
+#ifdef OUSTER_USE_CURL
+
 #include <assert.h>
+#include <curl/curl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
-#include <curl/curl.h>
 
 void ouster_buffer_init(ouster_buffer_t *b, int cap)
 {
@@ -827,6 +827,7 @@ void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
 	fclose(f);
 }
 
+#endif
 #include <string.h>
 
 void ouster_dump_lidar_header(FILE *f, ouster_lidar_header_t const *p)

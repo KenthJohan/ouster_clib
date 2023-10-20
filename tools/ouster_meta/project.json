@@ -8,6 +8,7 @@
     },
     "lang.c": {
         "lib": ["ouster_clib", "curl", "m"],
-        "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable"]
+        "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable"],
+		"defines":[]
     }
 }

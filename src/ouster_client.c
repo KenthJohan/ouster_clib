@@ -1,14 +1,12 @@
-#include "ouster_clib/ouster_client.h"
-#include "ouster_clib/ouster_assert.h"
-#include "ouster_clib/ouster_log.h"
+#include "ouster_clib.h"
+
+#ifdef OUSTER_USE_CURL
 
 #include <assert.h>
+#include <curl/curl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
-#include <curl/curl.h>
 
 void ouster_buffer_init(ouster_buffer_t *b, int cap)
 {
@@ -129,3 +127,5 @@ void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
 	fwrite(client->buf.data, client->buf.size, 1, f);
 	fclose(f);
 }
+
+#endif

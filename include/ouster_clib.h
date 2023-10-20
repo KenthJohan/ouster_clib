@@ -38,8 +38,7 @@
 /** \def OUSTER_USE_CURL
  * Used to download meta file from Ouster Sensor HTTP server
  */
-//#define OUSTER_USE_CURL
-
+#define OUSTER_USE_CURL
 
 /** \def OUSTER_USE_DUMP
  * Include dump or print struct functionality
@@ -50,9 +49,6 @@
  * Enable logging
  */
 #define OUSTER_ENABLE_LOG
-
-
-
 
 /** @} */ // end of options
 
@@ -361,8 +357,16 @@ typedef struct
 #include "ouster_clib/ouster_sock.h"
 #include "ouster_clib/ouster_udpcap.h"
 
+#ifdef OUSTER_NO_DUMP
+#undef OUSTER_USE_DUMP
+#endif
+
 #ifdef OUSTER_USE_DUMP
 #include "ouster_clib/ouster_dump.h"
+#endif
+
+#ifdef OUSTER_NO_CURL
+#undef OUSTER_USE_CURL
 #endif
 
 #ifdef OUSTER_USE_CURL

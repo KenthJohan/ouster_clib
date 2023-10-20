@@ -1,5 +1,18 @@
 #include "ouster_clib.h"
-#pragma once
+/**
+ * @defgroup json JSON
+ * @brief Functionality for json
+ *
+ * \ingroup c
+ * @{
+ */
+
+#ifndef OUSTER_JSON_H
+#define OUSTER_JSON_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * MIT License
@@ -484,6 +497,13 @@ jsmntok_t *json_parse_value(char const *json, jsmntok_t *t, char const *path[], 
 jsmntok_t *json_parse_vector(char const *json, jsmntok_t *t, char const *path[], void *out, int n, json_type_t type);
 jsmntok_t *json_parse_string(char const *json, jsmntok_t *t, char const *path[], char *out, int n);
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif // OUSTER_JSON_H
+
+/** @} */
 #include <stdlib.h>
 #include <string.h>
 
@@ -1217,7 +1237,20 @@ void ouster_log_(char const *format, ...)
 	vprintf(format, args);
 	va_end(args);
 }
-#pragma once
+/**
+ * @defgroup math Math
+ * @brief Functionality for math
+ *
+ * \ingroup c
+ * @{
+ */
+
+#ifndef OUSTER_MATH_H
+#define OUSTER_MATH_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define M4(i, j) ((i) * 4 + (j))
 #define M3(i, j) ((i) * 3 + (j))
@@ -1229,6 +1262,14 @@ void m3_print(double const *a);
 
 void v3_print(double const *a);
 
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // OUSTER_MATH_H
+
+/** @} */
 
 #include <math.h>
 #include <stdio.h>

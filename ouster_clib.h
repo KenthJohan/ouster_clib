@@ -497,8 +497,8 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 
 #endif // OUSTER_LIDAR_H
 /**
- * @defgroup assert Assertion
- * @brief Functionality for sanity checks
+ * @defgroup log Logging
+ * @brief Functionality logging
  *
  * \ingroup c
  * @{

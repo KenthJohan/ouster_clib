@@ -1,6 +1,6 @@
 /**
- * @defgroup assert Assertion
- * @brief Functionality for sanity checks
+ * @defgroup log Logging
+ * @brief Functionality logging
  *
  * \ingroup c
  * @{

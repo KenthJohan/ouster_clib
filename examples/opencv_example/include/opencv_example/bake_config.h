@@ -18,7 +18,7 @@
 #define OPENCV_EXAMPLE_BAKE_CONFIG_H
 
 /* Headers of public dependencies */
-/* No dependencies */
+#include <ouster_clib.h>
 
 #endif
 

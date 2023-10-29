@@ -45,6 +45,11 @@
  */
 #define OUSTER_USE_DUMP
 
+/** \def OUSTER_USE_UDPCAP
+ * Include UDP capture and replay functionality
+ */
+#define OUSTER_USE_UDPCAP
+
 /** \def OUSTER_ENABLE_LOG
  * Enable logging
  */
@@ -235,6 +240,10 @@ typedef enum {
 /** The max number of LIDAR rows of Ouster Sensors */
 #define OUSTER_MAX_ROWS 128
 
+/** Size for SOL_SOCKET, SO_RCVBUF */
+#define OUSTER_DEFAULT_RCVBUF_SIZE (1024*1024)
+
+
 typedef struct
 {
 	uint32_t mask;
@@ -355,18 +364,26 @@ typedef struct
 #include "ouster_clib/ouster_meta.h"
 #include "ouster_clib/ouster_net.h"
 #include "ouster_clib/ouster_sock.h"
-#include "ouster_clib/ouster_udpcap.h"
+
+#ifdef OUSTER_NO_UDPCAP
+#undef OUSTER_USE_UDPCAP
+#endif
 
 #ifdef OUSTER_NO_DUMP
 #undef OUSTER_USE_DUMP
 #endif
 
-#ifdef OUSTER_USE_DUMP
-#include "ouster_clib/ouster_dump.h"
-#endif
-
 #ifdef OUSTER_NO_CURL
 #undef OUSTER_USE_CURL
+#endif
+
+
+#ifdef OUSTER_USE_UDPCAP
+#include "ouster_clib/ouster_udpcap.h"
+#endif
+
+#ifdef OUSTER_USE_DUMP
+#include "ouster_clib/ouster_dump.h"
 #endif
 
 #ifdef OUSTER_USE_CURL

@@ -65,8 +65,8 @@ int main(int argc, char *argv[])
 	printf("Column window: %i %i\n", meta.mid0, meta.mid1);
 
 	int socks[SOCK_INDEX_COUNT];
-	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(meta.udp_port_lidar);
-	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(meta.udp_port_imu);
+	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(meta.udp_port_lidar, OUSTER_DEFAULT_RCVBUF_SIZE);
+	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(meta.udp_port_imu, OUSTER_DEFAULT_RCVBUF_SIZE);
 
 	ouster_field_t fields[FIELD_COUNT] = {
 	    {.quantity = OUSTER_QUANTITY_RANGE, .depth = 4},

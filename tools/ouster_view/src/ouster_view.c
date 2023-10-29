@@ -71,8 +71,8 @@ void *rec(void *ptr)
 	ouster_field_init(fields, FIELD_COUNT, meta);
 
 	int socks[2];
-	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(7502);
-	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(7503);
+	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(7502, OUSTER_DEFAULT_RCVBUF_SIZE);
+	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(7503, OUSTER_DEFAULT_RCVBUF_SIZE);
 
 	ouster_lidar_t lidar = {0};
 

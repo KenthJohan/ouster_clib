@@ -72,7 +72,7 @@ int main(int argc, char const *argv[])
 	app.read_file = fopen(app.read_filename, "r");
 	if (app.read_file == NULL) {
 		char buf[1024];
-		ouster_fs_readfile_failed_reason(app.read_filename, buf, 1024);
+		ouster_fs_readfile_failed_reason(app.read_filename, buf, sizeof(buf));
 		fprintf(stderr, "%s", buf);
 		return -1;
 	}
@@ -81,7 +81,7 @@ int main(int argc, char const *argv[])
 		char *content = ouster_fs_readfile(app.metafile);
 		if (content == NULL) {
 			char buf[1024];
-			ouster_fs_readfile_failed_reason(app.read_filename, buf, 1024);
+			ouster_fs_readfile_failed_reason(app.read_filename, buf, sizeof(buf));
 			fprintf(stderr, "%s", buf);
 			return -1;
 		}

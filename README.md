@@ -1,5 +1,6 @@
 This is a non official SDK for Ouster LiDAR sensors.<br>
 The ouster_clib is meant to be simplistic and use zero dependencies. Easy to debug, modify and extend. 
+Don't want to build lib? then drop `ouster_clib.h` and `ouster_clib.c` in any project.
 Dependency on `libcurl` is optional and is only used to download meta file.
 <br><br>
 The official SDK can be found at https://github.com/ouster-lidar/ouster_example. <br>
@@ -13,13 +14,12 @@ The official SDK can be found at https://github.com/ouster-lidar/ouster_example.
 * Meta file parser
 * Meta file downloader is optional. Requires dependency libcurl.
 * Destagger
-* LUT table for XYZ support
+* LUT table for converting image to XYZ pointcloud
 * Completes a frame exactly at the last packet
 * Memory requirement depends on field of view
-* No hidden state
-* No Windows support
 
 ## Supported devices
+I have only tested on these sensors but it should work an all others as Ouster sensor uses common packet format.
 * OS1-16
 * OS1-128
 
@@ -28,15 +28,14 @@ The official SDK can be found at https://github.com/ouster-lidar/ouster_example.
 
 
 ## TODO
+* Add cmake build system
+* Add meson build system
 * HTTP client configure support
 * Support all format profiles
 * OS layer abstraction
-* Maybe remove `libcurl` dependency
-* Add meson build system
-* Add cmake build system
 
 
-## Build tools supported
+## Build systems supported
 * [bake](https://github.com/SanderMertens/bake)
 
 
@@ -50,48 +49,17 @@ sudo apt install build-essential
 sudo apt install libcurl4-openssl-dev
 ```
 
-### Install bake
+## Requirement building with bake
 ```bash
 cd ~/Downloads
 git clone https://github.com/SanderMertens/bake
 bake/setup.sh
-```
-
-### Build ouster_clib
-```bash
 cd ~/Downloads
 git clone https://github.com/KenthJohan/ouster_clib/
 bake ouster_clib
 ```
 
-
-
-
-
-
-## Building
-
-
-### VS code
+## VS code
 ```bash
 sudo snap install code --classic
 ```
-
-## Running examples
-
-```bash
-bake run examples/client_example -a <arg1>
-bake run examples/opencv_example -a <arg1>
-```
-
-
-## ldd minimal example client_example
-
-```bash
-$ ldd examples/client_example/bin/x64-Linux-debug/client_example 
-        linux-vdso.so.1 (0x00007fff35b9b000)
-        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fc8b409e000)
-        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fc8b3e00000)
-        /lib64/ld-linux-x86-64.so.2 (0x00007fc8b41b1000)
-```
-

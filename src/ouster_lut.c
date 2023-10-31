@@ -236,6 +236,7 @@ void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, vo
 		// printf("%+f %+f\n", mag, sqrt(V3_DOT(out_xyz, out_xyz)));
 	}
 }
+
 void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, void *out, int out_stride)
 {
 	ouster_assert_notnull(lut);

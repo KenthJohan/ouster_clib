@@ -21,8 +21,10 @@ int main(int argc, char *argv[])
 	ouster_client_t client =
 	    {
 	        .host = argv[1]};
+
 	ouster_client_init(&client);
 	ouster_client_download_meta_file(&client, argv[2]);
 	ouster_client_fini(&client);
+
 	return 0;
 }

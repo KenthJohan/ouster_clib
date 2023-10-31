@@ -1,5 +1,5 @@
 {
-    "id": "client_example",
+    "id": "get_points",
     "type": "application",
     "value": {
         "language": "c",
@@ -7,7 +7,8 @@
         "use" : ["ouster_clib"]
     },
     "lang.c": {
-        "lib": ["ouster_clib", "curl", "m"],
+        "lib": ["ouster_clib", "m"],
+		"defines" : ["OUSTER_NO_CURL", "OUSTER_NO_UDPCAP"],
         "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable"]
     }
 }

@@ -1,0 +1,33 @@
+{
+	"id": "ouster_3d",
+	"type": "application",
+	"value": {
+		"language": "c",
+		"public": false,
+		"use": [
+			"ouster_clib"
+		]
+	},
+	"lang.c": {
+		"c-standard": "c11",
+		"defines": [
+			"SOKOL_GLCORE33"
+		],
+		"lib": [
+			"hac",
+			"ouster_clib",
+			"m",
+			"GL",
+			"X11",
+			"Xi",
+			"Xcursor"
+		],
+		"cflags": [
+			"-Werror",
+			"-Wall",
+			"-Wno-pedantic",
+			"-Wextra",
+			"-Wno-error=unused-variable"
+		]
+	}
+}

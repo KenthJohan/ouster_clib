@@ -163,5 +163,26 @@
 				"externalConsole": false,
 			}
 		},
+		{
+			"name": "Launch ouster_3d",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/tools/ouster_3d",
+			"environment": [],
+			"program": "${workspaceFolder}/tools/ouster_3d/bin/x64-Linux-debug/ouster_3d",
+			"args": [
+				"-m",
+				"${config:OUSTER_META_PATH}"
+			],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
 	]
 }

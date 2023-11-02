@@ -3,7 +3,6 @@
 
 #include "sokol_app.h"
 
-#include "HandmadeMath.h"
 #include <stdlib.h>
 #include <ouster_clib.h>
 #include <string.h>

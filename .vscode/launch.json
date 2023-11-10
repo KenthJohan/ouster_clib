@@ -97,6 +97,30 @@
 			}
 		},
 		{
+			"name": "Launch ouster_meta",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/tools/ouster_meta",
+			"environment": [],
+			"envFile": "${workspaceFolder}/.env",
+			"program": "${workspaceFolder}/tools/ouster_meta/bin/x64-Linux-debug/ouster_meta",
+			"args": [
+				"-m",
+				"${config:OUSTER_META_PATH}.new",
+				"-s",
+				"${config:OUSTER_HOST}",
+			],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
+		{
 			"name": "Launch ouster_capture1",
 			"type": "cppdbg",
 			"request": "launch",

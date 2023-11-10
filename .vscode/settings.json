@@ -10,7 +10,9 @@
 		"ouster_log.h": "c",
 		"ouster_sock.h": "c",
 		"ouster_clib.h": "c",
-		"ouster_dump.h": "c"
+		"ouster_dump.h": "c",
+		"sokol_log.h": "c",
+		"image_saver.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

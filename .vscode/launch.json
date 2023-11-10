@@ -56,7 +56,9 @@
 			"envFile": "${workspaceFolder}/.env",
 			"program": "${workspaceFolder}/tools/ouster_monitor/bin/x64-Linux-debug/ouster_monitor",
 			"args": [
+				"-m",
 				"${config:OUSTER_META_PATH}",
+				"-e",
 				"loss"
 			],
 			"osx": {
@@ -78,8 +80,11 @@
 			"envFile": "${workspaceFolder}/.env",
 			"program": "${workspaceFolder}/tools/ouster_snapshot/bin/x64-Linux-debug/ouster_snapshot",
 			"args": [
+				"-m",
 				"${config:OUSTER_META_PATH}",
+				"-e",
 				"raw",
+				"-o",
 				"output.png"
 			],
 			"osx": {
@@ -101,8 +106,10 @@
 			"envFile": "${workspaceFolder}/.env",
 			"program": "${workspaceFolder}/tools/ouster_capture1/bin/x64-Linux-debug/ouster_capture1",
 			"args": [
+				"-m",
 				"${config:OUSTER_META_PATH}",
-				"~/ouster_new_capture.udpcap",
+				"-c",
+				"${config:OUSTER_UDPCAP_PATH}.new",
 			],
 			"osx": {
 				"MIMode": "lldb",

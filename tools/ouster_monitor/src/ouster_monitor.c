@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include <ouster_clib.h>
+#include "argparse.h"
 
 typedef enum {
 	SOCK_INDEX_LIDAR,
@@ -63,21 +64,44 @@ void print_help(int argc, char *argv[])
 	printf("\t$ %s <%s> %s\n", argv[0], "meta.json", "column");
 }
 
-int main(int argc, char *argv[])
+static const char *const usages[] = {
+    "ouster_monitor [options] [[--] args]",
+    "ouster_monitor [options]",
+    NULL,
+};
+
+
+int main(int argc, char const *argv[])
 {
-	printf("===================================================================\n");
+	printf("ouster_monitor======================================================\n");
 	ouster_fs_pwd();
 
-	if (argc <= 2) {
-		print_help(argc, argv);
-		return 0;
+	char const *metafile = NULL;
+	char const *modestr = NULL;
+
+	struct argparse_option options[] = {
+	    OPT_HELP(),
+	    OPT_GROUP("Basic options"),
+	    OPT_STRING('m', "metafile", &metafile, "The meta file that correspond to the LiDAR sensor configuration", NULL, 0, 0),
+	    OPT_STRING('e', "emode", &modestr, "The output mode", NULL, 0, 0),
+	    OPT_END(),
+	};
+
+	struct argparse argparse;
+	argparse_init(&argparse, options, usages, 0);
+	argparse_describe(&argparse, "\nA brief description of what the program does and how it works.", "\nAdditional description of the program after the description of the arguments.");
+	argc = argparse_parse(&argparse, argc, argv);
+
+	if (metafile == NULL) {
+		argparse_usage(&argparse);
+		return -1;
 	}
 
-	monitor_mode_t mode = get_mode(argv[2]);
+	monitor_mode_t mode = get_mode(modestr);
 
 	if (mode == MONITOR_MODE_UNKNOWN) {
-		printf("The mode <%s> does not exist.\n", argv[2]);
-		print_help(argc, argv);
+		printf("The mode <%s> does not exist.\n", modestr);
+		argparse_usage(&argparse);
 		return 0;
 	}
 
@@ -95,9 +119,12 @@ int main(int argc, char *argv[])
 	ouster_lut_t lut = {0};
 
 	{
-		char *content = ouster_fs_readfile(argv[1]);
+		char *content = ouster_fs_readfile(metafile);
 		if (content == NULL) {
-			return 0;
+			char buf[512];
+			ouster_fs_readfile_failed_reason(metafile, buf, sizeof(buf));
+			fprintf(stderr, "%s", buf);
+			return -1;
 		}
 		ouster_meta_parse(content, &meta);
 		free(content);

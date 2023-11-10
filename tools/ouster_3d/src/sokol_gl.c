@@ -1,3 +1,3 @@
-#include "sokol/sokol_gfx.h"
+#include "sokol_gfx.h"
 #define SOKOL_GL_IMPL
-#include "sokol/sokol_gl.h"
+#include "sokol_gl.h"

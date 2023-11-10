@@ -47,6 +47,11 @@
  */
 #define OUSTER_USE_DUMP
 
+/** \def OUSTER_USE_UDPCAP
+ * Include UDP capture and replay functionality
+ */
+#define OUSTER_USE_UDPCAP
+
 /** \def OUSTER_ENABLE_LOG
  * Enable logging
  */
@@ -236,6 +241,10 @@ typedef enum {
 
 /** The max number of LIDAR rows of Ouster Sensors */
 #define OUSTER_MAX_ROWS 128
+
+/** Size for SOL_SOCKET, SO_RCVBUF */
+#define OUSTER_DEFAULT_RCVBUF_SIZE (1024*1024)
+
 
 typedef struct
 {
@@ -701,9 +710,9 @@ extern "C"
 {
 #endif
 
-int ouster_sock_create_udp_lidar(int port);
+int ouster_sock_create_udp_lidar(int port, int rcvbuf_size);
 
-int ouster_sock_create_udp_imu(int port);
+int ouster_sock_create_udp_imu(int port, int rcvbuf_size);
 
 int ouster_sock_create_tcp(char const *hint_name);
 
@@ -714,6 +723,21 @@ int ouster_sock_create_tcp(char const *hint_name);
 #endif // OUSTER_SOCK_H
 
 /** @} */
+
+#ifdef OUSTER_NO_UDPCAP
+#undef OUSTER_USE_UDPCAP
+#endif
+
+#ifdef OUSTER_NO_DUMP
+#undef OUSTER_USE_DUMP
+#endif
+
+#ifdef OUSTER_NO_CURL
+#undef OUSTER_USE_CURL
+#endif
+
+
+#ifdef OUSTER_USE_UDPCAP
 /**
  * @defgroup udpcap UDP Capture/Replay
  * @brief Functionality for capturing and replaying UDP packets
@@ -789,9 +813,6 @@ void ouster_udpcap_set_port(ouster_udpcap_t *cap, int port);
 #endif // OUSTER_UDPCAP_H
 
 /** @} */
-
-#ifdef OUSTER_NO_DUMP
-#undef OUSTER_USE_DUMP
 #endif
 
 #ifdef OUSTER_USE_DUMP
@@ -826,10 +847,6 @@ void ouster_dump_meta(FILE *f, ouster_meta_t const *meta);
 #endif // OUSTER_DUMP_H
 
 /** @} */
-#endif
-
-#ifdef OUSTER_NO_CURL
-#undef OUSTER_USE_CURL
 #endif
 
 #ifdef OUSTER_USE_CURL

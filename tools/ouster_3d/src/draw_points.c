@@ -62,9 +62,24 @@ void draw_points_init(draw_points_t *app)
 	});
 	//sg_update_buffer(app->vbuf, &SG_RANGE(app->vertices));
 
-
-	char const *vs = ouster_fs_readfile("shader2.vs.glsl");
-	char const *fs = ouster_fs_readfile("shader2.fs.glsl");
+	char const * vspath = "ouster_3d_shader2.vs.glsl";
+	char const * fspath = "ouster_3d_shader2.fs.glsl";
+	char const *vs = ouster_fs_readfile(vspath);
+	if(vs == NULL)
+	{
+		char buf[512];
+		ouster_fs_readfile_failed_reason(vspath, buf, sizeof(buf));
+		fprintf(stderr, "%s\n", buf);
+		exit(-1);
+	}
+	char const *fs = ouster_fs_readfile(fspath);
+	if(fs == NULL)
+	{
+		char buf[512];
+		ouster_fs_readfile_failed_reason(fspath, buf, sizeof(buf));
+		fprintf(stderr, "%s\n", buf);
+		exit(-1);
+	}
 	sg_shader_desc desc = {0};
 	desc.attrs[0].name = "position";
 	desc.attrs[1].name = "color0";

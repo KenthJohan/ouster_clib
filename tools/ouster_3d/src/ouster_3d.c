@@ -238,8 +238,8 @@ void *rec(app_t *app)
 }
 
 static const char *const usages[] = {
-    "hac_viz2 [options] [[--] args]",
-    "hac_viz2 [options]",
+    "ouster_3d [options] [[--] args]",
+    "ouster_3d [options]",
     NULL,
 };
 

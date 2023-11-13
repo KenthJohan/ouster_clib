@@ -94,7 +94,9 @@ void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta)
 		int cols = field->cols;
 		int cells = rows * cols;
 		for (int i = 0; i < cells; ++i) {
-			data32[i] &= mask;
+			uint32_t value = data32[i];
+			value &= mask;
+			data32[i] = value;
 		}
 	}
 }

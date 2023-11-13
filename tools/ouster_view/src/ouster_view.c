@@ -70,7 +70,7 @@ void draw_mouse(Tigr *bmp, tigr_mouse_t *mouse, int w, int h, uint32_t *range)
 			return;
 		}
 		// snprintf(buf, sizeof(buf), "%i %i", mouse->x, mouse->y);
-		snprintf(buf, sizeof(buf), "%i", range[i]);
+		snprintf(buf, sizeof(buf), "%i", range[i] * 8);
 		tigrPrint(bmp, tfont, mouse->x + 5, mouse->y + 5, (TPixel){.r = 0x61, .g = 0x3C, .b = 0x66, .a = 0xFF}, buf);
 		tigrPlot(bmp, mouse->x, mouse->y, (TPixel){.r = 0xFF, .g = 0x55, .b = 0x55, .a = 0xFF});
 	}

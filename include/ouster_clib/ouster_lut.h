@@ -45,6 +45,8 @@ void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, vo
  */
 void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, void *out, int out_stride);
 
+void ouster_lut_cartesian_f32_single(ouster_lut_t const *lut, float x, float y, float mag, float *out);
+
 /** Allocates size for xyz pointcloud
  *
  * @param lut Input LUT unit vector direction field

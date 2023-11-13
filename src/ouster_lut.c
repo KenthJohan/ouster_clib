@@ -237,6 +237,21 @@ void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, vo
 	}
 }
 
+void ouster_lut_cartesian_f32_single(ouster_lut_t const *lut, float x, float y, float mag, float *out)
+{
+	ouster_assert_notnull(lut);
+	ouster_assert_notnull(out);
+	int i = round(y) * lut->w + round(x);
+	ouster_assert(i >= 0, "");
+	ouster_assert(i < lut->w * lut->h, "");
+	double const *d = lut->direction + i;
+	double const *o = lut->offset + i;
+	out[0] = (float)(mag * d[0] + o[0]);
+	out[1] = (float)(mag * d[1] + o[1]);
+	out[2] = (float)(mag * d[2] + o[2]);
+}
+
+
 void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, void *out, int out_stride)
 {
 	ouster_assert_notnull(lut);

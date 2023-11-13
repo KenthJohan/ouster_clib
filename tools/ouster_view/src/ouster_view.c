@@ -8,6 +8,7 @@
 
 #include "convert.h"
 #include "tigr.h"
+#include "tigr_mouse.h"
 
 #include "argparse.h"
 
@@ -40,25 +41,40 @@ mode_t get_mode(char const *str)
 	return SNAPSHOT_MODE_UNKNOWN;
 }
 
-
-
 static const char *const usages[] = {
     "ouster_view [options] [[--] args]",
     "ouster_view [options]",
     NULL,
 };
 
-
-
 typedef struct
 {
 	char const *metafile;
-	char const * modestr;
+	char const *modestr;
 	monitor_mode_t mode;
 	ouster_meta_t meta;
 	pthread_mutex_t lock;
 	Tigr *bmp;
+	tigr_mouse_t mouse;
 } app_t;
+
+void draw_mouse(Tigr *bmp, tigr_mouse_t *mouse, int w, int h, uint32_t *range)
+{
+	if (mouse->btn) {
+		char buf[512];
+		int i = mouse->y * w + mouse->x;
+		if (i < 0) {
+			return;
+		}
+		if (i >= (w * h)) {
+			return;
+		}
+		// snprintf(buf, sizeof(buf), "%i %i", mouse->x, mouse->y);
+		snprintf(buf, sizeof(buf), "%i", range[i]);
+		tigrPrint(bmp, tfont, mouse->x + 5, mouse->y + 5, (TPixel){.r = 0x61, .g = 0x3C, .b = 0x66, .a = 0xFF}, buf);
+		tigrPlot(bmp, mouse->x, mouse->y, (TPixel){.r = 0xFF, .g = 0x55, .b = 0x55, .a = 0xFF});
+	}
+}
 
 void *rec(void *ptr)
 {
@@ -99,7 +115,12 @@ void *rec(void *ptr)
 					if (app->mode == SNAPSHOT_MODE_DESTAGGER) {
 						ouster_field_destagger(fields, FIELD_COUNT, meta);
 					}
+
+					pthread_mutex_lock(&app->lock);
 					convert_u32_to_bmp(fields[FIELD_RANGE].data, app->bmp, w, h);
+					draw_mouse(app->bmp, &app->mouse, w,h, fields[0].data);
+					pthread_mutex_unlock(&app->lock);
+
 					ouster_field_zero(fields, FIELD_COUNT);
 					printf("frame=%i, mid_loss=%i\n", lidar.frame_id, lidar.mid_loss);
 				}
@@ -125,7 +146,6 @@ int main(int argc, char const *argv[])
 	app_t app = {
 	    .lock = PTHREAD_MUTEX_INITIALIZER};
 
-
 	struct argparse_option options[] = {
 	    OPT_HELP(),
 	    OPT_GROUP("Basic options"),
@@ -148,7 +168,7 @@ int main(int argc, char const *argv[])
 		argparse_usage(&argparse);
 		return -1;
 	}
-	
+
 	app.mode = get_mode(app.modestr);
 
 	if (app.mode == SNAPSHOT_MODE_UNKNOWN) {
@@ -209,9 +229,13 @@ again:
 		default:
 			break;
 		}
+		tigr_mouse_get(screen, &app.mouse);
+
 		tigrClear(screen, tigrRGB(0x80, 0x90, 0xa0));
 		pthread_mutex_lock(&app.lock);
+
 		tigrBlit(screen, app.bmp, 0, 0, 0, 0, w, h);
+
 		pthread_mutex_unlock(&app.lock);
 		tigrUpdate(screen);
 	}

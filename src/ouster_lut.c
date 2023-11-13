@@ -97,8 +97,6 @@ XYZLut make_xyz_lut(size_t w, size_t h, double range_unit,
 }
 */
 
-
-
 void ouster_lut_fini(ouster_lut_t *lut)
 {
 	free(lut->direction);
@@ -203,6 +201,18 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	free(azimuth);
 	free(altitude);
 
+	for (int i = 0; i < w * h; ++i) {
+		double range_unit = 0.001;
+		double *d = direction + i * 3;
+		double *o = offset + i * 3;
+		d[0] *= range_unit;
+		d[1] *= range_unit;
+		d[2] *= range_unit;
+		o[0] *= range_unit;
+		o[1] *= range_unit;
+		o[2] *= range_unit;
+	}
+
 	lut->direction = direction;
 	lut->offset = offset;
 	lut->w = w;
@@ -210,9 +220,9 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 
 	/*
 	for (int i = 0; i < w * h; ++i) {
-		double *d = direction + i * 3;
-		double *o = offset + i * 3;
-		printf("%+f %+f %+f %+f %+f %+f, %+f\n", o[0], o[1], o[2], d[0], d[1], d[2], sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
+	    double *d = direction + i * 3;
+	    double *o = offset + i * 3;
+	    printf("%+f %+f %+f %+f %+f %+f, %+f\n", o[0], o[1], o[2], d[0], d[1], d[2], sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
 	}
 	*/
 }
@@ -250,7 +260,6 @@ void ouster_lut_cartesian_f32_single(ouster_lut_t const *lut, float x, float y, 
 	out[1] = (float)(mag * d[1] + o[1]);
 	out[2] = (float)(mag * d[2] + o[2]);
 }
-
 
 void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, void *out, int out_stride)
 {

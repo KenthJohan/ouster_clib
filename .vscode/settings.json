@@ -12,7 +12,9 @@
 		"ouster_clib.h": "c",
 		"ouster_dump.h": "c",
 		"sokol_log.h": "c",
-		"image_saver.h": "c"
+		"image_saver.h": "c",
+		"tigr_mouse.h": "c",
+		"mutex": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

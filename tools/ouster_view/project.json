@@ -12,6 +12,7 @@
 		"lib": [
 			"ouster_clib",
 			"m",
+			"pthread",
 			"X11",
 			"GL"
 		],

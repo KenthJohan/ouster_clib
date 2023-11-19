@@ -14,12 +14,12 @@
 		"sokol_log.h": "c",
 		"image_saver.h": "c",
 		"tigr_mouse.h": "c",
-		"mutex": "c"
+		"mutex": "c",
+		"convert.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""
 	},
-	"OUSTER_UDPCAP_PATH": "~/Downloads/OS1_caps/OS1-128.udpcap",
-	"OUSTER_META_PATH": "~/Downloads/OS1_caps/OS1-128.json",
+	"OUSTER_META_PATH": "~/Downloads/OS1_caps/meta.json",
 	"OUSTER_HOST": "192.168.1.137",
 }

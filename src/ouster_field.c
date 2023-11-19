@@ -81,23 +81,44 @@ void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta)
 {
 	ouster_assert_notnull(field);
 	ouster_assert_notnull(meta);
-	ouster_extract_t *extract = meta->extract + field->quantity;
+	ouster_extract_t const *extract = meta->extract + field->quantity;
 	uint32_t mask = extract->mask;
 	if (mask == 0xFFFFFFFF) {
 		return;
 	}
+	int rows = field->rows;
+	int cols = field->cols;
+	int cells = rows * cols;
 
 	ouster_assert(field->depth == 4, "Destination data depth other than 4 is not supported");
-	if (field->depth == 4) {
+	switch (field->depth) {
+	case 1: {
+		ouster_assert(mask <= UINT8_MAX, "Mask is too big");
+		uint8_t *data8 = (uint8_t *)field->data;
+		for (int i = 0; i < cells; ++i) {
+			uint16_t value = data8[i];
+			value &= (uint16_t)mask;
+			data8[i] = value;
+		}
+	} break;
+	case 2: {
+		ouster_assert(mask <= UINT16_MAX, "Mask is too big");
+		uint16_t *data16 = (uint16_t *)field->data;
+		for (int i = 0; i < cells; ++i) {
+			uint16_t value = data16[i];
+			value &= (uint16_t)mask;
+			data16[i] = value;
+		}
+	} break;
+	case 4: {
+		ouster_assert(mask <= UINT32_MAX, "Mask is too big");
 		uint32_t *data32 = (uint32_t *)field->data;
-		int rows = field->rows;
-		int cols = field->cols;
-		int cells = rows * cols;
 		for (int i = 0; i < cells; ++i) {
 			uint32_t value = data32[i];
 			value &= mask;
 			data32[i] = value;
 		}
+	} break;
 	}
 }
 

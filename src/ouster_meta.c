@@ -1,7 +1,7 @@
 #include "ouster_clib/ouster_meta.h"
+#include "ouster_clib.h"
 #include "ouster_clib/ouster_assert.h"
 #include "ouster_clib/ouster_log.h"
-#include "ouster_clib.h"
 
 #define JSMN_HEADER
 #include "jsmn.h"
@@ -10,7 +10,6 @@
 #include <string.h>
 
 #define TOK_COUNT 1024
-
 
 #define MAX(a, b) (((a) > (b)) ? a : b)
 #define MIN(a, b) (((a) < (b)) ? a : b)
@@ -126,12 +125,10 @@ void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_q
 		f->depth = 2;
 		break;
 		/*
-	{ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
-	{ChanField::FLAGS, {UINT8, 1, 0b10000000, 7}},
-	{ChanField::REFLECTIVITY, {UINT8, 2, 0, 0}},
-	{ChanField::NEAR_IR, {UINT8, 3, 0, -4}},
-	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-	*/
+		Range [15 bit unsigned int] - Range scaled down by a factor of 8 mm, for a maximum range of (2^15*8) = 262 mm in 15 bits. Note The range value will be set to 0 if out of range or if no detection is made.
+		Shift by minus 3 is a left shift. That will multiply by a factor 2^3 = 8.
+		{ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
+		*/
 	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_RANGE):
 		f->mask = UINT32_C(0x7fff);
 		f->offset = 0;
@@ -237,6 +234,3 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	ouster_assert(out->midw > 0, "");
 	ouster_assert(out->channel_data_size > 0, "");
 }
-
-
-

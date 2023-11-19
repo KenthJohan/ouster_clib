@@ -70,7 +70,9 @@ void draw_mouse(Tigr *bmp, tigr_mouse_t *mouse, int w, int h, uint32_t *range)
 			return;
 		}
 		// snprintf(buf, sizeof(buf), "%i %i", mouse->x, mouse->y);
-		snprintf(buf, sizeof(buf), "%i", range[i]*8);
+		snprintf(buf, sizeof(buf), "%ji", (intmax_t)range[i]);
+		printf("range: %ji %ji : %ji\n", (intmax_t)mouse->x, (intmax_t)mouse->y, (intmax_t)range[i]);
+		fflush(stdout);
 		tigrPrint(bmp, tfont, mouse->x + 5, mouse->y + 5, (TPixel){.r = 0x61, .g = 0x3C, .b = 0x66, .a = 0xFF}, buf);
 		tigrPlot(bmp, mouse->x, mouse->y, (TPixel){.r = 0xFF, .g = 0x55, .b = 0x55, .a = 0xFF});
 	}
@@ -113,7 +115,7 @@ void *rec(void *ptr)
 					if (app->mode == SNAPSHOT_MODE_RAW) {
 					}
 					if (app->mode == SNAPSHOT_MODE_DESTAGGER) {
-						ouster_field_destagger(fields, FIELD_COUNT, meta);
+						// ouster_field_destagger(fields, FIELD_COUNT, meta);
 					}
 
 					pthread_mutex_lock(&app->lock);
@@ -122,7 +124,7 @@ void *rec(void *ptr)
 					pthread_mutex_unlock(&app->lock);
 
 					ouster_field_zero(fields, FIELD_COUNT);
-					printf("frame=%i, mid_loss=%i\n", lidar.frame_id, lidar.mid_loss);
+					//printf("frame=%i, mid_loss=%i\n", lidar.frame_id, lidar.mid_loss);
 				}
 			} else {
 				printf("Bytes received (%ji) does not match lidar_packet_size (%ji)\n", (intmax_t)n, (intmax_t)app->meta.lidar_packet_size);
@@ -198,33 +200,12 @@ int main(int argc, char const *argv[])
 		ouster_assert(rc == 0, "");
 	}
 
-	int flags = 0;
-	Tigr *screen = NULL;
-
-again:
-	if (screen) {
-		tigrFree(screen);
-	}
-	screen = tigrWindow(w, h, "ouster_view", flags | TIGR_AUTO);
+	Tigr *screen = tigrWindow(w, h, "ouster_view", 0);
 	while (!tigrClosed(screen)) {
 		int c = tigrReadChar(screen);
-		// printf("c: %i\n", c);
 		switch (c) {
-		case '1':
-			flags &= ~(TIGR_2X | TIGR_3X | TIGR_4X);
-			goto again;
-		case '2':
-			flags &= ~(TIGR_2X | TIGR_3X | TIGR_4X);
-			flags |= TIGR_2X;
-			goto again;
-		case '3':
-			flags &= ~(TIGR_2X | TIGR_3X | TIGR_4X);
-			flags |= TIGR_3X;
-			goto again;
-		case '4':
-			flags &= ~(TIGR_2X | TIGR_3X | TIGR_4X);
-			flags |= TIGR_4X;
-			goto again;
+		case 'q':
+			goto exit;
 
 		default:
 			break;
@@ -232,13 +213,15 @@ again:
 		tigr_mouse_get(screen, &app.mouse);
 
 		tigrClear(screen, tigrRGB(0x80, 0x90, 0xa0));
+
 		pthread_mutex_lock(&app.lock);
-
-		tigrBlit(screen, app.bmp, 0, 0, 0, 0, w, h);
-
+		tigrBlit(screen, app.bmp, 0, 0, 0, 0, app.bmp->w, app.bmp->h);
 		pthread_mutex_unlock(&app.lock);
+
 		tigrUpdate(screen);
 	}
+
+exit:
 	tigrFree(screen);
 
 	return 0;

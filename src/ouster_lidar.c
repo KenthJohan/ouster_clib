@@ -3,7 +3,6 @@
 #include "ouster_clib/ouster_log.h"
 #include <string.h>
 
-
 void ouster_lidar_header_get1(char const *buf, void *dst, int type)
 {
 	ouster_assert_notnull(buf);
@@ -55,8 +54,6 @@ void ouster_lidar_header_get(char const *buf, ouster_lidar_header_t *dst)
 	ouster_lidar_header_get1(buf, &dst->shot_limiting, ouster_id(ouster_shot_limiting_t));
 }
 
-
-
 void ouster_column_get1(char const *colbuf, void *dst, int type)
 {
 	ouster_assert_notnull(colbuf);
@@ -86,9 +83,6 @@ void ouster_column_get(char const *colbuf, ouster_column_t *dst)
 	ouster_column_get1(colbuf, &dst->status, ouster_id(ouster_status_t));
 	ouster_column_get1(colbuf, &dst->mid, ouster_id(ouster_measurment_id_t));
 }
-
-
-
 
 void pxcpy(char *dst, int dst_inc, char const *src, int src_inc, int n, int esize)
 {
@@ -143,13 +137,13 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 	}
 
 	int mid_delta = column.mid - lidar->last_mid;
-	//ouster_log("mid_delta %i\n", mid_delta);
+	// ouster_log("mid_delta %i\n", mid_delta);
 	lidar->mid_loss += (mid_delta - 1);
 
 	// col_size = 1584
 	for (int icol = 0; icol < meta->columns_per_packet; icol++, colbuf += meta->col_size) {
 		ouster_column_get(colbuf, &column);
-		//ouster_column_dump(&column);
+		// ouster_dump_column(stdout, &column);
 
 		if ((column.status & 0x01) == 0) {
 			continue;

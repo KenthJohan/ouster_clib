@@ -23,7 +23,7 @@ sudo cp $HOME/bake/x64-Linux/release/bin/ouster_meta /usr/local/bin/
 sudo cp $HOME/bake/x64-Linux/release/bin/ouster_monitor /usr/local/bin/
 sudo cp $HOME/bake/x64-Linux/release/bin/ouster_view /usr/local/bin/
 sudo cp $HOME/bake/x64-Linux/release/bin/ouster_3d /usr/local/bin/
-sudo cp $HOME/bake/x64-Linux/release/bin/ouster_3d /usr/local/bin/
+sudo cp $HOME/bake/x64-Linux/release/bin/ouster_imu /usr/local/bin/
 #sudo cp tools/ouster_3d/ouster_3d_shader1.vs.glsl /usr/local/bin/
 #sudo cp tools/ouster_3d/ouster_3d_shader1.fs.glsl /usr/local/bin/
 #sudo cp tools/ouster_3d/ouster_3d_shader2.vs.glsl /usr/local/bin/

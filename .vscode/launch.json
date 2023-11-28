@@ -215,5 +215,26 @@
 				"externalConsole": false,
 			}
 		},
+		{
+			"name": "Launch ouster_imu",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/tools/ouster_imu",
+			"environment": [],
+			"program": "${workspaceFolder}/tools/ouster_imu/bin/x64-Linux-debug/ouster_imu",
+			"args": [
+				"-m",
+				"${config:OUSTER_META_PATH}"
+			],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
 	]
 }

@@ -952,21 +952,44 @@ void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta)
 {
 	ouster_assert_notnull(field);
 	ouster_assert_notnull(meta);
-	ouster_extract_t *extract = meta->extract + field->quantity;
+	ouster_extract_t const *extract = meta->extract + field->quantity;
 	uint32_t mask = extract->mask;
 	if (mask == 0xFFFFFFFF) {
 		return;
 	}
+	int rows = field->rows;
+	int cols = field->cols;
+	int cells = rows * cols;
 
 	ouster_assert(field->depth == 4, "Destination data depth other than 4 is not supported");
-	if (field->depth == 4) {
-		uint32_t *data32 = (uint32_t *)field->data;
-		int rows = field->rows;
-		int cols = field->cols;
-		int cells = rows * cols;
+	switch (field->depth) {
+	case 1: {
+		ouster_assert(mask <= UINT8_MAX, "Mask is too big");
+		uint8_t *data8 = (uint8_t *)field->data;
 		for (int i = 0; i < cells; ++i) {
-			data32[i] &= mask;
+			uint16_t value = data8[i];
+			value &= (uint16_t)mask;
+			data8[i] = value;
 		}
+	} break;
+	case 2: {
+		ouster_assert(mask <= UINT16_MAX, "Mask is too big");
+		uint16_t *data16 = (uint16_t *)field->data;
+		for (int i = 0; i < cells; ++i) {
+			uint16_t value = data16[i];
+			value &= (uint16_t)mask;
+			data16[i] = value;
+		}
+	} break;
+	case 4: {
+		ouster_assert(mask <= UINT32_MAX, "Mask is too big");
+		uint32_t *data32 = (uint32_t *)field->data;
+		for (int i = 0; i < cells; ++i) {
+			uint32_t value = data32[i];
+			value &= mask;
+			data32[i] = value;
+		}
+	} break;
 	}
 }
 
@@ -1051,7 +1074,6 @@ error:
 }
 #include <string.h>
 
-
 void ouster_lidar_header_get1(char const *buf, void *dst, int type)
 {
 	ouster_assert_notnull(buf);
@@ -1103,8 +1125,6 @@ void ouster_lidar_header_get(char const *buf, ouster_lidar_header_t *dst)
 	ouster_lidar_header_get1(buf, &dst->shot_limiting, ouster_id(ouster_shot_limiting_t));
 }
 
-
-
 void ouster_column_get1(char const *colbuf, void *dst, int type)
 {
 	ouster_assert_notnull(colbuf);
@@ -1134,9 +1154,6 @@ void ouster_column_get(char const *colbuf, ouster_column_t *dst)
 	ouster_column_get1(colbuf, &dst->status, ouster_id(ouster_status_t));
 	ouster_column_get1(colbuf, &dst->mid, ouster_id(ouster_measurment_id_t));
 }
-
-
-
 
 void pxcpy(char *dst, int dst_inc, char const *src, int src_inc, int n, int esize)
 {
@@ -1191,13 +1208,13 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 	}
 
 	int mid_delta = column.mid - lidar->last_mid;
-	//ouster_log("mid_delta %i\n", mid_delta);
+	// ouster_log("mid_delta %i\n", mid_delta);
 	lidar->mid_loss += (mid_delta - 1);
 
 	// col_size = 1584
 	for (int icol = 0; icol < meta->columns_per_packet; icol++, colbuf += meta->col_size) {
 		ouster_column_get(colbuf, &column);
-		//ouster_column_dump(&column);
+		// ouster_dump_column(stdout, &column);
 
 		if ((column.status & 0x01) == 0) {
 			continue;
@@ -1367,8 +1384,6 @@ XYZLut make_xyz_lut(size_t w, size_t h, double range_unit,
 }
 */
 
-
-
 void ouster_lut_fini(ouster_lut_t *lut)
 {
 	free(lut->direction);
@@ -1473,6 +1488,18 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	free(azimuth);
 	free(altitude);
 
+	for (int i = 0; i < w * h; ++i) {
+		double range_unit = 0.001;
+		double *d = direction + i * 3;
+		double *o = offset + i * 3;
+		d[0] *= range_unit;
+		d[1] *= range_unit;
+		d[2] *= range_unit;
+		o[0] *= range_unit;
+		o[1] *= range_unit;
+		o[2] *= range_unit;
+	}
+
 	lut->direction = direction;
 	lut->offset = offset;
 	lut->w = w;
@@ -1480,9 +1507,9 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 
 	/*
 	for (int i = 0; i < w * h; ++i) {
-		double *d = direction + i * 3;
-		double *o = offset + i * 3;
-		printf("%+f %+f %+f %+f %+f %+f, %+f\n", o[0], o[1], o[2], d[0], d[1], d[2], sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
+	    double *d = direction + i * 3;
+	    double *o = offset + i * 3;
+	    printf("%+f %+f %+f %+f %+f %+f, %+f\n", o[0], o[1], o[2], d[0], d[1], d[2], sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
 	}
 	*/
 }
@@ -1505,6 +1532,20 @@ void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, vo
 		outd[2] = (float)(mag * d[2] + o[2]);
 		// printf("%+f %+f\n", mag, sqrt(V3_DOT(out_xyz, out_xyz)));
 	}
+}
+
+void ouster_lut_cartesian_f32_single(ouster_lut_t const *lut, float x, float y, float mag, float *out)
+{
+	ouster_assert_notnull(lut);
+	ouster_assert_notnull(out);
+	int i = round(y) * lut->w + round(x);
+	ouster_assert(i >= 0, "");
+	ouster_assert(i < lut->w * lut->h, "");
+	double const *d = lut->direction + i;
+	double const *o = lut->offset + i;
+	out[0] = (float)(mag * d[0] + o[0]);
+	out[1] = (float)(mag * d[1] + o[1]);
+	out[2] = (float)(mag * d[2] + o[2]);
 }
 
 void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, void *out, int out_stride)
@@ -1588,7 +1629,6 @@ void mul3(double *r, double const *a, double const *x)
 #include <string.h>
 
 #define TOK_COUNT 1024
-
 
 #define MAX(a, b) (((a) > (b)) ? a : b)
 #define MIN(a, b) (((a) < (b)) ? a : b)
@@ -1704,12 +1744,10 @@ void ouster_extract_init(ouster_extract_t *f, ouster_profile_t profile, ouster_q
 		f->depth = 2;
 		break;
 		/*
-	{ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
-	{ChanField::FLAGS, {UINT8, 1, 0b10000000, 7}},
-	{ChanField::REFLECTIVITY, {UINT8, 2, 0, 0}},
-	{ChanField::NEAR_IR, {UINT8, 3, 0, -4}},
-	{ChanField::RAW32_WORD1, {UINT32, 0, 0, 0}},
-	*/
+		Range [15 bit unsigned int] - Range scaled down by a factor of 8 mm, for a maximum range of (2^15*8) = 262 mm in 15 bits. Note The range value will be set to 0 if out of range or if no detection is made.
+		Shift by minus 3 is a left shift. That will multiply by a factor 2^3 = 8.
+		{ChanField::RANGE, {UINT16, 0, 0x7fff, -3}},
+		*/
 	case COMBINE(OUSTER_PROFILE_RNG15_RFL8_NIR8, OUSTER_QUANTITY_RANGE):
 		f->mask = UINT32_C(0x7fff);
 		f->offset = 0;
@@ -1815,9 +1853,6 @@ void ouster_meta_parse(char const *json, ouster_meta_t *out)
 	ouster_assert(out->midw > 0, "");
 	ouster_assert(out->channel_data_size > 0, "");
 }
-
-
-
 
 
 #include <arpa/inet.h>

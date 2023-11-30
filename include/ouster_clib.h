@@ -243,6 +243,8 @@ typedef enum {
 /** Size for SOL_SOCKET, SO_RCVBUF */
 #define OUSTER_DEFAULT_RCVBUF_SIZE (1024*1024)
 
+/** Number of bytes in a IMU packet */
+#define OUSTER_PACKET_IMU_SIZE 48
 
 typedef struct
 {
@@ -370,19 +372,19 @@ Angular Velocity about Z-axis [32 bit float] - Angular velocity in deg per sec.
 typedef struct
 {
 	/** timestamp of monotonic system time since boot in nanoseconds */
-	uint64_t IMU_Diagnostic_Time;
+	uint64_t sys_ts;
 
 	/** timestamp for accelerometer time relative to timestamp_mode in nanoseconds */
-	uint64_t Accelerometer_Read_Time;
+	uint64_t acc_ts;
 
 	/** timestamp for gyroscope time relative to timestamp_mode in nanoseconds */
-	uint64_t Gyroscope_Read_Time;
+	uint64_t gyro_ts;
 
 	/** acceleration in g */
-	float acceleration[3];
+	float acc[3];
 
 	/** Angular velocity in deg per sec */
-	float angular_velocity[3];
+	float angvel[3];
 } ouster_imu_packet_t;
 
 /** @} */ // end of core

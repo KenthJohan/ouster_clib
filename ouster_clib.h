@@ -245,6 +245,8 @@ typedef enum {
 /** Size for SOL_SOCKET, SO_RCVBUF */
 #define OUSTER_DEFAULT_RCVBUF_SIZE (1024*1024)
 
+/** Number of bytes in a IMU packet */
+#define OUSTER_PACKET_IMU_SIZE 48
 
 typedef struct
 {
@@ -354,6 +356,38 @@ typedef struct
 {
 	ouster_quantity_t q[OUSTER_QUANTITY_CHAN_FIELD_MAX];
 } ouster_field_desc_t;
+
+
+/*
+IMU UDP Packets are 48 Bytes long and by default are sent to Port 7503 at 100 Hz. Data is organized in little endian format.
+
+IMU Diagnostic Time [64 bit unsigned int] - timestamp of monotonic system time since boot in nanoseconds.
+Accelerometer Read Time [64 bit unsigned int] - timestamp for accelerometer time relative to timestamp_mode in nanoseconds.
+Gyroscope Read Time [64 bit unsigned int] - timestamp for gyroscope time relative to timestamp_mode in nanoseconds.
+Acceleration in X-axis [32 bit float] - acceleration in g.
+Acceleration in Y-axis [32 bit float] - acceleration in g.
+Acceleration in Z-axis [32 bit float] - acceleration in g.
+Angular Velocity about X-axis [32 bit float] - Angular velocity in deg per sec.
+Angular Velocity about Y-axis [32 bit float] - Angular velocity in deg per sec.
+Angular Velocity about Z-axis [32 bit float] - Angular velocity in deg per sec.
+*/
+typedef struct
+{
+	/** timestamp of monotonic system time since boot in nanoseconds */
+	uint64_t sys_ts;
+
+	/** timestamp for accelerometer time relative to timestamp_mode in nanoseconds */
+	uint64_t acc_ts;
+
+	/** timestamp for gyroscope time relative to timestamp_mode in nanoseconds */
+	uint64_t gyro_ts;
+
+	/** acceleration in g */
+	float acc[3];
+
+	/** Angular velocity in deg per sec */
+	float angvel[3];
+} ouster_imu_packet_t;
 
 /** @} */ // end of core
 

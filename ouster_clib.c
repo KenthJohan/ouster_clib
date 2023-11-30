@@ -1489,7 +1489,8 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	free(altitude);
 
 	for (int i = 0; i < w * h; ++i) {
-		double range_unit = 0.001;
+		double range_unit = 0.001f;
+		//double range_unit = 1.0f;
 		double *d = direction + i * 3;
 		double *o = offset + i * 3;
 		d[0] *= range_unit;

@@ -18,7 +18,7 @@ int ouster_sock_create_udp_lidar(int port, int rcvbuf_size);
 
 int ouster_sock_create_udp_imu(int port, int rcvbuf_size);
 
-int ouster_sock_create_tcp(char const *hint_name);
+int ouster_sock_create_tcp(char const *hint_name, int port);
 
 #ifdef __cplusplus
 }

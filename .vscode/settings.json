@@ -17,7 +17,13 @@
 		"mutex": "c",
 		"convert.h": "c",
 		"ouster_assert.h": "c",
-		"ouster_field.h": "c"
+		"ouster_field.h": "c",
+		"ouster_client.h": "c",
+		"ouster_http.h": "c",
+		"socket.h": "c",
+		"string.h": "c",
+		"stdio.h": "c",
+		"fcntl.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

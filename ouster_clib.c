@@ -827,6 +827,29 @@ void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
 	fclose(f);
 }
 
+void ouster_client_write_meta_file(ouster_client_t *client, FILE * f)
+{
+	ouster_assert_notnull(client);
+	req_get(client, URLAPI_METADATA);
+	fwrite(client->buf.data, client->buf.size, 1, f);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif
 #include <string.h>
 
@@ -1071,6 +1094,52 @@ error:
 		free(content);
 	}
 	return NULL;
+}
+
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+#define HTTP_EOL "\r\n\r\n"
+
+void ouster_http_request(int sock, char const *host, char const *path, ouster_vec_t *v)
+{
+	ouster_assert_notnull(host);
+	ouster_assert_notnull(path);
+	ouster_assert_notnull(v);
+	ouster_assert(v->esize == 1, "");
+	{
+		char buf[1024] = {0};
+		int n = snprintf(buf, sizeof(buf), "GET %s HTTP/1.1\r\nHost: %s\r\nAccept: */*" HTTP_EOL, path, host);
+		ouster_log("REQ START:\n%s\nREQ END\n", buf);
+		write(sock, buf, n);
+	}
+
+	while (1) {
+		char buf[1024] = {0};
+		ssize_t n = recv(sock, buf, sizeof(buf), 0);
+		if (n <= 0) {
+			break;
+		}
+		ouster_vec_append(v, buf, n, 1.5f);
+	}
+	{
+		char *e = OUSTER_OFFSET(v->data, v->esize * v->count);
+		e[0] = '\0';
+	}
+
+	char *json = strstr(v->data, HTTP_EOL);
+	if (json) {
+		json += strlen(HTTP_EOL);
+		size_t n = strlen(json);
+		memcpy(v->data, json, n);
+		v->count = n;
+		char *e = OUSTER_OFFSET(v->data, v->esize * v->count);
+		e[0] = '\0';
+	}
 }
 #include <string.h>
 
@@ -2252,14 +2321,15 @@ int ouster_sock_create_udp_imu(int port, int rcvbuf_size)
 	return ouster_net_create(&desc);
 }
 
-int ouster_sock_create_tcp(char const *hint_name)
+int ouster_sock_create_tcp(char const *hint_name, int port)
 {
 	ouster_assert_notnull(hint_name);
 
 	ouster_net_sock_desc_t desc = {0};
 	desc.flags = OUSTER_NET_FLAGS_TCP | OUSTER_NET_FLAGS_CONNECT;
 	desc.hint_name = hint_name;
-	desc.hint_service = "7501";
+	desc.hint_service = NULL;
+	desc.port = port;
 	desc.rcvtimeout_sec = 10;
 	return ouster_net_create(&desc);
 }
@@ -2361,4 +2431,52 @@ int ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f)
 	}
 
 	return OUSTER_UDPCAP_OK;
+}
+#include <string.h>
+
+
+
+void ouster_vec_init(ouster_vec_t * v, int esize, int cap)
+{
+	ouster_assert_notnull(v);
+	ouster_assert(cap >= 0, "");
+	ouster_assert(esize >= 0, "");
+	v->data = malloc(cap * esize);
+	ouster_assert_notnull(v->data);
+	v->cap = cap;
+	v->esize = esize;
+}
+
+void ouster_vec_append(ouster_vec_t * v, void const * data, int n, float factor)
+{
+	ouster_assert_notnull(v);
+	ouster_assert(factor >= 1.0f, "");
+	int count = v->count + n;
+	if (count > v->cap) {
+		int cap = (float)count * factor;
+		v->data = realloc(v->data, cap);
+		ouster_assert_notnull(v->data);
+		v->cap = cap + 1;
+	}
+	int offset = v->esize * v->count;
+	memcpy(OUSTER_OFFSET(v->data, offset), data, n);
+	v->count = count;
+}
+
+
+
+void test_ouster_vec()
+{
+	char const * d1 = "Hello";
+	char const * d2 = " ";
+	char const * d3 = "world!";
+	ouster_vec_t v;
+	ouster_vec_init(&v, 1, 2);
+	ouster_vec_append(&v, d1, strlen(d1), 1.5f);
+	ouster_vec_append(&v, d2, strlen(d2), 1.5f);
+	ouster_vec_append(&v, d3, strlen(d3), 1.5f);
+
+	char const * str = v.data;
+	int diff = strcmp("Hello world!", str);
+	ouster_assert(diff == 0, "");
 }

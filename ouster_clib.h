@@ -750,7 +750,7 @@ int ouster_sock_create_udp_lidar(int port, int rcvbuf_size);
 
 int ouster_sock_create_udp_imu(int port, int rcvbuf_size);
 
-int ouster_sock_create_tcp(char const *hint_name);
+int ouster_sock_create_tcp(char const *hint_name, int port);
 
 #ifdef __cplusplus
 }
@@ -759,6 +759,55 @@ int ouster_sock_create_tcp(char const *hint_name);
 #endif // OUSTER_SOCK_H
 
 /** @} */
+#ifndef OUSTER_VEC_H
+#define OUSTER_VEC_H
+#include <stdio.h>
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+
+#define OUSTER_OFFSET(o, offset) (void*)(((uintptr_t)(o)) + ((uintptr_t)(offset)))
+
+typedef struct
+{
+	int cap;
+	int count;
+	int esize;
+	void * data;
+} ouster_vec_t;
+
+void ouster_vec_init(ouster_vec_t * v, int esize, int cap);
+
+void ouster_vec_append(ouster_vec_t * v, void const * data, int n, float factor);
+
+void test_ouster_vec();
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // OUSTER_VEC_H
+#ifndef OUSTER_HTTP_H
+#define OUSTER_HTTP_H
+#include <stdio.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define OUSTER_HTTP_GET_METADATA "/api/v1/sensor/metadata"
+#define OUSTER_HTTP_GET_FIRMWARE "/api/v1/system/firmware"
+
+void ouster_http_request(int sock, char const *host, char const *path, ouster_vec_t *v);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // OUSTER_CLIENT_H
 
 #ifdef OUSTER_NO_UDPCAP
 #undef OUSTER_USE_UDPCAP
@@ -888,6 +937,7 @@ void ouster_dump_meta(FILE *f, ouster_meta_t const *meta);
 #ifdef OUSTER_USE_CURL
 #ifndef OUSTER_CLIENT_H
 #define OUSTER_CLIENT_H
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -911,6 +961,7 @@ typedef struct
 void ouster_client_init(ouster_client_t *client);
 void ouster_client_fini(ouster_client_t *client);
 void ouster_client_download_meta_file(ouster_client_t *client, char const *path);
+void ouster_client_write_meta_file(ouster_client_t *client, FILE * f);
 
 #ifdef __cplusplus
 }

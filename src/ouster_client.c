@@ -128,4 +128,27 @@ void ouster_client_download_meta_file(ouster_client_t *client, char const *path)
 	fclose(f);
 }
 
+void ouster_client_write_meta_file(ouster_client_t *client, FILE * f)
+{
+	ouster_assert_notnull(client);
+	req_get(client, URLAPI_METADATA);
+	fwrite(client->buf.data, client->buf.size, 1, f);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif

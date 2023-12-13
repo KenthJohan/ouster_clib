@@ -28,14 +28,15 @@ int ouster_sock_create_udp_imu(int port, int rcvbuf_size)
 	return ouster_net_create(&desc);
 }
 
-int ouster_sock_create_tcp(char const *hint_name)
+int ouster_sock_create_tcp(char const *hint_name, int port)
 {
 	ouster_assert_notnull(hint_name);
 
 	ouster_net_sock_desc_t desc = {0};
 	desc.flags = OUSTER_NET_FLAGS_TCP | OUSTER_NET_FLAGS_CONNECT;
 	desc.hint_name = hint_name;
-	desc.hint_service = "7501";
+	desc.hint_service = NULL;
+	desc.port = port;
 	desc.rcvtimeout_sec = 10;
 	return ouster_net_create(&desc);
 }

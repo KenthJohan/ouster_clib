@@ -398,6 +398,8 @@ typedef struct
 #include "ouster_clib/ouster_meta.h"
 #include "ouster_clib/ouster_net.h"
 #include "ouster_clib/ouster_sock.h"
+#include "ouster_clib/ouster_vec.h"
+#include "ouster_clib/ouster_http.h"
 
 #ifdef OUSTER_NO_UDPCAP
 #undef OUSTER_USE_UDPCAP

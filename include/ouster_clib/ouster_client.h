@@ -1,5 +1,6 @@
 #ifndef OUSTER_CLIENT_H
 #define OUSTER_CLIENT_H
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -23,6 +24,7 @@ typedef struct
 void ouster_client_init(ouster_client_t *client);
 void ouster_client_fini(ouster_client_t *client);
 void ouster_client_download_meta_file(ouster_client_t *client, char const *path);
+void ouster_client_write_meta_file(ouster_client_t *client, FILE * f);
 
 #ifdef __cplusplus
 }

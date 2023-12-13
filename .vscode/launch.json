@@ -47,6 +47,27 @@
 			}
 		},
 		{
+			"name": "Launch meta_download",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/examples/meta_download",
+			"environment": [],
+			"envFile": "${workspaceFolder}/.env",
+			"program": "${workspaceFolder}/examples/meta_download/bin/x64-Linux-debug/meta_download",
+			"args": [
+				"${config:OUSTER_HOST}",
+			],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
+		{
 			"name": "Launch ouster_monitor",
 			"type": "cppdbg",
 			"request": "launch",
@@ -107,7 +128,7 @@
 			"program": "${workspaceFolder}/tools/ouster_meta/bin/x64-Linux-debug/ouster_meta",
 			"args": [
 				"-m",
-				"${config:OUSTER_META_PATH}.new",
+				"new_meta.json",
 				"-s",
 				"${config:OUSTER_HOST}",
 			],

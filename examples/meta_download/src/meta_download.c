@@ -4,6 +4,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define BUFFER_SIZE (1024 * 1024)
+
 int main(int argc, char *argv[])
 {
 	ouster_fs_pwd();
@@ -13,18 +15,12 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	if (argc <= 2) {
-		printf("Missing output meta file destination\n");
-		return 0;
-	}
-
-	ouster_client_t client =
-	    {
-	        .host = argv[1]};
-
-	ouster_client_init(&client);
-	ouster_client_download_meta_file(&client, argv[2]);
-	ouster_client_fini(&client);
+	int s = ouster_sock_create_tcp(argv[1], 80);
+	ouster_vec_t v = {0};
+	ouster_vec_init(&v, 1, 1024);
+	ouster_http_request(s, argv[1], OUSTER_HTTP_GET_METADATA, &v);
+	printf("%s\n\n", (char *)v.data);
+	return 0;
 
 	return 0;
 }

@@ -24,7 +24,7 @@ typedef void* (*ouster_os_api_calloc_t)(size_t size);
 
 typedef void (*ouster_os_api_free_t)(void *ptr);
 
-typedef void (*ouster_os_api_log_t)(int32_t level, const char *file,  int32_t line, const char *msg);
+typedef void (*ouster_os_api_log_t)(int32_t level, const char *file, int32_t line, const char *msg);
 
 typedef void (*ouster_os_api_abort_t)(void);
 
@@ -74,7 +74,7 @@ void ouster_os_warn(const char *file, int32_t line, const char *msg);
 void ouster_os_err(const char *file, int32_t line, const char *msg);
 void ouster_os_fatal(const char *file, int32_t line, const char *msg);
 
-
+void ouster_os_set_api_defaults(void);
 
 
 

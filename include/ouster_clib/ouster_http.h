@@ -1,6 +1,13 @@
+/**
+ * @defgroup http HTTP request
+ * @brief Functionality for getting HTTP response from HTTP request
+ *
+ * \ingroup c
+ * @{
+ */
+
 #ifndef OUSTER_HTTP_H
 #define OUSTER_HTTP_H
-#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,4 +22,6 @@ void ouster_http_request(int sock, char const *host, char const *path, ouster_ve
 }
 #endif
 
-#endif // OUSTER_CLIENT_H
+#endif // OUSTER_HTTP_H
+
+/** @} */

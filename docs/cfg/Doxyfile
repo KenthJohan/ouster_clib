@@ -907,6 +907,8 @@ INPUT                  = include/ouster_clib.h \
 						 include/ouster_clib/ouster_fs.h \
 						 include/ouster_clib/ouster_log.h \
 						 include/ouster_clib/ouster_dump.h \
+						 include/ouster_clib/ouster_http.h \
+						 include/ouster_clib/ouster_vec.h \
                          README.md \
                          docs/Docs.md
 

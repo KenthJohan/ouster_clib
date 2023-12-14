@@ -759,29 +759,35 @@ int ouster_sock_create_tcp(char const *hint_name, int port);
 #endif // OUSTER_SOCK_H
 
 /** @} */
+/**
+ * @defgroup vec Growable vector
+ * @brief Functionality for appending data to vector
+ *
+ * \ingroup c
+ * @{
+ */
+
 #ifndef OUSTER_VEC_H
 #define OUSTER_VEC_H
 #include <stdio.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-
-#define OUSTER_OFFSET(o, offset) (void*)(((uintptr_t)(o)) + ((uintptr_t)(offset)))
+#define OUSTER_OFFSET(o, offset) (void *)(((uintptr_t)(o)) + ((uintptr_t)(offset)))
 
 typedef struct
 {
 	int cap;
 	int count;
 	int esize;
-	void * data;
+	void *data;
 } ouster_vec_t;
 
-void ouster_vec_init(ouster_vec_t * v, int esize, int cap);
+void ouster_vec_init(ouster_vec_t *v, int esize, int cap);
 
-void ouster_vec_append(ouster_vec_t * v, void const * data, int n, float factor);
+void ouster_vec_append(ouster_vec_t *v, void const *data, int n, float factor);
 
 void test_ouster_vec();
 
@@ -790,6 +796,8 @@ void test_ouster_vec();
 #endif
 
 #endif // OUSTER_VEC_H
+
+/** @} */
 #ifndef OUSTER_HTTP_H
 #define OUSTER_HTTP_H
 #include <stdio.h>
@@ -817,10 +825,6 @@ void ouster_http_request(int sock, char const *host, char const *path, ouster_ve
 #undef OUSTER_USE_DUMP
 #endif
 
-#ifdef OUSTER_NO_CURL
-#undef OUSTER_USE_CURL
-#endif
-
 
 #ifdef OUSTER_USE_UDPCAP
 /**
@@ -842,8 +846,7 @@ extern "C" {
 #include <stdio.h>
 
 
-typedef enum
-{
+typedef enum {
 	OUSTER_UDPCAP_OK,
 	OUSTER_UDPCAP_ERROR_RECV,
 	OUSTER_UDPCAP_ERROR_FREAD,
@@ -932,42 +935,6 @@ void ouster_dump_meta(FILE *f, ouster_meta_t const *meta);
 #endif // OUSTER_DUMP_H
 
 /** @} */
-#endif
-
-#ifdef OUSTER_USE_CURL
-#ifndef OUSTER_CLIENT_H
-#define OUSTER_CLIENT_H
-#include <stdio.h>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-typedef struct
-{
-	char *data;
-	int size;
-	int cap;
-} ouster_buffer_t;
-
-typedef struct
-{
-	void *curl;
-	char const *host;
-	ouster_buffer_t buf;
-} ouster_client_t;
-
-void ouster_client_init(ouster_client_t *client);
-void ouster_client_fini(ouster_client_t *client);
-void ouster_client_download_meta_file(ouster_client_t *client, char const *path);
-void ouster_client_write_meta_file(ouster_client_t *client, FILE * f);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // OUSTER_CLIENT_H
 #endif
 
 #endif // OUSTER_CLIB_H

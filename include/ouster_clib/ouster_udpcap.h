@@ -18,8 +18,7 @@ extern "C" {
 
 #include "ouster_clib/ouster_net.h"
 
-typedef enum
-{
+typedef enum {
 	OUSTER_UDPCAP_OK,
 	OUSTER_UDPCAP_ERROR_RECV,
 	OUSTER_UDPCAP_ERROR_FREAD,

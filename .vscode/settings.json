@@ -23,7 +23,8 @@
 		"socket.h": "c",
 		"string.h": "c",
 		"stdio.h": "c",
-		"fcntl.h": "c"
+		"fcntl.h": "c",
+		"ouster_vec.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

@@ -64,6 +64,7 @@ int main(int argc, char const *argv[])
 		ouster_vec_t v = {0};
 		ouster_vec_init(&v, 1, 1024);
 		ouster_http_request(s, host, OUSTER_HTTP_GET_METADATA, &v);
+		printf("meta json content:\n%s\n\n", (char*)v.data);
 		fwrite(v.data, v.count * v.esize, 1, f);
 		fclose(f);
 	}

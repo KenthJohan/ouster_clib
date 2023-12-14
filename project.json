@@ -19,7 +19,6 @@
 			"-Wextra"
 		],
 		"lib": [
-			"curl",
 			"m"
 		]
 	}

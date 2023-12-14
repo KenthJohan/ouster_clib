@@ -1,7 +1,6 @@
 This is a non official SDK for Ouster LiDAR sensors.<br>
-The ouster_clib is meant to be simplistic and use zero dependencies. Easy to debug, modify and extend. 
+The ouster_clib is meant to be simplistic and uses zero dependencies. Easy to debug, modify and extend. 
 Don't want to build lib? then drop `ouster_clib.h` and `ouster_clib.c` in any project.
-Dependency on `libcurl` is optional and is only used to download meta file.
 <br><br>
 The official SDK can be found at https://github.com/ouster-lidar/ouster_example. <br>
 
@@ -11,9 +10,8 @@ The official SDK can be found at https://github.com/ouster-lidar/ouster_example.
 * C++ compatible
 * Easy to integrate with [OpenCV](examples/opencv_example/src/opencv_example.cpp) or Eigen
 * Debug friendly
-* Meta file parser
-* Meta file downloader is optional. Requires dependency libcurl.
-* Destagger
+* Meta file parser and downloader
+* Generic destagger
 * LUT table for converting image to XYZ pointcloud
 * Completes a frame exactly at the last packet
 * Memory requirement depends on field of view
@@ -46,7 +44,6 @@ libcurl is optional.
 sudo apt update
 sudo apt install git
 sudo apt install build-essential
-sudo apt install libcurl4-openssl-dev
 ```
 
 ## Requirement building with bake

@@ -19,7 +19,11 @@ void ouster_http_request(int sock, char const *host, char const *path, ouster_ve
 		char buf[1024] = {0};
 		int n = snprintf(buf, sizeof(buf), "GET %s HTTP/1.1\r\nHost: %s\r\nAccept: */*" HTTP_EOL, path, host);
 		ouster_log("REQ START:\n%s\nREQ END\n", buf);
-		write(sock, buf, n);
+		ssize_t written = write(sock, buf, n);
+		if(n != written) {
+			ouster_log("write failed: %s\n", buf);
+			return;
+		}
 	}
 
 	while (1) {

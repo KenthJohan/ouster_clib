@@ -6,6 +6,7 @@
 void ouster_log_(char const *format, ...)
 {
 	assert(format);
+	printf("OUSTER: ");
 	va_list args;
 	va_start(args, format);
 	vprintf(format, args);

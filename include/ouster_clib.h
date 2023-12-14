@@ -409,10 +409,6 @@ typedef struct
 #undef OUSTER_USE_DUMP
 #endif
 
-#ifdef OUSTER_NO_CURL
-#undef OUSTER_USE_CURL
-#endif
-
 
 #ifdef OUSTER_USE_UDPCAP
 #include "ouster_clib/ouster_udpcap.h"
@@ -420,10 +416,6 @@ typedef struct
 
 #ifdef OUSTER_USE_DUMP
 #include "ouster_clib/ouster_dump.h"
-#endif
-
-#ifdef OUSTER_USE_CURL
-#include "ouster_clib/ouster_client.h"
 #endif
 
 #endif // OUSTER_CLIB_H

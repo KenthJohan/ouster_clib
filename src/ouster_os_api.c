@@ -2,41 +2,6 @@
 
 ouster_os_api_t ouster_os_api;
 
-void ouster_os_dbg(const char *file, int32_t line, const char *msg)
-{
-	if (ouster_os_api.log_) {
-		ouster_os_api.log_(1, file, line, msg);
-	}
-}
-
-void ouster_os_trace(const char *file, int32_t line, const char *msg)
-{
-	if (ouster_os_api.log_) {
-		ouster_os_api.log_(0, file, line, msg);
-	}
-}
-
-void ouster_os_warn(const char *file, int32_t line, const char *msg)
-{
-	if (ouster_os_api.log_) {
-		ouster_os_api.log_(-2, file, line, msg);
-	}
-}
-
-void ouster_os_err(const char *file, int32_t line, const char *msg)
-{
-	if (ouster_os_api.log_) {
-		ouster_os_api.log_(-3, file, line, msg);
-	}
-}
-
-void ouster_os_fatal(const char *file, int32_t line, const char *msg)
-{
-	if (ouster_os_api.log_) {
-		ouster_os_api.log_(-4, file, line, msg);
-	}
-}
-
 static void *ouster_os_api_calloc(size_t size)
 {
 	return calloc(1, (size_t)size);

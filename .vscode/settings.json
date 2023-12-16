@@ -24,7 +24,8 @@
 		"string.h": "c",
 		"stdio.h": "c",
 		"fcntl.h": "c",
-		"ouster_vec.h": "c"
+		"ouster_vec.h": "c",
+		"ouster_os_api.h": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

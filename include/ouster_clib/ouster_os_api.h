@@ -18,9 +18,9 @@ extern "C" {
 
 typedef void *(*ouster_os_api_malloc_t)(size_t size);
 
-typedef void* (*ouster_os_api_realloc_t)(void *ptr, size_t size);
+typedef void *(*ouster_os_api_realloc_t)(void *ptr, size_t size);
 
-typedef void* (*ouster_os_api_calloc_t)(size_t size);
+typedef void *(*ouster_os_api_calloc_t)(size_t size);
 
 typedef void (*ouster_os_api_free_t)(void *ptr);
 
@@ -45,7 +45,6 @@ typedef struct ouster_os_api_t {
 
 extern ouster_os_api_t ouster_os_api;
 
-
 #ifndef ouster_os_malloc
 #define ouster_os_malloc(size) ouster_os_api.malloc_(size)
 #endif
@@ -66,17 +65,7 @@ extern ouster_os_api_t ouster_os_api;
 #define ouster_os_abort(size) ouster_os_api.abort_()
 #endif
 
-
-/* Logging */
-void ouster_os_dbg(const char *file, int32_t line, const char *msg);
-void ouster_os_trace(const char *file, int32_t line, const char *msg);
-void ouster_os_warn(const char *file, int32_t line, const char *msg);
-void ouster_os_err(const char *file, int32_t line, const char *msg);
-void ouster_os_fatal(const char *file, int32_t line, const char *msg);
-
 void ouster_os_set_api_defaults(void);
-
-
 
 #ifdef __cplusplus
 }

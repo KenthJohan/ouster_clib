@@ -17,8 +17,8 @@ extern "C" {
 
 /** Logging */
 #ifdef OUSTER_ENABLE_LOG
-void ouster_log_(char const *fmt, ...);
-#define ouster_log(...) ouster_log_(__VA_ARGS__)
+void ouster_log_(int32_t level, char const * file, int32_t line, char const *fmt, ...);
+#define ouster_log(...) ouster_log_(0, __FILE__, __LINE__, __VA_ARGS__)
 #else
 #define ouster_log(...)
 #endif

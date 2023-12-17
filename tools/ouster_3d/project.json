@@ -21,7 +21,8 @@
 			"GL",
 			"X11",
 			"Xi",
-			"Xcursor"
+			"Xcursor",
+			"rt"
 		],
 		"cflags": [
 			"-Werror",

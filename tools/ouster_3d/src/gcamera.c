@@ -65,7 +65,7 @@ void gcamera_init(gcamera_state_t *camera)
 	//camera->looking_speed = 0.8f;
 	//camera->moving_speed = 0.1f;
 	camera->looking_speed = 0.8f;
-	camera->moving_speed = 100.1f;
+	camera->moving_speed = 10.1f;
 	camera->fov = 45.0f;
 }
 

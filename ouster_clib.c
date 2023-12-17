@@ -871,11 +871,9 @@ void ouster_field_zero(ouster_field_t fields[], int count)
 	}
 }
 
-#include <assert.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -926,7 +924,7 @@ char *ouster_fs_readfile(char const *path)
 	}
 	rewind(file);
 
-	content = malloc(size + 1);
+	content = ouster_os_malloc(size + 1);
 	content[size] = '\0';
 	size_t n = fread(content, size, 1, file);
 	if (n != 1) {
@@ -938,7 +936,7 @@ char *ouster_fs_readfile(char const *path)
 	return content;
 error:
 	if (content) {
-		free(content);
+		ouster_os_free(content);
 	}
 	return NULL;
 }
@@ -1167,13 +1165,43 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 #include <stdarg.h>
 #include <stdio.h>
 
-void ouster_log_(char const *format, ...)
+static char *ouster_vasprintf_malloc(const char *fmt, va_list args)
 {
-	assert(format);
-	printf("OUSTER: ");
+	size_t size = 0;
+	char *result = NULL;
+	va_list tmpa;
+
+	va_copy(tmpa, args);
+
+	size = vsnprintf(result, 0, fmt, tmpa);
+
+	va_end(tmpa);
+
+	if ((int32_t)size < 0) {
+		return NULL;
+	}
+
+	result = (char *)ouster_os_malloc(size + 1);
+
+	if (!result) {
+		return NULL;
+	}
+
+	vsprintf(result, fmt, args);
+
+	return result;
+}
+
+void ouster_log_(int32_t level, char const *file, int32_t line, char const *fmt, ...)
+{
+	assert(fmt);
 	va_list args;
-	va_start(args, format);
-	vprintf(format, args);
+	va_start(args, fmt);
+
+	char *msg = ouster_vasprintf_malloc(fmt, args);
+	ouster_os_api.log_(0, file, line, msg);
+	ouster_os_free(msg);
+
 	va_end(args);
 }
 /**
@@ -2144,6 +2172,54 @@ uint64_t ouster_net_select(int socks[], int n, const int timeout_sec, const int 
 	return result;
 }
 
+
+ouster_os_api_t ouster_os_api;
+
+static void *ouster_os_api_calloc(size_t size)
+{
+	return calloc(1, (size_t)size);
+}
+
+static void *ouster_os_api_malloc(size_t size)
+{
+	return malloc((size_t)size);
+}
+
+static void ouster_os_api_free(void *ptr)
+{
+	free(ptr);
+}
+
+static void * ouster_os_api_realloc(void *ptr, size_t size)
+{
+	return realloc(ptr, size);
+}
+
+static void ouster_log_msg(int32_t level, const char *file, int32_t line, const char *msg)
+{
+	FILE *stream;
+	if (level >= 0) {
+		stream = stdout;
+	} else {
+		stream = stderr;
+	}
+	fputs(msg, stream);
+	fputs("\n", stream);
+}
+
+void ouster_os_set_api_defaults(void)
+{
+	/* Memory management */
+	ouster_os_api.malloc_ = ouster_os_api_malloc;
+	ouster_os_api.free_ = ouster_os_api_free;
+	ouster_os_api.realloc_ = ouster_os_api_realloc;
+	ouster_os_api.calloc_ = ouster_os_api_calloc;
+
+	/* Logging */
+	ouster_os_api.log_ = ouster_log_msg;
+
+	ouster_os_api.abort_ = abort;
+}
 #include <stddef.h>
 
 
@@ -2285,50 +2361,53 @@ int ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f)
 	return OUSTER_UDPCAP_OK;
 }
 #include <string.h>
+#include <stdint.h>
 
-
-
-void ouster_vec_init(ouster_vec_t * v, int esize, int cap)
+void ouster_vec_init(ouster_vec_t *v, int esize, int cap)
 {
 	ouster_assert_notnull(v);
 	ouster_assert(cap >= 0, "");
 	ouster_assert(esize >= 0, "");
-	v->data = malloc(cap * esize);
+	v->data = ouster_os_malloc(cap * esize);
 	ouster_assert_notnull(v->data);
 	v->cap = cap;
 	v->esize = esize;
 }
 
-void ouster_vec_append(ouster_vec_t * v, void const * data, int n, float factor)
+void ouster_vec_append(ouster_vec_t *v, void const *data, int n, float factor)
 {
 	ouster_assert_notnull(v);
+	ouster_assert_notnull(data);
+	ouster_assert(n >= 0, "");
 	ouster_assert(factor >= 1.0f, "");
 	int count = v->count + n;
 	if (count > v->cap) {
 		int cap = (float)count * factor;
-		v->data = realloc(v->data, cap);
+		v->data = ouster_os_realloc(v->data, cap);
 		ouster_assert_notnull(v->data);
+		ouster_assert(count <= cap, "");
 		v->cap = cap + 1;
 	}
 	int offset = v->esize * v->count;
+	ouster_assert(offset >= 0, "");
+	ouster_assert((offset + n) <= v->cap, "");
 	memcpy(OUSTER_OFFSET(v->data, offset), data, n);
 	v->count = count;
 }
 
-
-
-void test_ouster_vec()
+int test_ouster_vec()
 {
-	char const * d1 = "Hello";
-	char const * d2 = " ";
-	char const * d3 = "world!";
+	char const *d1 = "Hello";
+	char const *d2 = " ";
+	char const *d3 = "world!";
 	ouster_vec_t v;
 	ouster_vec_init(&v, 1, 2);
 	ouster_vec_append(&v, d1, strlen(d1), 1.5f);
 	ouster_vec_append(&v, d2, strlen(d2), 1.5f);
 	ouster_vec_append(&v, d3, strlen(d3), 1.5f);
 
-	char const * str = v.data;
+	char const *str = v.data;
 	int diff = strcmp("Hello world!", str);
 	ouster_assert(diff == 0, "");
+	return diff == 0;
 }

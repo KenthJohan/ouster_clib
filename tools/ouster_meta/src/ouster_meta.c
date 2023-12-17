@@ -27,6 +27,7 @@ if (argc <= 2) {
 int main(int argc, char const *argv[])
 {
 	printf("ouster_meta=================================================\n");
+	ouster_os_set_api_defaults();
 	ouster_fs_pwd();
 
 	char const *outputfile = NULL;

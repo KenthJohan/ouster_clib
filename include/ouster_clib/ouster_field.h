@@ -10,12 +10,15 @@
 #ifndef OUSTER_FIELD_H
 #define OUSTER_FIELD_H
 
-#include "ouster_clib.h"
+#include "ouster_clib/ouster_types.h"
+#include "ouster_clib/ouster_meta.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 
 void ouster_destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[]);
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta);

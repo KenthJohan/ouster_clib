@@ -42,6 +42,7 @@ static const char *const usages[] = {
 int main(int argc, char const *argv[])
 {
 	printf("ouster_capture1======================\n");
+	ouster_os_set_api_defaults();
 	ouster_fs_pwd();
 
 	char const *metafile = NULL;

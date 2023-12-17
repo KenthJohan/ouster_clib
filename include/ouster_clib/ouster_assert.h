@@ -9,6 +9,9 @@
 #ifndef OUSTER_ASSERT_H
 #define OUSTER_ASSERT_H
 
+#include "ouster_clib/ouster_types.h"
+#include "ouster_clib/ouster_os_api.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,8 +40,8 @@ int ouster_assert_(
 
 
 #else
-#define ouster_assert(expr, ...)
-#define ouster_assert_notnull(expr)
+#define ouster_assert(expr, ...) ouster_unused(expr)
+#define ouster_assert_notnull(expr) ouster_unused(expr)
 #endif // OUSTER_DEBUG
 
 #ifdef __cplusplus

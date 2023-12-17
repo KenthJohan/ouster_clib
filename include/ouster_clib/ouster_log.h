@@ -9,7 +9,7 @@
 #ifndef OUSTER_LOG_H
 #define OUSTER_LOG_H
 
-#include "ouster_clib.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

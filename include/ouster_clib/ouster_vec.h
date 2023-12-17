@@ -8,7 +8,7 @@
 
 #ifndef OUSTER_VEC_H
 #define OUSTER_VEC_H
-#include <stdio.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +28,7 @@ void ouster_vec_init(ouster_vec_t *v, int esize, int cap);
 
 void ouster_vec_append(ouster_vec_t *v, void const *data, int n, float factor);
 
-void test_ouster_vec();
+int test_ouster_vec();
 
 #ifdef __cplusplus
 }

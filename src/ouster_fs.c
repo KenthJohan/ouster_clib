@@ -1,11 +1,10 @@
 #include "ouster_clib/ouster_fs.h"
 #include "ouster_clib/ouster_assert.h"
 #include "ouster_clib/ouster_log.h"
-#include <assert.h>
+#include "ouster_clib/ouster_os_api.h"
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -56,7 +55,7 @@ char *ouster_fs_readfile(char const *path)
 	}
 	rewind(file);
 
-	content = malloc(size + 1);
+	content = ouster_os_malloc(size + 1);
 	content[size] = '\0';
 	size_t n = fread(content, size, 1, file);
 	if (n != 1) {
@@ -68,7 +67,7 @@ char *ouster_fs_readfile(char const *path)
 	return content;
 error:
 	if (content) {
-		free(content);
+		ouster_os_free(content);
 	}
 	return NULL;
 }

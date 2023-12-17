@@ -1,8 +1,7 @@
 #ifndef OUSTER_META_H
 #define OUSTER_META_H
 
-#include "ouster_clib.h"
-#include <stdio.h>
+#include "ouster_clib/ouster_types.h"
 
 #ifdef __cplusplus
 extern "C" {

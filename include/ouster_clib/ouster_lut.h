@@ -9,11 +9,13 @@
 #ifndef OUSTER_LUT_H
 #define OUSTER_LUT_H
 
-#include "ouster_clib.h"
+#include "ouster_clib/ouster_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 
 
 /** Inits a xyz lut table from meta configuration

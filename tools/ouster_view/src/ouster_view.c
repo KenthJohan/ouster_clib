@@ -143,6 +143,7 @@ void *rec(void *ptr)
 int main(int argc, char const *argv[])
 {
 	printf("ouster_view==========================\n");
+	ouster_os_set_api_defaults();
 	ouster_fs_pwd();
 
 	app_t app = {

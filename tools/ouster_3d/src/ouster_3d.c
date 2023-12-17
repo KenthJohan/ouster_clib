@@ -158,19 +158,18 @@ static void cleanup_cb(app_t *app)
 }
 
 
-int convert(vertex_t * v, double * xyz, int n)
+int convert(vertex_t * v, double * xyz, int n, float thres)
 {
 	int j = 0;
 	for(int i = 0; i < n; ++i, xyz += 3)
 	{
 		double l2 = V3_DOT(xyz, xyz);
-		float thres = 100.0f;
 		if(l2 < (thres*thres)){continue;}
 		v->color = 0XFFFFFFFF;
 		v->x = xyz[0];
 		v->y = xyz[1];
 		v->z = xyz[2];
-		v->w = 5.0f;
+		v->w = 0.03f;
 		j++;
 		v++;
 	}
@@ -218,7 +217,7 @@ void *rec(app_t *app)
 					pthread_mutex_lock(&app->lock);
 					int n = MIN(lut.w*lut.h, app->draw_points.vertices_cap);
 
-					int j = convert(app->draw_points.vertices, xyz, n);
+					int j = convert(app->draw_points.vertices, xyz, n, 0.1);
 					app->draw_points.vertices_count = j;
 					pthread_mutex_unlock(&app->lock);
 
@@ -245,6 +244,7 @@ static const char *const usages[] = {
 
 sapp_desc sokol_main(int argc, char *argv[])
 {
+	ouster_os_set_api_defaults();
 	ouster_fs_pwd();
 
 	app_t *app = calloc(1, sizeof(app_t));

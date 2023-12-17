@@ -871,11 +871,9 @@ void ouster_field_zero(ouster_field_t fields[], int count)
 	}
 }
 
-#include <assert.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -926,7 +924,7 @@ char *ouster_fs_readfile(char const *path)
 	}
 	rewind(file);
 
-	content = malloc(size + 1);
+	content = ouster_os_malloc(size + 1);
 	content[size] = '\0';
 	size_t n = fread(content, size, 1, file);
 	if (n != 1) {
@@ -938,7 +936,7 @@ char *ouster_fs_readfile(char const *path)
 	return content;
 error:
 	if (content) {
-		free(content);
+		ouster_os_free(content);
 	}
 	return NULL;
 }
@@ -1167,13 +1165,43 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 #include <stdarg.h>
 #include <stdio.h>
 
-void ouster_log_(char const *format, ...)
+static char *ouster_vasprintf_malloc(const char *fmt, va_list args)
 {
-	assert(format);
-	printf("OUSTER: ");
+	size_t size = 0;
+	char *result = NULL;
+	va_list tmpa;
+
+	va_copy(tmpa, args);
+
+	size = vsnprintf(result, 0, fmt, tmpa);
+
+	va_end(tmpa);
+
+	if ((int32_t)size < 0) {
+		return NULL;
+	}
+
+	result = (char *)ouster_os_malloc(size + 1);
+
+	if (!result) {
+		return NULL;
+	}
+
+	vsprintf(result, fmt, args);
+
+	return result;
+}
+
+void ouster_log_(int32_t level, char const *file, int32_t line, char const *fmt, ...)
+{
+	assert(fmt);
 	va_list args;
-	va_start(args, format);
-	vprintf(format, args);
+	va_start(args, fmt);
+
+	char *msg = ouster_vasprintf_malloc(fmt, args);
+	ouster_os_api.log_(0, file, line, msg);
+	ouster_os_free(msg);
+
 	va_end(args);
 }
 /**
@@ -1210,105 +1238,15 @@ void v3_print(double const *a);
 
 /** @} */
 
+//#define _USE_MATH_DEFINES
 #include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
 
-/*
-
-
-XYZLut make_xyz_lut(size_t w, size_t h, double range_unit,
-                    const mat4d& beam_to_lidar_transform,
-                    const mat4d& transform,
-                    const std::vector<double>& azimuth_angles_deg,
-                    const std::vector<double>& altitude_angles_deg) {
-    if (w <= 0 || h <= 0)
-        throw std::invalid_argument("lut dimensions must be greater than zero");
-
-    if ((azimuth_angles_deg.size() != h || altitude_angles_deg.size() != h) &&
-        (azimuth_angles_deg.size() != w * h ||
-         altitude_angles_deg.size() != w * h)) {
-        throw std::invalid_argument("unexpected scan dimensions");
-    }
-
-    double beam_to_lidar_euclidean_distance_mm = beam_to_lidar_transform(0, 3);
-    if (beam_to_lidar_transform(2, 3) != 0) {
-        beam_to_lidar_euclidean_distance_mm =
-            std::sqrt(std::pow(beam_to_lidar_transform(0, 3), 2) +
-                      std::pow(beam_to_lidar_transform(2, 3), 2));
-    }
-
-    XYZLut lut;
-
-    Eigen::ArrayXd encoder(w * h);   // theta_e
-    Eigen::ArrayXd azimuth(w * h);   // theta_a
-    Eigen::ArrayXd altitude(w * h);  // phi
-
-    if (azimuth_angles_deg.size() == h && altitude_angles_deg.size() == h) {
-        // OS sensor
-        const double azimuth_radians = M_PI * 2.0 / w;
-
-        // populate angles for each pixel
-        for (size_t v = 0; v < w; v++) {
-            for (size_t u = 0; u < h; u++) {
-                size_t i = u * w + v;
-                encoder(i) = 2.0 * M_PI - (v * azimuth_radians);
-                azimuth(i) = -azimuth_angles_deg[u] * M_PI / 180.0;
-                altitude(i) = altitude_angles_deg[u] * M_PI / 180.0;
-            }
-        }
-
-    } else if (azimuth_angles_deg.size() == w * h &&
-               altitude_angles_deg.size() == w * h) {
-        // DF sensor
-        // populate angles for each pixel
-        for (size_t v = 0; v < w; v++) {
-            for (size_t u = 0; u < h; u++) {
-                size_t i = u * w + v;
-                encoder(i) = 0;
-                azimuth(i) = azimuth_angles_deg[i] * M_PI / 180.0;
-                altitude(i) = altitude_angles_deg[i] * M_PI / 180.0;
-            }
-        }
-    }
-
-    // unit vectors for each pixel
-    lut.direction = LidarScan::Points{w * h, 3};
-    lut.direction.col(0) = (encoder + azimuth).cos() * altitude.cos();
-    lut.direction.col(1) = (encoder + azimuth).sin() * altitude.cos();
-    lut.direction.col(2) = altitude.sin();
-
-    // offsets due to beam origin
-    lut.offset = LidarScan::Points{w * h, 3};
-    lut.offset.col(0) =
-        encoder.cos() * beam_to_lidar_transform(0, 3) -
-        lut.direction.col(0) * beam_to_lidar_euclidean_distance_mm;
-    lut.offset.col(1) =
-        encoder.sin() * beam_to_lidar_transform(0, 3) -
-        lut.direction.col(1) * beam_to_lidar_euclidean_distance_mm;
-    lut.offset.col(2) =
-        -lut.direction.col(2) * beam_to_lidar_euclidean_distance_mm +
-        beam_to_lidar_transform(2, 3);
-
-    // apply the supplied transform
-    auto rot = transform.topLeftCorner(3, 3).transpose();
-    auto trans = transform.topRightCorner(3, 1).transpose();
-    lut.direction.matrix() *= rot;
-    lut.offset.matrix() *= rot;
-    lut.offset.matrix() += trans.replicate(w * h, 1);
-
-    // apply scaling factor
-    lut.direction *= range_unit;
-    lut.offset *= range_unit;
-
-    return lut;
-}
-*/
 
 void ouster_lut_fini(ouster_lut_t *lut)
 {
-	free(lut->direction);
-	free(lut->offset);
+	ouster_os_free(lut->direction);
+	ouster_os_free(lut->offset);
 	lut->direction = NULL;
 	lut->offset = NULL;
 }
@@ -1329,11 +1267,11 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	ouster_assert(h >= 0, "");
 	ouster_assert(h <= 128, "");
 
-	double *encoder = calloc(1, w * h * sizeof(double));  // theta_e
-	double *azimuth = calloc(1, w * h * sizeof(double));  // theta_a
-	double *altitude = calloc(1, w * h * sizeof(double)); // phi
-	double *direction = calloc(1, w * h * 3 * sizeof(double));
-	double *offset = calloc(1, w * h * 3 * sizeof(double));
+	double *encoder = ouster_os_calloc(w * h * sizeof(double));  // theta_e
+	double *azimuth = ouster_os_calloc(w * h * sizeof(double));  // theta_a
+	double *altitude = ouster_os_calloc(w * h * sizeof(double)); // phi
+	double *direction = ouster_os_calloc(w * h * 3 * sizeof(double));
+	double *offset = ouster_os_calloc(w * h * 3 * sizeof(double));
 	ouster_assert_notnull(encoder);
 	ouster_assert_notnull(azimuth);
 	ouster_assert_notnull(altitude);
@@ -1345,7 +1283,7 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	m4_print(meta->lidar_to_sensor_transform);
 
 	// This represent a column measurement angle:
-	double azimuth_radians = M_PI * 2.0 / meta->columns_per_frame;
+	double azimuth_radians = OUSTER_M_PI * 2.0 / meta->columns_per_frame;
 
 	// OS sensor - populate angles for each pixel
 	for (int c = 0; c < w; c++) {
@@ -1355,9 +1293,9 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 			ouster_assert(mid >= meta->mid0, "");
 			ouster_assert(mid <= meta->mid1, "");
 			int i = r * w + c;
-			encoder[i] = 2.0 * M_PI - (mid * azimuth_radians);
-			azimuth[i] = -meta->beam_azimuth_angles[r] * M_PI / 180.0;
-			altitude[i] = meta->beam_altitude_angles[r] * M_PI / 180.0;
+			encoder[i] = 2.0 * OUSTER_M_PI - (mid * azimuth_radians);
+			azimuth[i] = -meta->beam_azimuth_angles[r] * OUSTER_M_PI / 180.0;
+			altitude[i] = meta->beam_altitude_angles[r] * OUSTER_M_PI / 180.0;
 		}
 	}
 
@@ -1405,9 +1343,9 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 		o[2] += translation[2];
 	}
 
-	free(encoder);
-	free(azimuth);
-	free(altitude);
+	ouster_os_free(encoder);
+	ouster_os_free(azimuth);
+	ouster_os_free(altitude);
 
 	for (int i = 0; i < w * h; ++i) {
 		double range_unit = 0.001f;
@@ -1496,7 +1434,7 @@ double *ouster_lut_alloc(ouster_lut_t const *lut)
 
 	int n = lut->w * lut->h;
 	int size = n * sizeof(double) * 3;
-	void *memory = calloc(1, size);
+	void *memory = ouster_os_calloc(size);
 	return memory;
 }
 #include <stdio.h>
@@ -2144,6 +2082,64 @@ uint64_t ouster_net_select(int socks[], int n, const int timeout_sec, const int 
 	return result;
 }
 
+#include <stdio.h>
+#include <stdlib.h>
+
+ouster_os_api_t ouster_os_api;
+int64_t ouster_os_api_malloc_count = 0;
+int64_t ouster_os_api_realloc_count = 0;
+int64_t ouster_os_api_calloc_count = 0;
+int64_t ouster_os_api_free_count = 0;
+
+static void *ouster_os_api_calloc(size_t size)
+{
+	ouster_os_api_calloc_count++;
+	return calloc(1, (size_t)size);
+}
+
+static void *ouster_os_api_malloc(size_t size)
+{
+	ouster_os_api_malloc_count++;
+	return malloc((size_t)size);
+}
+
+static void ouster_os_api_free(void *ptr)
+{
+	ouster_os_api_free_count++;
+	free(ptr);
+}
+
+static void * ouster_os_api_realloc(void *ptr, size_t size)
+{
+	ouster_os_api_realloc_count++;
+	return realloc(ptr, size);
+}
+
+static void ouster_log_msg(int32_t level, const char *file, int32_t line, const char *msg)
+{
+	FILE *stream;
+	if (level >= 0) {
+		stream = stdout;
+	} else {
+		stream = stderr;
+	}
+	fputs(msg, stream);
+	fputs("\n", stream);
+}
+
+void ouster_os_set_api_defaults(void)
+{
+	/* Memory management */
+	ouster_os_api.malloc_ = ouster_os_api_malloc;
+	ouster_os_api.free_ = ouster_os_api_free;
+	ouster_os_api.realloc_ = ouster_os_api_realloc;
+	ouster_os_api.calloc_ = ouster_os_api_calloc;
+
+	/* Logging */
+	ouster_os_api.log_ = ouster_log_msg;
+
+	ouster_os_api.abort_ = abort;
+}
 #include <stddef.h>
 
 
@@ -2285,50 +2281,53 @@ int ouster_udpcap_sock_to_file(ouster_udpcap_t *cap, int sock, FILE *f)
 	return OUSTER_UDPCAP_OK;
 }
 #include <string.h>
+#include <stdint.h>
 
-
-
-void ouster_vec_init(ouster_vec_t * v, int esize, int cap)
+void ouster_vec_init(ouster_vec_t *v, int esize, int cap)
 {
 	ouster_assert_notnull(v);
 	ouster_assert(cap >= 0, "");
 	ouster_assert(esize >= 0, "");
-	v->data = malloc(cap * esize);
+	v->data = ouster_os_malloc(cap * esize);
 	ouster_assert_notnull(v->data);
 	v->cap = cap;
 	v->esize = esize;
 }
 
-void ouster_vec_append(ouster_vec_t * v, void const * data, int n, float factor)
+void ouster_vec_append(ouster_vec_t *v, void const *data, int n, float factor)
 {
 	ouster_assert_notnull(v);
+	ouster_assert_notnull(data);
+	ouster_assert(n >= 0, "");
 	ouster_assert(factor >= 1.0f, "");
 	int count = v->count + n;
 	if (count > v->cap) {
 		int cap = (float)count * factor;
-		v->data = realloc(v->data, cap);
+		v->data = ouster_os_realloc(v->data, cap);
 		ouster_assert_notnull(v->data);
+		ouster_assert(count <= cap, "");
 		v->cap = cap + 1;
 	}
 	int offset = v->esize * v->count;
+	ouster_assert(offset >= 0, "");
+	ouster_assert((offset + n) <= v->cap, "");
 	memcpy(OUSTER_OFFSET(v->data, offset), data, n);
 	v->count = count;
 }
 
-
-
-void test_ouster_vec()
+int test_ouster_vec()
 {
-	char const * d1 = "Hello";
-	char const * d2 = " ";
-	char const * d3 = "world!";
+	char const *d1 = "Hello";
+	char const *d2 = " ";
+	char const *d3 = "world!";
 	ouster_vec_t v;
 	ouster_vec_init(&v, 1, 2);
 	ouster_vec_append(&v, d1, strlen(d1), 1.5f);
 	ouster_vec_append(&v, d2, strlen(d2), 1.5f);
 	ouster_vec_append(&v, d3, strlen(d3), 1.5f);
 
-	char const * str = v.data;
+	char const *str = v.data;
 	int diff = strcmp("Hello world!", str);
 	ouster_assert(diff == 0, "");
+	return diff == 0;
 }

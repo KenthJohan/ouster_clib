@@ -3,30 +3,32 @@
 
 #include "sokol_app.h"
 
-#include <stdlib.h>
 #include <ouster_clib.h>
+#include <stdlib.h>
 #include <string.h>
 
 typedef struct {
-	float mvp[4*4];
+	float mvp[4 * 4];
 	float extra[4];
 } vs_params_t;
 
-
 void draw_points_pass(draw_points_t *app, m4f32 *vp)
 {
+	if (app->vertices_count <= 0) {
+		return;
+	}
 	sg_apply_pipeline(app->pip);
 	sg_apply_bindings(&(sg_bindings){
 	    .vertex_buffers[0] = app->vbuf,
 	    .index_buffer.id = SG_INVALID_ID,
 	});
-	sg_update_buffer(app->vbuf, &(sg_range){.ptr = app->vertices, .size = app->vertices_count*sizeof(vertex_t)});
+	sg_update_buffer(app->vbuf, &(sg_range){.ptr = app->vertices, .size = app->vertices_count * sizeof(vertex_t)});
 	const float w = sapp_widthf();
 	const float h = sapp_heightf();
 	vs_params_t vs_params = {0};
 	vs_params.extra[0] = w;
 	vs_params.extra[1] = h;
-	//vs_params.point_size = app->point_size;
+	// vs_params.point_size = app->point_size;
 	memcpy(vs_params.mvp, vp, sizeof(m4f32));
 	sg_apply_uniforms(SG_SHADERSTAGE_VS, 0, &SG_RANGE(vs_params));
 	sg_draw(0, app->vertices_count, 1);
@@ -37,8 +39,7 @@ void setup_vertex_and_index_data(draw_points_t *app)
 {
 	vertex_t *v = app->vertices;
 	int n = app->vertices_count;
-	for(int i = 0; i < n; ++i, ++v)
-	{
+	for (int i = 0; i < n; ++i, ++v) {
 		v->x = ((float)rand() / (float)RAND_MAX) * sqrtf((float)n) - 50.0f;
 		v->y = ((float)rand() / (float)RAND_MAX) * sqrtf((float)n) - 50.0f;
 		v->z = ((float)rand() / (float)RAND_MAX) * sqrtf((float)n) - 50.0f;
@@ -57,24 +58,21 @@ void draw_points_init(draw_points_t *app)
 
 	setup_vertex_and_index_data(app);
 	app->vbuf = sg_make_buffer(&(sg_buffer_desc){
-		.size = sizeof(vertex_t) * app->vertices_cap,
-		.usage = SG_USAGE_STREAM
-	});
-	//sg_update_buffer(app->vbuf, &SG_RANGE(app->vertices));
+	    .size = sizeof(vertex_t) * app->vertices_cap,
+	    .usage = SG_USAGE_STREAM});
+	// sg_update_buffer(app->vbuf, &SG_RANGE(app->vertices));
 
-	char const * vspath = "ouster_3d_shader2.vs.glsl";
-	char const * fspath = "ouster_3d_shader2.fs.glsl";
+	char const *vspath = "ouster_3d_shader2.vs.glsl";
+	char const *fspath = "ouster_3d_shader2.fs.glsl";
 	char const *vs = ouster_fs_readfile(vspath);
-	if(vs == NULL)
-	{
+	if (vs == NULL) {
 		char buf[512];
 		ouster_fs_readfile_failed_reason(vspath, buf, sizeof(buf));
 		fprintf(stderr, "%s\n", buf);
 		exit(-1);
 	}
 	char const *fs = ouster_fs_readfile(fspath);
-	if(fs == NULL)
-	{
+	if (fs == NULL) {
 		char buf[512];
 		ouster_fs_readfile_failed_reason(fspath, buf, sizeof(buf));
 		fprintf(stderr, "%s\n", buf);

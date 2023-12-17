@@ -8,6 +8,7 @@
 
 int main(int argc, char *argv[])
 {
+	ouster_os_set_api_defaults();
 	ouster_fs_pwd();
 
 	if (argc <= 1) {

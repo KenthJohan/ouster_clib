@@ -43,6 +43,7 @@ cv::Mat ouster_get_cvmat(ouster_field_t *field)
 
 int main(int argc, char *argv[])
 {
+	ouster_os_set_api_defaults();
 	{
 		char cwd[1024] = {0};
 		getcwd(cwd, sizeof(cwd));

@@ -59,10 +59,69 @@
 
 /** @} */ // end of options
 
+/** @} */ // end of core
+
+/**
+ * @defgroup types Types
+ * @brief Types
+ *
+ * \ingroup c
+ * @{
+ */
+
+#ifndef OUSTER_TYPES_H
+#define OUSTER_TYPES_H
+
 #include <stdint.h>
+
+/*
+ Packet Header [256 bits]
+  https://github.com/ouster-lidar/ouster_example/blob/9d0971107f6f9c95e16afd727fa2534d01a0fe4e/ouster_client/src/parsing.cpp#L155
+
+  packet_header_size = legacy ? 0 : 32;
+  col_header_size = legacy ? 16 : 12;
+  channel_data_size = entry.chan_data_size;
+  col_footer_size = legacy ? 4 : 0;
+  packet_footer_size = legacy ? 0 : 32;
+
+  col_size = col_header_size + pixels_per_column * channel_data_size +
+			  col_footer_size;
+  lidar_packet_size = packet_header_size + columns_per_packet * col_size +
+					  packet_footer_size;
+*/
+
+/** The first bytes of the UDP LIDAR packet */
+#define OUSTER_PACKET_HEADER_SIZE 32
+
+/** The last bytes of the UDP LIDAR packet */
+#define OUSTER_PACKET_FOOTER_SIZE 32
+
+/** Bytes of a column header. Multiple of this column can appear in a packet */
+#define OUSTER_COLUMN_HEADER_SIZE 12
+
+/** Column does not have any footer */
+#define OUSTER_COLUMN_FOOTER_SIZE 0
+
+/** The max number of LIDAR rows of Ouster Sensors */
+#define OUSTER_MAX_ROWS 128
+
+/** Size for SOL_SOCKET, SO_RCVBUF */
+#define OUSTER_DEFAULT_RCVBUF_SIZE (1024 * 1024)
+
+/** Number of bytes in a IMU packet */
+#define OUSTER_PACKET_IMU_SIZE 48
+
+#define OUSTER_M_PI 3.14159265358979323846
+
+#define ouster_unused(x) ((void)(x))
 
 /** Translate C type to id. */
 #define ouster_id(T) OUSTER_ID##T##ID_
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef float ouster_f32_t;
 typedef double ouster_f64_t;
@@ -137,7 +196,8 @@ typedef uint8_t ouster_field_reflectivity_t;
 /** Ambient */
 typedef uint16_t ouster_field_nearir_t;
 
-typedef enum {
+typedef enum
+{
 	ouster_id(ouster_f32_t),
 	ouster_id(ouster_f64_t),
 	ouster_id(ouster_measurment_id_t),
@@ -158,6 +218,111 @@ typedef enum {
 	OUSTER_TYPE_LAST
 } ouster_type_t;
 
+typedef enum
+{
+
+	OUSTER_QUANTITY_RANGE = 1,			 // 1st return range in mm
+	OUSTER_QUANTITY_RANGE2 = 2,			 // 2nd return range in mm
+	OUSTER_QUANTITY_SIGNAL = 3,			 // 1st return signal in photons
+	OUSTER_QUANTITY_SIGNAL2 = 4,		 // 2nd return signal in photons
+	OUSTER_QUANTITY_REFLECTIVITY = 5,	 // 1st return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
+	OUSTER_QUANTITY_REFLECTIVITY2 = 6,	 // 2nd return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
+	OUSTER_QUANTITY_NEAR_IR = 7,		 // near_ir in photons
+	OUSTER_QUANTITY_FLAGS = 8,			 // 1st return flags
+	OUSTER_QUANTITY_FLAGS2 = 9,			 // 2nd return flags
+	OUSTER_QUANTITY_RAW_HEADERS = 40,	 // raw headers for packet/footer/column for dev use
+	OUSTER_QUANTITY_RAW32_WORD5 = 45,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD6 = 46,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD7 = 47,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD8 = 48,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD9 = 49,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_CUSTOM0 = 50,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM1 = 51,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM2 = 52,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM3 = 53,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM4 = 54,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM5 = 55,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM6 = 56,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM7 = 57,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM8 = 58,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM9 = 59,		 // custom user field
+	OUSTER_QUANTITY_RAW32_WORD1 = 60,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD2 = 61,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD3 = 62,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD4 = 63,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_CHAN_FIELD_MAX = 64, // max which allows us to introduce future fields
+} ouster_quantity_t;
+
+typedef struct
+{
+	uint32_t mask;
+	int offset;
+	int depth;
+} ouster_extract_t;
+
+typedef struct
+{
+	int frame_id;
+	int last_mid;
+	int mid_loss;
+	int num_valid_pixels;
+} ouster_lidar_t;
+
+typedef struct
+{
+	ouster_quantity_t q[OUSTER_QUANTITY_CHAN_FIELD_MAX];
+} ouster_field_desc_t;
+
+/*
+IMU UDP Packets are 48 Bytes long and by default are sent to Port 7503 at 100 Hz. Data is organized in little endian format.
+
+IMU Diagnostic Time [64 bit unsigned int] - timestamp of monotonic system time since boot in nanoseconds.
+Accelerometer Read Time [64 bit unsigned int] - timestamp for accelerometer time relative to timestamp_mode in nanoseconds.
+Gyroscope Read Time [64 bit unsigned int] - timestamp for gyroscope time relative to timestamp_mode in nanoseconds.
+Acceleration in X-axis [32 bit float] - acceleration in g.
+Acceleration in Y-axis [32 bit float] - acceleration in g.
+Acceleration in Z-axis [32 bit float] - acceleration in g.
+Angular Velocity about X-axis [32 bit float] - Angular velocity in deg per sec.
+Angular Velocity about Y-axis [32 bit float] - Angular velocity in deg per sec.
+Angular Velocity about Z-axis [32 bit float] - Angular velocity in deg per sec.
+*/
+typedef struct
+{
+	/** timestamp of monotonic system time since boot in nanoseconds */
+	uint64_t sys_ts;
+
+	/** timestamp for accelerometer time relative to timestamp_mode in nanoseconds */
+	uint64_t acc_ts;
+
+	/** timestamp for gyroscope time relative to timestamp_mode in nanoseconds */
+	uint64_t gyro_ts;
+
+	/** acceleration in g */
+	float acc[3];
+
+	/** Angular velocity in deg per sec */
+	float angvel[3];
+} ouster_imu_packet_t;
+
+typedef struct
+{
+	ouster_quantity_t quantity;
+	int rows;
+	int cols;
+	int depth;
+	int rowsize;
+	int size;
+	void *data;
+} ouster_field_t;
+
+typedef struct
+{
+	int w;
+	int h;
+	double *direction;
+	double *offset;
+} ouster_lut_t;
+
 /*
 https://static.ouster.dev/sensor-docs/image_route1/image_route2/sensor_data/sensor-data.html#single-return-profile
 RRRR Y0SS NN00
@@ -165,7 +330,8 @@ RRRR Y0SS NN00
 4    1 2  2
 0    4 6  8
 */
-typedef enum {
+typedef enum
+{
 	OUSTER_PROFILE_LIDAR_LEGACY = 1,
 	/** Dual Return Profile */
 	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL = 2,
@@ -176,84 +342,6 @@ typedef enum {
 	OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL = 5,
 	OUSTER_PROFILE_COUNT
 } ouster_profile_t;
-
-typedef enum {
-
-	OUSTER_QUANTITY_RANGE = 1,           // 1st return range in mm
-	OUSTER_QUANTITY_RANGE2 = 2,          // 2nd return range in mm
-	OUSTER_QUANTITY_SIGNAL = 3,          // 1st return signal in photons
-	OUSTER_QUANTITY_SIGNAL2 = 4,         // 2nd return signal in photons
-	OUSTER_QUANTITY_REFLECTIVITY = 5,    // 1st return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
-	OUSTER_QUANTITY_REFLECTIVITY2 = 6,   // 2nd return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
-	OUSTER_QUANTITY_NEAR_IR = 7,         // near_ir in photons
-	OUSTER_QUANTITY_FLAGS = 8,           // 1st return flags
-	OUSTER_QUANTITY_FLAGS2 = 9,          // 2nd return flags
-	OUSTER_QUANTITY_RAW_HEADERS = 40,    // raw headers for packet/footer/column for dev use
-	OUSTER_QUANTITY_RAW32_WORD5 = 45,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD6 = 46,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD7 = 47,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD8 = 48,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD9 = 49,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_CUSTOM0 = 50,        // custom user field
-	OUSTER_QUANTITY_CUSTOM1 = 51,        // custom user field
-	OUSTER_QUANTITY_CUSTOM2 = 52,        // custom user field
-	OUSTER_QUANTITY_CUSTOM3 = 53,        // custom user field
-	OUSTER_QUANTITY_CUSTOM4 = 54,        // custom user field
-	OUSTER_QUANTITY_CUSTOM5 = 55,        // custom user field
-	OUSTER_QUANTITY_CUSTOM6 = 56,        // custom user field
-	OUSTER_QUANTITY_CUSTOM7 = 57,        // custom user field
-	OUSTER_QUANTITY_CUSTOM8 = 58,        // custom user field
-	OUSTER_QUANTITY_CUSTOM9 = 59,        // custom user field
-	OUSTER_QUANTITY_RAW32_WORD1 = 60,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD2 = 61,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD3 = 62,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD4 = 63,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_CHAN_FIELD_MAX = 64, // max which allows us to introduce future fields
-} ouster_quantity_t;
-
-/*
- Packet Header [256 bits]
-  https://github.com/ouster-lidar/ouster_example/blob/9d0971107f6f9c95e16afd727fa2534d01a0fe4e/ouster_client/src/parsing.cpp#L155
-
-  packet_header_size = legacy ? 0 : 32;
-  col_header_size = legacy ? 16 : 12;
-  channel_data_size = entry.chan_data_size;
-  col_footer_size = legacy ? 4 : 0;
-  packet_footer_size = legacy ? 0 : 32;
-
-  col_size = col_header_size + pixels_per_column * channel_data_size +
-              col_footer_size;
-  lidar_packet_size = packet_header_size + columns_per_packet * col_size +
-                      packet_footer_size;
-*/
-
-/** The first bytes of the UDP LIDAR packet */
-#define OUSTER_PACKET_HEADER_SIZE 32
-
-/** The last bytes of the UDP LIDAR packet */
-#define OUSTER_PACKET_FOOTER_SIZE 32
-
-/** Bytes of a column header. Multiple of this column can appear in a packet */
-#define OUSTER_COLUMN_HEADER_SIZE 12
-
-/** Column does not have any footer */
-#define OUSTER_COLUMN_FOOTER_SIZE 0
-
-/** The max number of LIDAR rows of Ouster Sensors */
-#define OUSTER_MAX_ROWS 128
-
-/** Size for SOL_SOCKET, SO_RCVBUF */
-#define OUSTER_DEFAULT_RCVBUF_SIZE (1024*1024)
-
-/** Number of bytes in a IMU packet */
-#define OUSTER_PACKET_IMU_SIZE 48
-
-typedef struct
-{
-	uint32_t mask;
-	int offset;
-	int depth;
-} ouster_extract_t;
 
 typedef struct
 {
@@ -308,14 +396,6 @@ typedef struct
 
 typedef struct
 {
-	int w;
-	int h;
-	double *direction;
-	double *offset;
-} ouster_lut_t;
-
-typedef struct
-{
 	ouster_timestamp_t ts;
 	ouster_status_t status;
 	ouster_measurment_id_t mid;
@@ -333,64 +413,93 @@ typedef struct
 	ouster_shot_limiting_t shot_limiting;
 } ouster_lidar_header_t;
 
-typedef struct
-{
-	int frame_id;
-	int last_mid;
-	int mid_loss;
-	int num_valid_pixels;
-} ouster_lidar_t;
+#ifdef __cplusplus
+}
+#endif
 
-typedef struct
-{
-	ouster_quantity_t quantity;
-	int rows;
-	int cols;
-	int depth;
-	int rowsize;
-	int size;
-	void *data;
-} ouster_field_t;
+#endif // OUSTER_TYPES_H
 
-typedef struct
-{
-	ouster_quantity_t q[OUSTER_QUANTITY_CHAN_FIELD_MAX];
-} ouster_field_desc_t;
+/** @} */
+/**
+ * @defgroup os_api OS API
+ * @brief API of OS
+ *
+ * \ingroup c
+ * @{
+ */
 
+#ifndef OUSTER_OUSTER_OS_API_H
+#define OUSTER_OUSTER_OS_API_H
 
-/*
-IMU UDP Packets are 48 Bytes long and by default are sent to Port 7503 at 100 Hz. Data is organized in little endian format.
+#include <stdint.h>
+#include <stddef.h>
 
-IMU Diagnostic Time [64 bit unsigned int] - timestamp of monotonic system time since boot in nanoseconds.
-Accelerometer Read Time [64 bit unsigned int] - timestamp for accelerometer time relative to timestamp_mode in nanoseconds.
-Gyroscope Read Time [64 bit unsigned int] - timestamp for gyroscope time relative to timestamp_mode in nanoseconds.
-Acceleration in X-axis [32 bit float] - acceleration in g.
-Acceleration in Y-axis [32 bit float] - acceleration in g.
-Acceleration in Z-axis [32 bit float] - acceleration in g.
-Angular Velocity about X-axis [32 bit float] - Angular velocity in deg per sec.
-Angular Velocity about Y-axis [32 bit float] - Angular velocity in deg per sec.
-Angular Velocity about Z-axis [32 bit float] - Angular velocity in deg per sec.
-*/
-typedef struct
-{
-	/** timestamp of monotonic system time since boot in nanoseconds */
-	uint64_t sys_ts;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-	/** timestamp for accelerometer time relative to timestamp_mode in nanoseconds */
-	uint64_t acc_ts;
+typedef void *(*ouster_os_api_malloc_t)(size_t size);
 
-	/** timestamp for gyroscope time relative to timestamp_mode in nanoseconds */
-	uint64_t gyro_ts;
+typedef void *(*ouster_os_api_realloc_t)(void *ptr, size_t size);
 
-	/** acceleration in g */
-	float acc[3];
+typedef void *(*ouster_os_api_calloc_t)(size_t size);
 
-	/** Angular velocity in deg per sec */
-	float angvel[3];
-} ouster_imu_packet_t;
+typedef void (*ouster_os_api_free_t)(void *ptr);
 
-/** @} */ // end of core
+typedef void (*ouster_os_api_log_t)(int32_t level, const char *file, int32_t line, const char *msg);
 
+typedef void (*ouster_os_api_abort_t)(void);
+
+typedef struct ouster_os_api_t {
+
+	/* Memory management */
+	ouster_os_api_malloc_t malloc_;
+	ouster_os_api_realloc_t realloc_;
+	ouster_os_api_calloc_t calloc_;
+	ouster_os_api_free_t free_;
+
+	/* Logging */
+	ouster_os_api_log_t log_;
+
+	/* Application termination */
+	ouster_os_api_abort_t abort_;
+} ouster_os_api_t;
+
+extern ouster_os_api_t ouster_os_api;
+extern int64_t ouster_os_api_malloc_count;
+extern int64_t ouster_os_api_realloc_count;
+extern int64_t ouster_os_api_calloc_count;
+extern int64_t ouster_os_api_free_count;
+
+#ifndef ouster_os_malloc
+#define ouster_os_malloc(size) ouster_os_api.malloc_(size)
+#endif
+
+#ifndef ouster_os_free
+#define ouster_os_free(ptr) ouster_os_api.free_(ptr)
+#endif
+
+#ifndef ouster_os_realloc
+#define ouster_os_realloc(ptr, size) ouster_os_api.realloc_(ptr, size)
+#endif
+
+#ifndef ouster_os_calloc
+#define ouster_os_calloc(size) ouster_os_api.calloc_(size)
+#endif
+
+#ifndef ouster_os_abort
+#define ouster_os_abort(size) ouster_os_api.abort_()
+#endif
+
+void ouster_os_set_api_defaults(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // OUSTER_OUSTER_OS_API_H
+
+/** @} */
 /**
  * @defgroup assert Assertion
  * @brief Functionality for sanity checks
@@ -401,6 +510,7 @@ typedef struct
 
 #ifndef OUSTER_ASSERT_H
 #define OUSTER_ASSERT_H
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -430,8 +540,8 @@ int ouster_assert_(
 
 
 #else
-#define ouster_assert(expr, ...)
-#define ouster_assert_notnull(expr)
+#define ouster_assert(expr, ...) ouster_unused(expr)
+#define ouster_assert_notnull(expr) ouster_unused(expr)
 #endif // OUSTER_DEBUG
 
 #ifdef __cplusplus
@@ -453,11 +563,28 @@ int ouster_assert_(
 #ifndef OUSTER_FIELD_H
 #define OUSTER_FIELD_H
 
+#ifndef OUSTER_META_H
+#define OUSTER_META_H
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void ouster_meta_parse(char const *jsonstr, ouster_meta_t *out_meta);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // OUSTER_META_H
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 
 void ouster_destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[]);
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta);
@@ -522,6 +649,7 @@ char *ouster_fs_readfile(char const *path);
 extern "C" {
 #endif
 
+
 void ouster_lidar_header_get(char const *buf, ouster_lidar_header_t *dst);
 
 void ouster_column_get1(char const *colbuf, void *dst, int type);
@@ -546,6 +674,7 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 #ifndef OUSTER_LOG_H
 #define OUSTER_LOG_H
 
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -553,8 +682,8 @@ extern "C" {
 
 /** Logging */
 #ifdef OUSTER_ENABLE_LOG
-void ouster_log_(char const *fmt, ...);
-#define ouster_log(...) ouster_log_(__VA_ARGS__)
+void ouster_log_(int32_t level, char const * file, int32_t line, char const *fmt, ...);
+#define ouster_log(...) ouster_log_(0, __FILE__, __LINE__, __VA_ARGS__)
 #else
 #define ouster_log(...)
 #endif
@@ -581,6 +710,8 @@ void ouster_log_(char const *fmt, ...);
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 
 
 /** Inits a xyz lut table from meta configuration
@@ -627,22 +758,6 @@ double *ouster_lut_alloc(ouster_lut_t const *lut);
 #endif // OUSTER_LUT_H
 
 /** @} */
-#ifndef OUSTER_META_H
-#define OUSTER_META_H
-
-#include <stdio.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void ouster_meta_parse(char const *jsonstr, ouster_meta_t *out_meta);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // OUSTER_META_H
 /**
  * @defgroup net Network and sockets
  * @brief Provides network functionality
@@ -769,7 +884,7 @@ int ouster_sock_create_tcp(char const *hint_name, int port);
 
 #ifndef OUSTER_VEC_H
 #define OUSTER_VEC_H
-#include <stdio.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -789,7 +904,7 @@ void ouster_vec_init(ouster_vec_t *v, int esize, int cap);
 
 void ouster_vec_append(ouster_vec_t *v, void const *data, int n, float factor);
 
-void test_ouster_vec();
+int test_ouster_vec();
 
 #ifdef __cplusplus
 }
@@ -798,9 +913,17 @@ void test_ouster_vec();
 #endif // OUSTER_VEC_H
 
 /** @} */
+/**
+ * @defgroup http HTTP request
+ * @brief Functionality for getting HTTP response from HTTP request
+ *
+ * \ingroup c
+ * @{
+ */
+
 #ifndef OUSTER_HTTP_H
 #define OUSTER_HTTP_H
-#include <stdio.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -815,7 +938,9 @@ void ouster_http_request(int sock, char const *host, char const *path, ouster_ve
 }
 #endif
 
-#endif // OUSTER_CLIENT_H
+#endif // OUSTER_HTTP_H
+
+/** @} */
 
 #ifdef OUSTER_NO_UDPCAP
 #undef OUSTER_USE_UDPCAP

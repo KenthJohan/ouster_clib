@@ -9,20 +9,14 @@
 #ifndef OUSTER_LUT_H
 #define OUSTER_LUT_H
 
-#include "ouster_clib/ouster_meta.h"
+#include "ouster_clib/ouster_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-typedef struct
-{
-	int w;
-	int h;
-	double *direction;
-	double *offset;
-} ouster_lut_t;
+
 
 /** Inits a xyz lut table from meta configuration
  *

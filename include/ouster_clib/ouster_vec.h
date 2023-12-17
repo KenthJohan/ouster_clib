@@ -8,7 +8,7 @@
 
 #ifndef OUSTER_VEC_H
 #define OUSTER_VEC_H
-#include <stdio.h>
+
 
 #ifdef __cplusplus
 extern "C" {

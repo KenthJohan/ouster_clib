@@ -10,7 +10,7 @@
 #ifndef OUSTER_DUMP_H
 #define OUSTER_DUMP_H
 
-#include "ouster_clib.h"
+#include "ouster_clib/ouster_types.h"
 #include <stdio.h>
 
 #ifdef __cplusplus

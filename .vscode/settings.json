@@ -28,7 +28,13 @@
 		"ouster_os_api.h": "c",
 		"ouster_meta.h": "c",
 		"ouster_types.h": "c",
-		"json.h": "c"
+		"json.h": "c",
+		"stdlib.h": "c",
+		"ouster_math.h": "c",
+		"ouster_lut.h": "c",
+		"array": "c",
+		"string_view": "c",
+		"initializer_list": "c"
 	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""

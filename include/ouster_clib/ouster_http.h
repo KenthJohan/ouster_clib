@@ -9,6 +9,8 @@
 #ifndef OUSTER_HTTP_H
 #define OUSTER_HTTP_H
 
+#include "ouster_clib/ouster_vec.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -22,9 +22,9 @@
   packet_footer_size = legacy ? 0 : 32;
 
   col_size = col_header_size + pixels_per_column * channel_data_size +
-              col_footer_size;
+			  col_footer_size;
   lidar_packet_size = packet_header_size + columns_per_packet * col_size +
-                      packet_footer_size;
+					  packet_footer_size;
 */
 
 /** The first bytes of the UDP LIDAR packet */
@@ -48,16 +48,17 @@
 /** Number of bytes in a IMU packet */
 #define OUSTER_PACKET_IMU_SIZE 48
 
+#define OUSTER_M_PI 3.14159265358979323846
+
 #define ouster_unused(x) ((void)(x))
 
 /** Translate C type to id. */
 #define ouster_id(T) OUSTER_ID##T##ID_
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-
-
 
 typedef float ouster_f32_t;
 typedef double ouster_f64_t;
@@ -132,7 +133,8 @@ typedef uint8_t ouster_field_reflectivity_t;
 /** Ambient */
 typedef uint16_t ouster_field_nearir_t;
 
-typedef enum {
+typedef enum
+{
 	ouster_id(ouster_f32_t),
 	ouster_id(ouster_f64_t),
 	ouster_id(ouster_measurment_id_t),
@@ -153,37 +155,38 @@ typedef enum {
 	OUSTER_TYPE_LAST
 } ouster_type_t;
 
-typedef enum {
+typedef enum
+{
 
-	OUSTER_QUANTITY_RANGE = 1,           // 1st return range in mm
-	OUSTER_QUANTITY_RANGE2 = 2,          // 2nd return range in mm
-	OUSTER_QUANTITY_SIGNAL = 3,          // 1st return signal in photons
-	OUSTER_QUANTITY_SIGNAL2 = 4,         // 2nd return signal in photons
-	OUSTER_QUANTITY_REFLECTIVITY = 5,    // 1st return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
-	OUSTER_QUANTITY_REFLECTIVITY2 = 6,   // 2nd return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
-	OUSTER_QUANTITY_NEAR_IR = 7,         // near_ir in photons
-	OUSTER_QUANTITY_FLAGS = 8,           // 1st return flags
-	OUSTER_QUANTITY_FLAGS2 = 9,          // 2nd return flags
-	OUSTER_QUANTITY_RAW_HEADERS = 40,    // raw headers for packet/footer/column for dev use
-	OUSTER_QUANTITY_RAW32_WORD5 = 45,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD6 = 46,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD7 = 47,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD8 = 48,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD9 = 49,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_CUSTOM0 = 50,        // custom user field
-	OUSTER_QUANTITY_CUSTOM1 = 51,        // custom user field
-	OUSTER_QUANTITY_CUSTOM2 = 52,        // custom user field
-	OUSTER_QUANTITY_CUSTOM3 = 53,        // custom user field
-	OUSTER_QUANTITY_CUSTOM4 = 54,        // custom user field
-	OUSTER_QUANTITY_CUSTOM5 = 55,        // custom user field
-	OUSTER_QUANTITY_CUSTOM6 = 56,        // custom user field
-	OUSTER_QUANTITY_CUSTOM7 = 57,        // custom user field
-	OUSTER_QUANTITY_CUSTOM8 = 58,        // custom user field
-	OUSTER_QUANTITY_CUSTOM9 = 59,        // custom user field
-	OUSTER_QUANTITY_RAW32_WORD1 = 60,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD2 = 61,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD3 = 62,    // raw word access to packet for dev use
-	OUSTER_QUANTITY_RAW32_WORD4 = 63,    // raw word access to packet for dev use
+	OUSTER_QUANTITY_RANGE = 1,			 // 1st return range in mm
+	OUSTER_QUANTITY_RANGE2 = 2,			 // 2nd return range in mm
+	OUSTER_QUANTITY_SIGNAL = 3,			 // 1st return signal in photons
+	OUSTER_QUANTITY_SIGNAL2 = 4,		 // 2nd return signal in photons
+	OUSTER_QUANTITY_REFLECTIVITY = 5,	 // 1st return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
+	OUSTER_QUANTITY_REFLECTIVITY2 = 6,	 // 2nd return reflectivity, calibrated by range and sensor///< sensitivity in FW 2.1+. See sensor docs for more details
+	OUSTER_QUANTITY_NEAR_IR = 7,		 // near_ir in photons
+	OUSTER_QUANTITY_FLAGS = 8,			 // 1st return flags
+	OUSTER_QUANTITY_FLAGS2 = 9,			 // 2nd return flags
+	OUSTER_QUANTITY_RAW_HEADERS = 40,	 // raw headers for packet/footer/column for dev use
+	OUSTER_QUANTITY_RAW32_WORD5 = 45,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD6 = 46,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD7 = 47,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD8 = 48,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD9 = 49,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_CUSTOM0 = 50,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM1 = 51,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM2 = 52,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM3 = 53,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM4 = 54,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM5 = 55,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM6 = 56,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM7 = 57,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM8 = 58,		 // custom user field
+	OUSTER_QUANTITY_CUSTOM9 = 59,		 // custom user field
+	OUSTER_QUANTITY_RAW32_WORD1 = 60,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD2 = 61,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD3 = 62,	 // raw word access to packet for dev use
+	OUSTER_QUANTITY_RAW32_WORD4 = 63,	 // raw word access to packet for dev use
 	OUSTER_QUANTITY_CHAN_FIELD_MAX = 64, // max which allows us to introduce future fields
 } ouster_quantity_t;
 
@@ -193,7 +196,6 @@ typedef struct
 	int offset;
 	int depth;
 } ouster_extract_t;
-
 
 typedef struct
 {
@@ -250,6 +252,103 @@ typedef struct
 	void *data;
 } ouster_field_t;
 
+typedef struct
+{
+	int w;
+	int h;
+	double *direction;
+	double *offset;
+} ouster_lut_t;
+
+/*
+https://static.ouster.dev/sensor-docs/image_route1/image_route2/sensor_data/sensor-data.html#single-return-profile
+RRRR Y0SS NN00
+|--- | |- |-
+4    1 2  2
+0    4 6  8
+*/
+typedef enum
+{
+	OUSTER_PROFILE_LIDAR_LEGACY = 1,
+	/** Dual Return Profile */
+	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16_DUAL = 2,
+	/** Single Return Profile */
+	OUSTER_PROFILE_RNG19_RFL8_SIG16_NIR16 = 3,
+	/** Low Data Rate Profile */
+	OUSTER_PROFILE_RNG15_RFL8_NIR8 = 4,
+	OUSTER_PROFILE_FIVE_WORDS_PER_PIXEL = 5,
+	OUSTER_PROFILE_COUNT
+} ouster_profile_t;
+
+typedef struct
+{
+	/** The configured port where Ouster Sensor will send LIDAR UDP packets */
+	int udp_port_lidar;
+
+	/** The configured port where Ouster Sensor will send IMU UDP packets */
+	int udp_port_imu;
+
+	/** This will not change when configuring azimuth window */
+	int columns_per_frame;
+
+	/** This will not change when configuring azimuth window */
+	int columns_per_packet;
+
+	/** This is number of rows */
+	int pixels_per_column;
+
+	/** This is the pixel format */
+	ouster_profile_t profile;
+	int channel_data_size;
+
+	int col_size;
+
+	/** UDP packet size for LIDAR packets */
+	int lidar_packet_size;
+
+	/** This is used to destagg hightmap range image from LiDAR */
+	int pixel_shift_by_row[OUSTER_MAX_ROWS];
+
+	/** These are parameters to convert a hightmap range image from LiDAR to 3D points */
+	double beam_altitude_angles[OUSTER_MAX_ROWS];
+	double beam_azimuth_angles[OUSTER_MAX_ROWS];
+	double beam_to_lidar_transform[16];
+	double lidar_origin_to_beam_origin_mm;
+	double lidar_to_sensor_transform[16];
+
+	/** Start of azimuth window.
+	 * This will change when configuring azimuth window. */
+	int mid0;
+
+	/** End of azimuth window.
+	 * This will change when configuring azimuth window. */
+	int mid1;
+
+	/** Width of azimuth window.
+	 * This will change when configuring azimuth window. */
+	int midw;
+
+	ouster_extract_t extract[OUSTER_QUANTITY_CHAN_FIELD_MAX];
+} ouster_meta_t;
+
+typedef struct
+{
+	ouster_timestamp_t ts;
+	ouster_status_t status;
+	ouster_measurment_id_t mid;
+} ouster_column_t;
+
+typedef struct
+{
+	ouster_frame_id_t frame_id;
+	ouster_packet_type_t packet_type;
+	ouster_init_id_t init_id;
+	ouster_prod_sn_t prod_sn;
+	ouster_countdown_thermal_shutdown_t countdown_thermal_shutdown;
+	ouster_countdown_shot_limiting_t countdown_shot_limiting;
+	ouster_thermal_shutdown_t thermal_shutdown;
+	ouster_shot_limiting_t shot_limiting;
+} ouster_lidar_header_t;
 
 #ifdef __cplusplus
 }

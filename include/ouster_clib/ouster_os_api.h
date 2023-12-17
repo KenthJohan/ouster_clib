@@ -9,8 +9,8 @@
 #ifndef OUSTER_OUSTER_OS_API_H
 #define OUSTER_OUSTER_OS_API_H
 
-#include "ouster_clib.h"
-#include <stdio.h>
+#include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,6 +44,10 @@ typedef struct ouster_os_api_t {
 } ouster_os_api_t;
 
 extern ouster_os_api_t ouster_os_api;
+extern int64_t ouster_os_api_malloc_count;
+extern int64_t ouster_os_api_realloc_count;
+extern int64_t ouster_os_api_calloc_count;
+extern int64_t ouster_os_api_free_count;
 
 #ifndef ouster_os_malloc
 #define ouster_os_malloc(size) ouster_os_api.malloc_(size)

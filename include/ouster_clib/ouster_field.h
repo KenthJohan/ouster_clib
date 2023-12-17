@@ -20,8 +20,9 @@ extern "C" {
 
 
 
-void ouster_destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[]);
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta);
+void ouster_field_fini(ouster_field_t fields[], int count);
+void ouster_destagger(void *data, int cols, int rows, int depth, int rowsize, int pixel_shift_by_row[]);
 void ouster_field_destagger(ouster_field_t fields[], int count, ouster_meta_t *meta);
 void ouster_field_apply_mask_u32(ouster_field_t *field, ouster_meta_t *meta);
 void ouster_field_zero(ouster_field_t fields[], int count);

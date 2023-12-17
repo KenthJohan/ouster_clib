@@ -1,6 +1,7 @@
 #include "ouster_clib/ouster_field.h"
 #include "ouster_clib/ouster_assert.h"
-#include <stdlib.h>
+#include "ouster_clib/ouster_os_api.h"
+
 #include <string.h>
 
 void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
@@ -14,7 +15,17 @@ void ouster_field_init(ouster_field_t fields[], int count, ouster_meta_t *meta)
 		f->cols = meta->midw;
 		f->rowsize = f->cols * f->depth;
 		f->size = f->rows * f->cols * f->depth;
-		f->data = calloc(1, fields->size);
+		f->data = ouster_os_calloc(f->size);
+	}
+}
+
+void ouster_field_fini(ouster_field_t fields[], int count)
+{
+	ouster_assert_notnull(fields);
+	ouster_field_t *f = fields;
+	for (int i = 0; i < count; ++i, f++) {
+		ouster_os_free(f->data);
+		memset(f->data, 0, sizeof(ouster_field_t));
 	}
 }
 
@@ -27,31 +38,6 @@ void ouster_field_cpy(ouster_field_t dst[], ouster_field_t src[], int count)
 		memcpy(dst->data, src->data, src->size);
 	}
 }
-
-/*
-template <typename T>
-inline img_t<T> destagger(const Eigen::Ref<const img_t<T>>& img,
-                          const std::vector<int>& pixel_shift_by_row,
-                          bool inverse) {
-    const size_t h = img.rows();
-    const size_t w = img.cols();
-
-    if (pixel_shift_by_row.size() != h)
-        throw std::invalid_argument{"image height does not match shifts size"};
-
-    img_t<T> destaggered{h, w};
-    for (size_t u = 0; u < h; u++) {
-        const std::ptrdiff_t offset =
-            ((inverse ? -1 : 1) * pixel_shift_by_row[u] + w) % w;
-
-        destaggered.row(u).segment(offset, w - offset) =
-            img.row(u).segment(0, w - offset);
-        destaggered.row(u).segment(0, offset) =
-            img.row(u).segment(w - offset, offset);
-    }
-    return destaggered;
-}
-*/
 
 /*
 https://static.ouster.dev/sdk-docs/reference/lidar-scan.html#staggering-and-destaggering

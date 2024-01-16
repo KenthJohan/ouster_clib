@@ -9,13 +9,12 @@
     "lang.cpp": {
         "cxxflags": ["-pthread"],
         "cpp-standard": "c++20",
-		"defines": ["OUSTER_NO_UDPCAP", "OUSTER_NO_CURL"],
+		"defines": ["OUSTER_NO_UDPCAP"],
         "include": [
             "/usr/include/opencv4"
         ],
         "lib": [
             "ouster_clib", 
-            "curl",
             "pthread",
             "opencv_core", "opencv_imgproc", "opencv_features2d", "opencv_imgcodecs", "opencv_highgui",
             "GLEW", "glfw", "GL"

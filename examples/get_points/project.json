@@ -8,7 +8,7 @@
     },
     "lang.c": {
         "lib": ["ouster_clib", "m"],
-		"defines" : ["OUSTER_NO_CURL", "OUSTER_NO_UDPCAP"],
+		"defines" : ["OUSTER_NO_UDPCAP"],
         "cflags":["-Werror", "-Wall", "-Wpedantic", "-Wextra", "-Wno-error=unused-variable"]
     }
 }

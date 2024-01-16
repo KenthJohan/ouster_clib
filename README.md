@@ -39,7 +39,6 @@ I have only tested on these sensors but it should work an all others as Ouster s
 
 
 ## Requirement
-libcurl is optional.
 ```bash
 sudo apt update
 sudo apt install git

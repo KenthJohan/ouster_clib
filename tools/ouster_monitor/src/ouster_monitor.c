@@ -84,7 +84,7 @@ int main(int argc, char const *argv[])
 	    OPT_HELP(),
 	    OPT_GROUP("Basic options"),
 	    OPT_STRING('m', "metafile", &metafile, "The meta file that correspond to the LiDAR sensor configuration", NULL, 0, 0),
-	    OPT_STRING('e', "emode", &modestr, "The output mode", NULL, 0, 0),
+	    OPT_STRING('e', "emode", &modestr, "The printing output mode. Allowed modes: loss, packet, header, column", NULL, 0, 0),
 	    OPT_END(),
 	};
 

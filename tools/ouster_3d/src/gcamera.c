@@ -2,6 +2,10 @@
 #include <assert.h>
 #include <stdio.h>
 
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 static void quaternion_rotation_procedure(float const look[3], float q[4], float speed)
 {
 	assert(fabsf(V4_DOT(q, q) - 1.0f) < 0.1f);             // Check quaternion valididy:

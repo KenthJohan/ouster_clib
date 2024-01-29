@@ -43,9 +43,9 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	ouster_assert_notnull(direction);
 	ouster_assert_notnull(offset);
 
-	float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[M4(0, 3)];
-	float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[M4(2, 3)];
-	m4_print(meta->lidar_to_sensor_transform);
+	float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[OUSTER_M4(0, 3)];
+	float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[OUSTER_M4(2, 3)];
+	//ouster_m4_print(meta->lidar_to_sensor_transform);
 
 	// This represent a column measurement angle:
 	double azimuth_radians = OUSTER_M_PI * 2.0 / meta->columns_per_frame;
@@ -79,15 +79,15 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 
 	// Extract the rotation matrix from transform
 	double rotation[9] = {
-	    [M3(0, 0)] = meta->lidar_to_sensor_transform[M4(0, 0)],
-	    [M3(1, 0)] = meta->lidar_to_sensor_transform[M4(0, 1)],
-	    [M3(2, 0)] = meta->lidar_to_sensor_transform[M4(0, 2)],
-	    [M3(0, 1)] = meta->lidar_to_sensor_transform[M4(1, 0)],
-	    [M3(1, 1)] = meta->lidar_to_sensor_transform[M4(1, 1)],
-	    [M3(2, 1)] = meta->lidar_to_sensor_transform[M4(1, 2)],
-	    [M3(0, 2)] = meta->lidar_to_sensor_transform[M4(2, 0)],
-	    [M3(1, 2)] = meta->lidar_to_sensor_transform[M4(2, 1)],
-	    [M3(2, 2)] = meta->lidar_to_sensor_transform[M4(2, 2)],
+	    [OUSTER_M3(0, 0)] = meta->lidar_to_sensor_transform[OUSTER_M4(0, 0)],
+	    [OUSTER_M3(1, 0)] = meta->lidar_to_sensor_transform[OUSTER_M4(0, 1)],
+	    [OUSTER_M3(2, 0)] = meta->lidar_to_sensor_transform[OUSTER_M4(0, 2)],
+	    [OUSTER_M3(0, 1)] = meta->lidar_to_sensor_transform[OUSTER_M4(1, 0)],
+	    [OUSTER_M3(1, 1)] = meta->lidar_to_sensor_transform[OUSTER_M4(1, 1)],
+	    [OUSTER_M3(2, 1)] = meta->lidar_to_sensor_transform[OUSTER_M4(1, 2)],
+	    [OUSTER_M3(0, 2)] = meta->lidar_to_sensor_transform[OUSTER_M4(2, 0)],
+	    [OUSTER_M3(1, 2)] = meta->lidar_to_sensor_transform[OUSTER_M4(2, 1)],
+	    [OUSTER_M3(2, 2)] = meta->lidar_to_sensor_transform[OUSTER_M4(2, 2)],
 	};
 
 	// Extract the translation vector from transform
@@ -101,8 +101,8 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	for (int i = 0; i < w * h; ++i) {
 		double *d = direction + i * 3;
 		double *o = offset + i * 3;
-		mul3(d, rotation, d);
-		mul3(o, rotation, o);
+		ouster_m3f64_mul(d, rotation, d);
+		ouster_m3f64_mul(o, rotation, o);
 		o[0] += translation[0];
 		o[1] += translation[1];
 		o[2] += translation[2];
@@ -155,7 +155,7 @@ void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, vo
 		outd[0] = (float)(mag * d[0] + o[0]);
 		outd[1] = (float)(mag * d[1] + o[1]);
 		outd[2] = (float)(mag * d[2] + o[2]);
-		// printf("%+f %+f\n", mag, sqrt(V3_DOT(out_xyz, out_xyz)));
+		// printf("%+f %+f\n", mag, sqrt(OUSTER_V3_DOT(out_xyz, out_xyz)));
 	}
 }
 
@@ -189,7 +189,7 @@ void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, vo
 		outf[0] = (float)(mag * d[0] + o[0]);
 		outf[1] = (float)(mag * d[1] + o[1]);
 		outf[2] = (float)(mag * d[2] + o[2]);
-		// printf("%+f %+f\n", mag, sqrt(V3_DOT(out_xyz, out_xyz)));
+		// printf("%+f %+f\n", mag, sqrt(OUSTER_V3_DOT(out_xyz, out_xyz)));
 	}
 }
 

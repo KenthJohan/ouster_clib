@@ -1204,15 +1204,15 @@ void ouster_log_(int32_t level, char const *file, int32_t line, char const *fmt,
 extern "C" {
 #endif
 
-#define M4(i, j) ((i) * 4 + (j))
-#define M3(i, j) ((i) * 3 + (j))
-void mul3(double *r, double const *a, double const *x);
+#define OUSTER_M4(i, j) ((i) * 4 + (j))
+#define OUSTER_M3(i, j) ((i) * 3 + (j))
+void ouster_m3f64_mul(double r[9], double const a[9], double const x[9]);
 
-void m4_print(double const *a);
+void ouster_m4_print(double const a[16]);
 
-void m3_print(double const *a);
+void ouster_m3_print(double const a[9]);
 
-void v3_print(double const *a);
+void ouster_v3_print(double const a[3]);
 
 
 #ifdef __cplusplus
@@ -1263,9 +1263,9 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	ouster_assert_notnull(direction);
 	ouster_assert_notnull(offset);
 
-	float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[M4(0, 3)];
-	float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[M4(2, 3)];
-	m4_print(meta->lidar_to_sensor_transform);
+	float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[OUSTER_M4(0, 3)];
+	float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[OUSTER_M4(2, 3)];
+	//ouster_m4_print(meta->lidar_to_sensor_transform);
 
 	// This represent a column measurement angle:
 	double azimuth_radians = OUSTER_M_PI * 2.0 / meta->columns_per_frame;
@@ -1299,15 +1299,15 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 
 	// Extract the rotation matrix from transform
 	double rotation[9] = {
-	    [M3(0, 0)] = meta->lidar_to_sensor_transform[M4(0, 0)],
-	    [M3(1, 0)] = meta->lidar_to_sensor_transform[M4(0, 1)],
-	    [M3(2, 0)] = meta->lidar_to_sensor_transform[M4(0, 2)],
-	    [M3(0, 1)] = meta->lidar_to_sensor_transform[M4(1, 0)],
-	    [M3(1, 1)] = meta->lidar_to_sensor_transform[M4(1, 1)],
-	    [M3(2, 1)] = meta->lidar_to_sensor_transform[M4(1, 2)],
-	    [M3(0, 2)] = meta->lidar_to_sensor_transform[M4(2, 0)],
-	    [M3(1, 2)] = meta->lidar_to_sensor_transform[M4(2, 1)],
-	    [M3(2, 2)] = meta->lidar_to_sensor_transform[M4(2, 2)],
+	    [OUSTER_M3(0, 0)] = meta->lidar_to_sensor_transform[OUSTER_M4(0, 0)],
+	    [OUSTER_M3(1, 0)] = meta->lidar_to_sensor_transform[OUSTER_M4(0, 1)],
+	    [OUSTER_M3(2, 0)] = meta->lidar_to_sensor_transform[OUSTER_M4(0, 2)],
+	    [OUSTER_M3(0, 1)] = meta->lidar_to_sensor_transform[OUSTER_M4(1, 0)],
+	    [OUSTER_M3(1, 1)] = meta->lidar_to_sensor_transform[OUSTER_M4(1, 1)],
+	    [OUSTER_M3(2, 1)] = meta->lidar_to_sensor_transform[OUSTER_M4(1, 2)],
+	    [OUSTER_M3(0, 2)] = meta->lidar_to_sensor_transform[OUSTER_M4(2, 0)],
+	    [OUSTER_M3(1, 2)] = meta->lidar_to_sensor_transform[OUSTER_M4(2, 1)],
+	    [OUSTER_M3(2, 2)] = meta->lidar_to_sensor_transform[OUSTER_M4(2, 2)],
 	};
 
 	// Extract the translation vector from transform
@@ -1321,8 +1321,8 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 	for (int i = 0; i < w * h; ++i) {
 		double *d = direction + i * 3;
 		double *o = offset + i * 3;
-		mul3(d, rotation, d);
-		mul3(o, rotation, o);
+		ouster_m3f64_mul(d, rotation, d);
+		ouster_m3f64_mul(o, rotation, o);
 		o[0] += translation[0];
 		o[1] += translation[1];
 		o[2] += translation[2];
@@ -1375,7 +1375,7 @@ void ouster_lut_cartesian_f64(ouster_lut_t const *lut, uint32_t const *range, vo
 		outd[0] = (float)(mag * d[0] + o[0]);
 		outd[1] = (float)(mag * d[1] + o[1]);
 		outd[2] = (float)(mag * d[2] + o[2]);
-		// printf("%+f %+f\n", mag, sqrt(V3_DOT(out_xyz, out_xyz)));
+		// printf("%+f %+f\n", mag, sqrt(OUSTER_V3_DOT(out_xyz, out_xyz)));
 	}
 }
 
@@ -1409,7 +1409,7 @@ void ouster_lut_cartesian_f32(ouster_lut_t const *lut, uint32_t const *range, vo
 		outf[0] = (float)(mag * d[0] + o[0]);
 		outf[1] = (float)(mag * d[1] + o[1]);
 		outf[2] = (float)(mag * d[2] + o[2]);
-		// printf("%+f %+f\n", mag, sqrt(V3_DOT(out_xyz, out_xyz)));
+		// printf("%+f %+f\n", mag, sqrt(OUSTER_V3_DOT(out_xyz, out_xyz)));
 	}
 }
 
@@ -1424,46 +1424,51 @@ double *ouster_lut_alloc(ouster_lut_t const *lut)
 }
 #include <stdio.h>
 
-#define FMTF "%+20.10f"
-#define FMTF3 FMTF FMTF FMTF "\n"
-#define FMTF4 FMTF FMTF FMTF FMTF "\n"
+#define OUSTER_REAL_FORMAT "%+20.10f"
 
-#define M4_ARGS_1(x) (x)[0], (x)[1], (x)[2], (x)[3], (x)[4], (x)[5], (x)[6], (x)[7], (x)[8], (x)[9], (x)[10], (x)[11], (x)[12], (x)[13], (x)[14], (x)[15]
-#define M4_ARGS_2(x) (x)[0], (x)[4], (x)[8], (x)[12], (x)[1], (x)[5], (x)[9], (x)[13], (x)[2], (x)[6], (x)[10], (x)[14], (x)[3], (x)[7], (x)[11], (x)[15]
-#define M4_FORMAT FMTF4 FMTF4 FMTF4 FMTF4
+#define OUSTER_V3_ARGS(x) (x)[0], (x)[1], (x)[2]
+#define OUSTER_V3_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT "\n"
+#define OUSTER_V3_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
 
-#define M3_ARGS_1(x) (x)[0], (x)[1], (x)[2], (x)[3], (x)[4], (x)[5], (x)[6], (x)[7], (x)[8]
-#define M3_ARGS_2(x) (x)[0], (x)[3], (x)[6], (x)[1], (x)[4], (x)[7], (x)[2], (x)[5], (x)[8]
-#define M3_FORMAT FMTF3 FMTF3 FMTF3
+#define OUSTER_V4_ARGS(x) (x)[0], (x)[1], (x)[2], (x)[3]
+#define OUSTER_V4_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT "\n"
+#define OUSTER_V4_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2] + (a)[3] * (b)[3])
 
-#define V3_ARGS(x) (x)[0], (x)[1], (x)[2]
-#define V3_FORMAT "%f %f %f\n"
-#define V3_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
+#define OUSTER_M3_ARGS_1(x) (x)[0], (x)[1], (x)[2], (x)[3], (x)[4], (x)[5], (x)[6], (x)[7], (x)[8]
+#define OUSTER_M3_ARGS_2(x) (x)[0], (x)[3], (x)[6], (x)[1], (x)[4], (x)[7], (x)[2], (x)[5], (x)[8]
+#define OUSTER_M3_FORMAT OUSTER_V3_FORMAT OUSTER_V3_FORMAT OUSTER_V3_FORMAT
 
-void m4_print(double const *a)
+#define OUSTER_M4_ARGS_1(x) (x)[0], (x)[1], (x)[2], (x)[3], (x)[4], (x)[5], (x)[6], (x)[7], (x)[8], (x)[9], (x)[10], (x)[11], (x)[12], (x)[13], (x)[14], (x)[15]
+#define OUSTER_M4_ARGS_2(x) (x)[0], (x)[4], (x)[8], (x)[12], (x)[1], (x)[5], (x)[9], (x)[13], (x)[2], (x)[6], (x)[10], (x)[14], (x)[3], (x)[7], (x)[11], (x)[15]
+#define OUSTER_M4_FORMAT OUSTER_V4_FORMAT OUSTER_V4_FORMAT OUSTER_V4_FORMAT OUSTER_V4_FORMAT
+
+
+
+
+void ouster_m4_print(double const a[16])
 {
-	printf(M4_FORMAT, M4_ARGS_1(a));
+	printf(OUSTER_M4_FORMAT, OUSTER_M4_ARGS_1(a));
 }
 
-void m3_print(double const *a)
+void ouster_m3_print(double const a[9])
 {
-	printf(M3_FORMAT, M3_ARGS_1(a));
+	printf(OUSTER_M3_FORMAT, OUSTER_M3_ARGS_1(a));
 }
 
-void v3_print(double const *a)
+void ouster_v3_print(double const a[3])
 {
-	printf(V3_FORMAT, V3_ARGS(a));
+	printf(OUSTER_V3_FORMAT, OUSTER_V3_ARGS(a));
 }
 
-void mul3(double *r, double const *a, double const *x)
+void ouster_m3f64_mul(double r[9], double const a[9], double const x[9])
 {
 	ouster_assert_notnull(r);
 	ouster_assert_notnull(a);
 	ouster_assert_notnull(x);
 	double temp[3];
-	temp[0] = (a[M3(0, 0)] * x[0]) + (a[M3(1, 0)] * x[1]) + (a[M3(2, 0)] * x[2]);
-	temp[1] = (a[M3(0, 1)] * x[0]) + (a[M3(1, 1)] * x[1]) + (a[M3(2, 1)] * x[2]);
-	temp[2] = (a[M3(0, 2)] * x[0]) + (a[M3(1, 2)] * x[1]) + (a[M3(2, 2)] * x[2]);
+	temp[0] = (a[OUSTER_M3(0, 0)] * x[0]) + (a[OUSTER_M3(1, 0)] * x[1]) + (a[OUSTER_M3(2, 0)] * x[2]);
+	temp[1] = (a[OUSTER_M3(0, 1)] * x[0]) + (a[OUSTER_M3(1, 1)] * x[1]) + (a[OUSTER_M3(2, 1)] * x[2]);
+	temp[2] = (a[OUSTER_M3(0, 2)] * x[0]) + (a[OUSTER_M3(1, 2)] * x[1]) + (a[OUSTER_M3(2, 2)] * x[2]);
 	r[0] = temp[0];
 	r[1] = temp[1];
 	r[2] = temp[2];

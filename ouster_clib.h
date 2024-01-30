@@ -31,31 +31,87 @@
  * @{
  */
 
-/** \def OUSTER_DEBUG
+/** @def OUSTER_DEBUG
  * Used for input parameter checking and cheap sanity checks. There are lots of
  * asserts in every part of the code, so this will slow down applications.
  */
+#if !defined(OUSTER_DEBUG) && !defined(OUSTER_NDEBUG)
+#if defined(NDEBUG)
+#define OUSTER_NDEBUG
+#else
 #define OUSTER_DEBUG
+#endif
+#endif
 
 /** \def OUSTER_USE_DUMP
  * Include dump or print struct functionality
  */
+#ifndef OUSTER_USE_DUMP
 #define OUSTER_USE_DUMP
+#endif
 
 /** \def OUSTER_USE_UDPCAP
  * Include UDP capture and replay functionality
  */
+#ifndef OUSTER_USE_UDPCAP
 #define OUSTER_USE_UDPCAP
+#endif
 
 /** \def OUSTER_ENABLE_LOG
  * Enable logging
  */
-#define OUSTER_ENABLE_LOG
+//#ifndef OUSTER_ENABLE_LOG
+//#define OUSTER_ENABLE_LOG
+//#endif
 
 /** @} */ // end of options
 
 /** @} */ // end of core
 
+/**
+ * @defgroup log Logging
+ * @brief Functionality logging
+ *
+ * \ingroup c
+ * @{
+ */
+
+#ifndef OUSTER_LOG_H
+#define OUSTER_LOG_H
+
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
+
+/** Logging */
+#ifdef OUSTER_ENABLE_LOG
+void ouster_log_(int32_t level, char const * file, int32_t line, char const *fmt, ...);
+#define ouster_log(...) ouster_log_(0, __FILE__, __LINE__, __VA_ARGS__)
+#else
+#pragma message("Log DISABLED!")
+#define ouster_log(...)
+#endif
+
+
+void ouster_log_m4(double const a[16]);
+
+void ouster_log_m3(double const a[9]);
+
+void ouster_log_v3(double const a[3]);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // OUSTER_LOG_H
+
+/** @} */
 /**
  * @defgroup types Types
  * @brief Types
@@ -658,38 +714,6 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 #endif
 
 #endif // OUSTER_LIDAR_H
-/**
- * @defgroup log Logging
- * @brief Functionality logging
- *
- * \ingroup c
- * @{
- */
-
-#ifndef OUSTER_LOG_H
-#define OUSTER_LOG_H
-
-#include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/** Logging */
-#ifdef OUSTER_ENABLE_LOG
-void ouster_log_(int32_t level, char const * file, int32_t line, char const *fmt, ...);
-#define ouster_log(...) ouster_log_(0, __FILE__, __LINE__, __VA_ARGS__)
-#else
-#define ouster_log(...)
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // OUSTER_LOG_H
-
-/** @} */
 /**
  * @defgroup lut XYZ vector field lookup table
  * @brief Provides a vector field that converts image to pointcloud

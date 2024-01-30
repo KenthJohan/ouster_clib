@@ -1,6 +1,4 @@
-#include "ouster_clib/ouster_net.h"
-#include "ouster_clib/ouster_assert.h"
-#include "ouster_clib/ouster_log.h"
+#include "ouster_clib.h"
 
 #include <arpa/inet.h>
 #include <errno.h>

@@ -35,7 +35,10 @@ typedef struct ouster_os_api_t {
 	ouster_os_api_realloc_t realloc_;
 	ouster_os_api_calloc_t calloc_;
 	ouster_os_api_free_t free_;
-
+	
+	/* Trace level */
+	int32_t log_level_;
+	
 	/* Logging */
 	ouster_os_api_log_t log_;
 

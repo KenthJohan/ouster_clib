@@ -663,6 +663,7 @@ jsmntok_t *json_parse_string(char const *json, jsmntok_t *t, char const *path[],
 	parse_string(json, t + 1, out, n);
 	return t;
 }
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1146,6 +1147,59 @@ void ouster_lidar_get_fields(ouster_lidar_t *lidar, ouster_meta_t *meta, char co
 		ouster_assert(fields[j].depth > 0, "");
 	}
 }
+/**
+ * @defgroup math Math
+ * @brief Functionality for math
+ *
+ * \ingroup c
+ * @{
+ */
+
+#ifndef OUSTER_MATH_H
+#define OUSTER_MATH_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define OUSTER_M4(i, j) ((i) * 4 + (j))
+#define OUSTER_M3(i, j) ((i) * 3 + (j))
+
+#define OUSTER_REAL_FORMAT "%+20.10f"
+
+#define OUSTER_V3_ARGS(x) (x)[0], (x)[1], (x)[2]
+#define OUSTER_V4_ARGS(x) (x)[0], (x)[1], (x)[2], (x)[3]
+
+#define OUSTER_V3_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT "\n"
+#define OUSTER_V4_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT "\n"
+
+#define OUSTER_V3_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
+#define OUSTER_V4_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2] + (a)[3] * (b)[3])
+
+#define OUSTER_M3_ARGS_1(x) (x)[0], (x)[1], (x)[2], (x)[3], (x)[4], (x)[5], (x)[6], (x)[7], (x)[8]
+#define OUSTER_M3_ARGS_2(x) (x)[0], (x)[3], (x)[6], (x)[1], (x)[4], (x)[7], (x)[2], (x)[5], (x)[8]
+#define OUSTER_M4_ARGS_1(x) (x)[0], (x)[1], (x)[2], (x)[3], (x)[4], (x)[5], (x)[6], (x)[7], (x)[8], (x)[9], (x)[10], (x)[11], (x)[12], (x)[13], (x)[14], (x)[15]
+#define OUSTER_M4_ARGS_2(x) (x)[0], (x)[4], (x)[8], (x)[12], (x)[1], (x)[5], (x)[9], (x)[13], (x)[2], (x)[6], (x)[10], (x)[14], (x)[3], (x)[7], (x)[11], (x)[15]
+
+#define OUSTER_M3_FORMAT OUSTER_V3_FORMAT OUSTER_V3_FORMAT OUSTER_V3_FORMAT
+#define OUSTER_M4_FORMAT OUSTER_V4_FORMAT OUSTER_V4_FORMAT OUSTER_V4_FORMAT OUSTER_V4_FORMAT
+
+void ouster_m3f64_mul(double r[9], double const a[9], double const x[9]);
+
+void ouster_m4_print(double const a[16]);
+
+void ouster_m3_print(double const a[9]);
+
+void ouster_v3_print(double const a[3]);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // OUSTER_MATH_H
+
+/** @} */
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -1189,39 +1243,22 @@ void ouster_log_(int32_t level, char const *file, int32_t line, char const *fmt,
 
 	va_end(args);
 }
-/**
- * @defgroup math Math
- * @brief Functionality for math
- *
- * \ingroup c
- * @{
- */
-
-#ifndef OUSTER_MATH_H
-#define OUSTER_MATH_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define OUSTER_M4(i, j) ((i) * 4 + (j))
-#define OUSTER_M3(i, j) ((i) * 3 + (j))
-void ouster_m3f64_mul(double r[9], double const a[9], double const x[9]);
-
-void ouster_m4_print(double const a[16]);
-
-void ouster_m3_print(double const a[9]);
-
-void ouster_v3_print(double const a[3]);
 
 
-#ifdef __cplusplus
+void ouster_log_m4(double const a[16])
+{
+	ouster_log(OUSTER_M4_FORMAT, OUSTER_M4_ARGS_1(a));
 }
-#endif
 
-#endif // OUSTER_MATH_H
+void ouster_log_m3(double const a[9])
+{
+	ouster_log(OUSTER_M3_FORMAT, OUSTER_M3_ARGS_1(a));
+}
 
-/** @} */
+void ouster_log_v3(double const a[3])
+{
+	ouster_log(OUSTER_V3_FORMAT, OUSTER_V3_ARGS(a));
+}
 
 //#define _USE_MATH_DEFINES
 #include <math.h>
@@ -1265,7 +1302,7 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 
 	float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[OUSTER_M4(0, 3)];
 	float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[OUSTER_M4(2, 3)];
-	//ouster_m4_print(meta->lidar_to_sensor_transform);
+	ouster_log_m4(meta->lidar_to_sensor_transform);
 
 	// This represent a column measurement angle:
 	double azimuth_radians = OUSTER_M_PI * 2.0 / meta->columns_per_frame;
@@ -1422,43 +1459,7 @@ double *ouster_lut_alloc(ouster_lut_t const *lut)
 	void *memory = ouster_os_calloc(size);
 	return memory;
 }
-#include <stdio.h>
 
-#define OUSTER_REAL_FORMAT "%+20.10f"
-
-#define OUSTER_V3_ARGS(x) (x)[0], (x)[1], (x)[2]
-#define OUSTER_V3_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT "\n"
-#define OUSTER_V3_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
-
-#define OUSTER_V4_ARGS(x) (x)[0], (x)[1], (x)[2], (x)[3]
-#define OUSTER_V4_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT OUSTER_REAL_FORMAT "\n"
-#define OUSTER_V4_DOT(a, b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2] + (a)[3] * (b)[3])
-
-#define OUSTER_M3_ARGS_1(x) (x)[0], (x)[1], (x)[2], (x)[3], (x)[4], (x)[5], (x)[6], (x)[7], (x)[8]
-#define OUSTER_M3_ARGS_2(x) (x)[0], (x)[3], (x)[6], (x)[1], (x)[4], (x)[7], (x)[2], (x)[5], (x)[8]
-#define OUSTER_M3_FORMAT OUSTER_V3_FORMAT OUSTER_V3_FORMAT OUSTER_V3_FORMAT
-
-#define OUSTER_M4_ARGS_1(x) (x)[0], (x)[1], (x)[2], (x)[3], (x)[4], (x)[5], (x)[6], (x)[7], (x)[8], (x)[9], (x)[10], (x)[11], (x)[12], (x)[13], (x)[14], (x)[15]
-#define OUSTER_M4_ARGS_2(x) (x)[0], (x)[4], (x)[8], (x)[12], (x)[1], (x)[5], (x)[9], (x)[13], (x)[2], (x)[6], (x)[10], (x)[14], (x)[3], (x)[7], (x)[11], (x)[15]
-#define OUSTER_M4_FORMAT OUSTER_V4_FORMAT OUSTER_V4_FORMAT OUSTER_V4_FORMAT OUSTER_V4_FORMAT
-
-
-
-
-void ouster_m4_print(double const a[16])
-{
-	printf(OUSTER_M4_FORMAT, OUSTER_M4_ARGS_1(a));
-}
-
-void ouster_m3_print(double const a[9])
-{
-	printf(OUSTER_M3_FORMAT, OUSTER_M3_ARGS_1(a));
-}
-
-void ouster_v3_print(double const a[3])
-{
-	printf(OUSTER_V3_FORMAT, OUSTER_V3_ARGS(a));
-}
 
 void ouster_m3f64_mul(double r[9], double const a[9], double const x[9])
 {
@@ -2114,7 +2115,7 @@ static void ouster_log_msg(int32_t level, const char *file, int32_t line, const 
 		stream = stderr;
 	}
 	fputs(msg, stream);
-	fputs("\n", stream);
+	//fputs("\n", stream);
 }
 
 void ouster_os_set_api_defaults(void)
@@ -2171,6 +2172,7 @@ int ouster_sock_create_tcp(char const *hint_name, int port)
 	desc.rcvtimeout_sec = 10;
 	return ouster_net_create(&desc);
 }
+
 
 #include <endian.h>
 #include <netinet/in.h>

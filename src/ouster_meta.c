@@ -1,6 +1,4 @@
-#include "ouster_clib/ouster_meta.h"
-#include "ouster_clib/ouster_assert.h"
-#include "ouster_clib/ouster_log.h"
+#include "ouster_clib.h"
 
 #define JSMN_HEADER
 #include "jsmn.h"

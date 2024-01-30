@@ -1,7 +1,4 @@
-#include "ouster_clib/ouster_fs.h"
-#include "ouster_clib/ouster_assert.h"
-#include "ouster_clib/ouster_log.h"
-#include "ouster_clib/ouster_os_api.h"
+#include "ouster_clib.h"
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>

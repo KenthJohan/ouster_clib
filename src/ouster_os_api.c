@@ -41,7 +41,7 @@ static void ouster_log_msg(int32_t level, const char *file, int32_t line, const 
 		stream = stderr;
 	}
 	fputs(msg, stream);
-	fputs("\n", stream);
+	//fputs("\n", stream);
 }
 
 void ouster_os_set_api_defaults(void)
@@ -53,6 +53,7 @@ void ouster_os_set_api_defaults(void)
 	ouster_os_api.calloc_ = ouster_os_api_calloc;
 
 	/* Logging */
+	ouster_os_api.log_level_ = -1;
 	ouster_os_api.log_ = ouster_log_msg;
 
 	ouster_os_api.abort_ = abort;

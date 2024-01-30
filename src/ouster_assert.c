@@ -1,4 +1,5 @@
-#include "ouster_clib/ouster_assert.h"
+#include "ouster_clib.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

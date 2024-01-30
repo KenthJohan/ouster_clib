@@ -1,5 +1,4 @@
-#include "ouster_clib/ouster_dump.h"
-#include "ouster_clib/ouster_assert.h"
+#include "ouster_clib.h"
 #include <string.h>
 
 void ouster_dump_lidar_header(FILE *f, ouster_lidar_header_t const *p)

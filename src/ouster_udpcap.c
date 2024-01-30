@@ -1,11 +1,9 @@
+#include "ouster_clib.h"
+
 #include <endian.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "ouster_clib/ouster_assert.h"
-#include "ouster_clib/ouster_log.h"
-#include "ouster_clib/ouster_net.h"
-#include "ouster_clib/ouster_udpcap.h"
 
 /*
 void ouster_ser_i32(char data[4], int32_t value)

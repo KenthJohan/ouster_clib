@@ -1,7 +1,4 @@
-#include "ouster_clib/ouster_lidar.h"
-#include "ouster_clib/ouster_assert.h"
-#include "ouster_clib/ouster_log.h"
-#include "ouster_clib/ouster_field.h"
+#include "ouster_clib.h"
 #include <string.h>
 
 void ouster_lidar_header_get1(char const *buf, void *dst, int type)

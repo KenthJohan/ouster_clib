@@ -1,6 +1,4 @@
-#include "ouster_clib/ouster_lut.h"
-#include "ouster_clib/ouster_assert.h"
-#include "ouster_clib/ouster_os_api.h"
+#include "ouster_clib.h"
 #include "ouster_math.h"
 
 //#define _USE_MATH_DEFINES
@@ -45,7 +43,7 @@ void ouster_lut_init(ouster_lut_t *lut, ouster_meta_t const *meta)
 
 	float beam_to_lidar_transform_03 = meta->beam_to_lidar_transform[OUSTER_M4(0, 3)];
 	float beam_to_lidar_transform_23 = meta->beam_to_lidar_transform[OUSTER_M4(2, 3)];
-	//ouster_m4_print(meta->lidar_to_sensor_transform);
+	ouster_log_m4(meta->lidar_to_sensor_transform);
 
 	// This represent a column measurement angle:
 	double azimuth_radians = OUSTER_M_PI * 2.0 / meta->columns_per_frame;

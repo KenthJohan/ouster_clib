@@ -1,3 +1,6 @@
+
+#include <ouster_clib.h>
+
 #include "sokol_app.h"
 #include "sokol_gfx.h"
 
@@ -8,10 +11,11 @@
 
 #include "argparse.h"
 
+
 #include "draw_points.h"
 #include "gcamera.h"
 
-#include <ouster_clib.h>
+
 
 #include <assert.h>
 #include <float.h>
@@ -245,6 +249,7 @@ static const char *const usages[] = {
 sapp_desc sokol_main(int argc, char *argv[])
 {
 	ouster_os_set_api_defaults();
+	ouster_log_set_level(0);
 	ouster_fs_pwd();
 
 	app_t *app = calloc(1, sizeof(app_t));

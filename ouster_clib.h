@@ -60,9 +60,15 @@
 /** \def OUSTER_ENABLE_LOG
  * Enable logging
  */
-//#ifndef OUSTER_ENABLE_LOG
-//#define OUSTER_ENABLE_LOG
-//#endif
+#if defined(OUSTER_ENABLE_LOG) && defined(OUSTER_DISABLE_LOG)
+#error "invalid configuration: cannot both define OUSTER_ENABLE_LOG and OUSTER_DISABLE_LOG"
+#endif
+#ifndef OUSTER_ENABLE_LOG
+#define OUSTER_ENABLE_LOG
+#endif
+#ifdef OUSTER_DISABLE_LOG
+#undef OUSTER_ENABLE_LOG
+#endif
 
 /** @} */ // end of options
 
@@ -86,23 +92,27 @@ extern "C" {
 #endif
 
 
-
+int32_t ouster_log_set_level(int32_t level);
 
 /** Logging */
 #ifdef OUSTER_ENABLE_LOG
 void ouster_log_(int32_t level, char const * file, int32_t line, char const *fmt, ...);
+void ouster_log_m4_(double const a[16]);
+void ouster_log_m3_(double const a[9]);
+void ouster_log_v3_(double const a[3]);
 #define ouster_log(...) ouster_log_(0, __FILE__, __LINE__, __VA_ARGS__)
+#define ouster_log_m4(...) ouster_log_m4_(__VA_ARGS__)
+#define ouster_log_m3(...) ouster_log_m3_(__VA_ARGS__)
+#define ouster_log_v3(...) ouster_log_v3_(__VA_ARGS__)
 #else
-#pragma message("Log DISABLED!")
 #define ouster_log(...)
+#define ouster_log_m4(...)
+#define ouster_log_m3(...)
+#define ouster_log_v3(...)
 #endif
 
 
-void ouster_log_m4(double const a[16]);
 
-void ouster_log_m3(double const a[9]);
-
-void ouster_log_v3(double const a[3]);
 
 
 #ifdef __cplusplus
@@ -508,7 +518,10 @@ typedef struct ouster_os_api_t {
 	ouster_os_api_realloc_t realloc_;
 	ouster_os_api_calloc_t calloc_;
 	ouster_os_api_free_t free_;
-
+	
+	/* Trace level */
+	int32_t log_level_;
+	
 	/* Logging */
 	ouster_os_api_log_t log_;
 

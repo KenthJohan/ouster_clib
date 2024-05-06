@@ -19,7 +19,7 @@ void main()
 	vec2 viewport = vs_params[4].xy;
 	color = color0;
 	centre = (0.5 * gl_Position.xy / gl_Position.w + 0.5) * viewport;
-	float radius = position.w;
+	float radius = position.w * 0.001;
 	gl_PointSize = viewport.y * radius / gl_Position.w;
 	radiusPixels = gl_PointSize / 2.0;
 }

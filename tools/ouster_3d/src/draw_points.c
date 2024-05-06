@@ -43,7 +43,7 @@ void setup_vertex_and_index_data(draw_points_t *app)
 		v->x = ((float)rand() / (float)RAND_MAX) * sqrtf((float)n) - 50.0f;
 		v->y = ((float)rand() / (float)RAND_MAX) * sqrtf((float)n) - 50.0f;
 		v->z = ((float)rand() / (float)RAND_MAX) * sqrtf((float)n) - 50.0f;
-		v->w = 5.0f;
+		v->w = 1.0f;
 		v->color = rand();
 	}
 }

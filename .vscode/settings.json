@@ -9,6 +9,6 @@
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""
 	},
-	"OUSTER_META_PATH": "~/Downloads/OS1_caps/test_19bit/meta.json",
+	"OUSTER_META_PATH": "~/Downloads/os-1-128.json",
 	"OUSTER_HOST": "192.168.1.137",
 }

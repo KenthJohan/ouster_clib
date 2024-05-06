@@ -44,7 +44,7 @@ typedef struct {
 	float dt;
 	float w;
 	float h;
-
+	float gui_point_radius; // The graphical point radius in 3D-view
 	char const *metafile;
 	ouster_meta_t meta;
 } app_t;
@@ -53,9 +53,11 @@ typedef struct {
 void print_status_text(app_t *app)
 {
 	sdtx_canvas(app->w * 0.5f, app->h * 0.5f);
-	sdtx_origin(1.0f, 2.0f);
-	sdtx_color3f(1.0f, 1.0f, 1.0f);
-	sdtx_printf("FPS: %f", 1.0f / app->dt);
+	sdtx_origin(0.1f, 0.1f);
+	sdtx_color3f(1.0f, 0.0f, 0.0f);
+	sdtx_printf("FPS: [%f] ", 1.0f / app->dt);
+	//sdtx_origin(1.0f, 3.0f);
+	sdtx_printf("Pos: [%+5.2f %+5.2f %+5.2f]", app->camera.pos[0], app->camera.pos[1], app->camera.pos[2]);
 }
 
 static void init_cb(app_t *app)
@@ -85,6 +87,10 @@ void gcamera_controller(gcamera_state_t *camera, int keys[])
 	camera->fov = keys[SAPP_KEYCODE_KP_0] ? 45 : camera->fov;
 	camera->fov -= keys[SAPP_KEYCODE_KP_1];
 	camera->fov += keys[SAPP_KEYCODE_KP_2];
+
+	camera->moving[0] *= 0.10f;
+	camera->moving[1] *= 0.10f;
+	camera->moving[2] *= 0.10f;
 	// printf("moving %f %f %f\n", V3_ARG(camera->moving));
 	// printf("looking %f %f %f\n", V3_ARG(camera->looking));
 }
@@ -97,6 +103,7 @@ static void frame_cb(app_t *app)
 
 	gcamera_controller(&app->camera, app->keys);
 	gcamera_update(&app->camera, app->dt, app->w, app->h);
+	app->gui_point_radius += (app->keys[SAPP_KEYCODE_PAGE_UP] - app->keys[SAPP_KEYCODE_PAGE_DOWN]) * 0.1f;
 
 	sg_pass_action action = (sg_pass_action){.colors[0] = {.load_action = SG_LOADACTION_CLEAR, .clear_value = {0.0f, 0.2f, 0.4f, 1.0f}}};
 
@@ -162,7 +169,7 @@ static void cleanup_cb(app_t *app)
 }
 
 
-int convert(vertex_t * v, double * xyz, int n, float thres)
+int convert(vertex_t * v, double * xyz, int n, float thres, float radius)
 {
 	int j = 0;
 	for(int i = 0; i < n; ++i, xyz += 3)
@@ -173,7 +180,7 @@ int convert(vertex_t * v, double * xyz, int n, float thres)
 		v->x = xyz[0];
 		v->y = xyz[1];
 		v->z = xyz[2];
-		v->w = 0.03f;
+		v->w = radius;
 		j++;
 		v++;
 	}
@@ -221,7 +228,7 @@ void *rec(app_t *app)
 					pthread_mutex_lock(&app->lock);
 					int n = MIN(lut.w*lut.h, app->draw_points.vertices_cap);
 
-					int j = convert(app->draw_points.vertices, xyz, n, 0.1);
+					int j = convert(app->draw_points.vertices, xyz, n, 0.1f, app->gui_point_radius);
 					app->draw_points.vertices_count = j;
 					pthread_mutex_unlock(&app->lock);
 
@@ -253,7 +260,9 @@ sapp_desc sokol_main(int argc, char *argv[])
 	ouster_fs_pwd();
 
 	app_t *app = calloc(1, sizeof(app_t));
+	app->gui_point_radius = 1.0f;
 	gcamera_init(&app->camera);
+	app->camera.pos[2] = -2.0f;
 
 	struct argparse_option options[] = {
 	    OPT_HELP(),

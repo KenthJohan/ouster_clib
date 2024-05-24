@@ -2,16 +2,11 @@
 
 #include "sokol_gfx.h"
 #include "gmath.h"
+#include "types.h"
 
 
 
-typedef struct {
-	float x;
-	float y;
-	float z;
-	float w;
-	uint32_t color;
-} vertex_t;
+
 
 typedef struct {
 	sg_pass_action pass_action;

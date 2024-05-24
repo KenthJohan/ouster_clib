@@ -14,6 +14,9 @@
 
 #include "draw_points.h"
 #include "gcamera.h"
+#include "save_csv.h"
+#include "app.h"
+#include "rxlidar.h"
 
 
 
@@ -23,31 +26,9 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-typedef enum {
-	SOCK_INDEX_LIDAR,
-	SOCK_INDEX_IMU,
-	SOCK_INDEX_COUNT
-} sock_index_t;
 
-typedef enum {
-	FIELD_RANGE,
-	FIELD_COUNT
-} field_t;
-
-typedef struct {
-	int keys[512];
-	gcamera_state_t camera;
-	draw_points_t draw_points;
-	pthread_t thread;
-	pthread_mutex_t lock;
-	float dt;
-	float w;
-	float h;
-	float gui_point_radius; // The graphical point radius in 3D-view
-	char const *metafile;
-	ouster_meta_t meta;
-} app_t;
 
 // helper function to print the help/status text
 void print_status_text(app_t *app)
@@ -95,6 +76,26 @@ void gcamera_controller(gcamera_state_t *camera, int keys[])
 	// printf("looking %f %f %f\n", V3_ARG(camera->looking));
 }
 
+
+int convert(vertex_t * v, double * xyz, int n, float thres, float radius)
+{
+	int j = 0;
+	for(int i = 0; i < n; ++i, xyz += 3)
+	{
+		double l2 = V3_DOT(xyz, xyz);
+		if(l2 < (thres*thres)){continue;}
+		v->color = 0XFFFFFFFF;
+		v->x = xyz[0];
+		v->y = xyz[1];
+		v->z = xyz[2];
+		v->w = radius;
+		j++;
+		v++;
+	}
+	return j;
+}
+
+
 static void frame_cb(app_t *app)
 {
 	app->dt = sapp_frame_duration();
@@ -105,14 +106,41 @@ static void frame_cb(app_t *app)
 	gcamera_update(&app->camera, app->dt, app->w, app->h);
 	app->gui_point_radius += (app->keys[SAPP_KEYCODE_PAGE_UP] - app->keys[SAPP_KEYCODE_PAGE_DOWN]) * 0.1f;
 
+	//printf("SAPP_KEYCODE_P %i\n", app->keys[SAPP_KEYCODE_P]);
+	if (app->keys[SAPP_KEYCODE_P] && (app->save_csv == 0)) {
+		app->save_csv = 100;
+	}
+
 	sg_pass_action action = (sg_pass_action){.colors[0] = {.load_action = SG_LOADACTION_CLEAR, .clear_value = {0.0f, 0.2f, 0.4f, 1.0f}}};
 
 	print_status_text(app);
 
 	sg_begin_default_passf(&action, app->w, app->h);
-	pthread_mutex_lock(&app->lock);
+
+
+
+	{
+		pthread_mutex_lock(&app->lock);
+		int n = MIN(app->points_count, app->draw_points.vertices_cap);
+		int j = convert(app->draw_points.vertices, app->points_xyz, n, 0.1f, app->gui_point_radius);
+		app->draw_points.vertices_count = j;
+		pthread_mutex_unlock(&app->lock);
+	}
+
+
 	draw_points_pass(&app->draw_points, &app->camera.vp);
-	pthread_mutex_unlock(&app->lock);
+
+
+
+	if (app->save_csv == 100) {
+		pthread_mutex_lock(&app->lock);
+		printf("savecsv\n");
+		save_csv(app->draw_points.vertices, app->draw_points.vertices_count);
+		pthread_mutex_unlock(&app->lock);
+	}
+	app->save_csv -= (app->save_csv > 0);
+
+
 	sdtx_draw();
 	sg_end_pass();
 
@@ -169,83 +197,7 @@ static void cleanup_cb(app_t *app)
 }
 
 
-int convert(vertex_t * v, double * xyz, int n, float thres, float radius)
-{
-	int j = 0;
-	for(int i = 0; i < n; ++i, xyz += 3)
-	{
-		double l2 = V3_DOT(xyz, xyz);
-		if(l2 < (thres*thres)){continue;}
-		v->color = 0XFFFFFFFF;
-		v->x = xyz[0];
-		v->y = xyz[1];
-		v->z = xyz[2];
-		v->w = radius;
-		j++;
-		v++;
-	}
-	return j;
-}
 
-void *rec(app_t *app)
-{
-	ouster_meta_t *meta = &app->meta;
-
-	ouster_field_t fields[FIELD_COUNT] = {
-	    [FIELD_RANGE] = {.quantity = OUSTER_QUANTITY_RANGE, .depth = 4}};
-
-	ouster_field_init(fields, FIELD_COUNT, meta);
-
-	int socks[2];
-	socks[SOCK_INDEX_LIDAR] = ouster_sock_create_udp_lidar(7502, OUSTER_DEFAULT_RCVBUF_SIZE);
-	socks[SOCK_INDEX_IMU] = ouster_sock_create_udp_imu(7503, OUSTER_DEFAULT_RCVBUF_SIZE);
-
-	ouster_lidar_t lidar = {0};
-
-	ouster_lut_t lut = {0};
-	ouster_lut_init(&lut, meta);
-	double *xyz = calloc(1, lut.w * lut.h * sizeof(double) * 3);
-
-	while (1) {
-		int timeout_sec = 1;
-		int timeout_usec = 0;
-		uint64_t a = ouster_net_select(socks, SOCK_INDEX_COUNT, timeout_sec, timeout_usec);
-
-		if (a == 0) {
-			ouster_log("Timeout\n");
-		}
-
-		if (a & (1 << SOCK_INDEX_LIDAR)) {
-			char buf[OUSTER_NET_UDP_MAX_SIZE];
-			int64_t n = ouster_net_read(socks[SOCK_INDEX_LIDAR], buf, sizeof(buf));
-			if (n == meta->lidar_packet_size) {
-				ouster_lidar_get_fields(&lidar, meta, buf, fields, FIELD_COUNT);
-				if (lidar.last_mid == meta->mid1) {
-					ouster_lut_cartesian_f64(&lut, fields[FIELD_RANGE].data, xyz, sizeof(double)*3);
-					ouster_field_zero(fields, FIELD_COUNT);
-					printf("frame=%i, mid_loss=%i\n", lidar.frame_id, lidar.mid_loss);
-
-					pthread_mutex_lock(&app->lock);
-					int n = MIN(lut.w*lut.h, app->draw_points.vertices_cap);
-
-					int j = convert(app->draw_points.vertices, xyz, n, 0.1f, app->gui_point_radius);
-					app->draw_points.vertices_count = j;
-					pthread_mutex_unlock(&app->lock);
-
-				}
-			} else {
-				printf("Bytes received (%ji) does not match lidar_packet_size (%ji)\n", (intmax_t)n, (intmax_t)app->meta.lidar_packet_size);
-			}
-		}
-
-		if (a & (1 << SOCK_INDEX_IMU)) {
-			// char buf[OUSTER_NET_UDP_MAX_SIZE];
-			// int64_t n = ouster_net_read(socks[SOCK_INDEX_IMU], buf, sizeof(buf));
-		}
-	}
-
-	return NULL;
-}
 
 static const char *const usages[] = {
     "ouster_3d [options] [[--] args]",

@@ -57,7 +57,7 @@ static void init_cb(app_t *app)
 	draw_points_init(&app->draw_points);
 }
 
-void gcamera_controller(gcamera_state_t *camera, int keys[])
+void gcamera_controller(gcamera_state_t *camera, uint8_t keys[])
 {
 	camera->looking[0] = keys[SAPP_KEYCODE_UP] - keys[SAPP_KEYCODE_DOWN];
 	camera->looking[1] = keys[SAPP_KEYCODE_RIGHT] - keys[SAPP_KEYCODE_LEFT];
@@ -107,9 +107,7 @@ static void frame_cb(app_t *app)
 	app->gui_point_radius += (app->keys[SAPP_KEYCODE_PAGE_UP] - app->keys[SAPP_KEYCODE_PAGE_DOWN]) * 0.1f;
 
 	//printf("SAPP_KEYCODE_P %i\n", app->keys[SAPP_KEYCODE_P]);
-	if (app->keys[SAPP_KEYCODE_P] && (app->save_csv == 0)) {
-		app->save_csv = 100;
-	}
+
 
 	sg_pass_action action = (sg_pass_action){.colors[0] = {.load_action = SG_LOADACTION_CLEAR, .clear_value = {0.0f, 0.2f, 0.4f, 1.0f}}};
 
@@ -118,7 +116,12 @@ static void frame_cb(app_t *app)
 	sg_begin_default_passf(&action, app->w, app->h);
 
 
+	if (app->keys[SAPP_KEYCODE_PAUSE] & KEY_PRESSED) {
+		app->pause = !app->pause;
+		printf(app->pause ? "Pause\n" : "Resume\n");
+	}
 
+	if (app->pause == 0)
 	{
 		pthread_mutex_lock(&app->lock);
 		int n = MIN(app->points_count, app->draw_points.vertices_cap);
@@ -130,15 +133,12 @@ static void frame_cb(app_t *app)
 
 	draw_points_pass(&app->draw_points, &app->camera.vp);
 
-
-
-	if (app->save_csv == 100) {
+	if (app->keys[SAPP_KEYCODE_C] & KEY_PRESSED) {
 		pthread_mutex_lock(&app->lock);
 		printf("savecsv\n");
 		save_csv(app->draw_points.vertices, app->draw_points.vertices_count);
 		pthread_mutex_unlock(&app->lock);
 	}
-	app->save_csv -= (app->save_csv > 0);
 
 
 	sdtx_draw();
@@ -151,11 +151,17 @@ static void frame_cb(app_t *app)
 	*/
 
 	sg_commit();
+
+
+	for(int i = 0; i < 512; ++i) {
+		app->keys[i] &= ~KEY_PRESSED;
+	}
 }
 
 void event_cb(const sapp_event *evt, app_t *app)
 {
-	int *keys = app->keys;
+	uint8_t *keys = app->keys;
+	sapp_keycode k = evt->key_code;
 
 	switch (evt->type) {
 	case SAPP_EVENTTYPE_MOUSE_DOWN:
@@ -175,12 +181,14 @@ void event_cb(const sapp_event *evt, app_t *app)
 	case SAPP_EVENTTYPE_MOUSE_SCROLL:
 		break;
 	case SAPP_EVENTTYPE_KEY_UP:
-		assert(evt->key_code < 512);
-		keys[evt->key_code] = 0;
+		assert(k < 512);
+		keys[k] = 0;
 		break;
 	case SAPP_EVENTTYPE_KEY_DOWN:
-		assert(evt->key_code < 512);
-		keys[evt->key_code] = 1;
+		assert(k < 512);
+		//printf("(keys[k] & KEY_PRESS): %i\n", (keys[k] & KEY_PRESS));
+		keys[k] |= (keys[k] & KEY_PRESS) ? 0 : KEY_PRESSED;
+		keys[k] |= KEY_PRESS;
 		break;
 	case SAPP_EVENTTYPE_RESIZED: {
 		break;
@@ -212,7 +220,7 @@ sapp_desc sokol_main(int argc, char *argv[])
 	ouster_fs_pwd();
 
 	app_t *app = calloc(1, sizeof(app_t));
-	app->gui_point_radius = 1.0f;
+	app->gui_point_radius = 10.0f;
 	gcamera_init(&app->camera);
 	app->camera.pos[2] = -2.0f;
 

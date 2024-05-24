@@ -5,7 +5,9 @@
 	"editor.fontSize": 14,
 	"terminal.integrated.fontSize": 14,
 	"window.zoomLevel": 1.3,
-	"files.associations": {},
+	"files.associations": {
+		"ouster_clib.h": "c"
+	},
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""
 	},

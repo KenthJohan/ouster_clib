@@ -62,8 +62,8 @@ void draw_points_init(draw_points_t *app)
 	    .usage = SG_USAGE_STREAM});
 	// sg_update_buffer(app->vbuf, &SG_RANGE(app->vertices));
 
-	char const *vspath = "ouster_3d_shader2.vs.glsl";
-	char const *fspath = "ouster_3d_shader2.fs.glsl";
+	char const *vspath = "ouster_3d_shader1.vs.glsl";
+	char const *fspath = "ouster_3d_shader1.fs.glsl";
 	char const *vs = ouster_fs_readfile(vspath);
 	if (vs == NULL) {
 		char buf[512];

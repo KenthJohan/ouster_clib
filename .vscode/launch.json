@@ -68,6 +68,30 @@
 			}
 		},
 		{
+			"name": "Launch ouster_csv",
+			"type": "cppdbg",
+			"request": "launch",
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/tools/ouster_csv",
+			"environment": [],
+			"envFile": "${workspaceFolder}/.env",
+			"program": "${workspaceFolder}/tools/ouster_csv/bin/x64-Linux-debug/ouster_csv",
+			"args": [
+				"-m",
+				"${config:OUSTER_META_PATH}",
+				"-c",
+				"test.csv",
+			],
+			"osx": {
+				"MIMode": "lldb",
+				"targetArchitecture": "arm64",
+				"externalConsole": false,
+			},
+			"linux": {
+				"externalConsole": false,
+			}
+		},
+		{
 			"name": "Launch ouster_monitor",
 			"type": "cppdbg",
 			"request": "launch",

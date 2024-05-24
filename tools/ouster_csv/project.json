@@ -1,0 +1,24 @@
+{
+	"id": "ouster_csv",
+	"type": "application",
+	"value": {
+		"language": "c",
+		"public": true,
+		"use": [
+			"ouster_clib"
+		]
+	},
+	"lang.c": {
+		"lib": [
+			"ouster_clib",
+			"m"
+		],
+		"cflags": [
+			"-Werror",
+			"-Wall",
+			"-Wpedantic",
+			"-Wextra",
+			"-Wno-error=unused-variable"
+		]
+	}
+}

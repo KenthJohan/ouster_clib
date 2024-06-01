@@ -204,7 +204,9 @@
 				"-c",
 				"${config:OUSTER_UDPCAP_PATH}",
 				"-o",
-				"15208"
+				"15208",
+				"-p",
+				"20000"
 			],
 			"osx": {
 				"MIMode": "lldb",

@@ -21,6 +21,7 @@
 	"terminal.integrated.env.linux": {
 		"GTK_PATH": ""
 	},
-	"OUSTER_META_PATH": "~/Downloads/os-1-128.json",
+	"OUSTER_META_PATH": "~/Documents/os-1-128.json",
+	"OUSTER_UDPCAP_PATH": "~/Documents/officebot.udpbin",
 	"OUSTER_HOST": "192.168.1.137",
 }
